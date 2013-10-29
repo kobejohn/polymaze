@@ -2,7 +2,8 @@ from collections import deque
 import math
 import random
 
-import PIL.Image, PIL.ImageDraw
+import PIL.Image
+import PIL.ImageDraw
 
 
 def main():
