@@ -16,7 +16,6 @@ def main():
 
 class PolyMaze(object):
     """Generate, manipulate and output mazes based on various polygons."""
-    #   - height, width that determines rectangular size of the map
     WALL = 'wall'
     PATH = 'path'
 
@@ -103,7 +102,7 @@ class PolyMaze(object):
         # setup the path creation mechanism
         current_path = deque()
         current_path.append(entrance)
-        potential_exit_and_length = (entrance, 1)  # longest path to a border space
+        potential_exit_and_length = (entrance, 1)  # longest path to a border
         # iteratively loop until the algorithm can find no more usable spaces
         # current_path will get longer as it stretches through the maze
         # eventually it will get shorter and come back to zero as the maze
@@ -202,7 +201,7 @@ class IndexedPolygonBase(object):
     # Begin implementation requirements for specific polygons:
     #
     EDGE_NAMES = tuple()  # sequence of keys for identifying polygon edges
-    SIDES_PER_INDEX = tuple()  # average sides per index (e.g. (1, 1) for a square)
+    SIDES_PER_INDEX = tuple()  # average sides/index (e.g. (1, 1) for a square)
 
     def _neighbor_index_by_edge(self, edge_name):
         """Return the index of the neighbor sharing the edge."""
