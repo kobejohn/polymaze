@@ -69,8 +69,7 @@ class TestPolyMaze(unittest.TestCase):
     def test_image_returns_image_with_same_rect_ratio_as_map_space(self):
         maze = generic_polymaze()
         # find min/max indexes of the maze's map
-        rows = [row for row, col in maze._map._map]
-        cols = [col for row, col in maze._map._map]
+        rows, cols = zip(*maze._map._map)
         row_min, row_max = min(rows), max(rows)
         col_min, col_max = min(cols), max(cols)
         # convert the min/max indexes to side units

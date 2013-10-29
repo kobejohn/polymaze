@@ -36,8 +36,7 @@ class PolyMaze(object):
         arguments: max_width/height_px bound the size of the returned image.
         """
         # calculate the size of the final image first in terms of polygon sides
-        rows = [i[0] for i in self._map.all_indexes()]  # todo: better way to unzip?
-        cols = [i[1] for i in self._map.all_indexes()]  # todo: better way to unzip?
+        rows, cols = zip(*self._map.all_indexes())
         row_scale, col_scale = self._map._polygon_class.SIDES_PER_INDEX
         height_in_poly_edges = row_scale * (max(rows) - min(rows) + 1.1)
         width_in_poly_edges = col_scale * (max(cols) - min(cols) + 2.1)
