@@ -276,6 +276,62 @@ class TestIndexedTriangle(unittest.TestCase):
                               right_edge_points)
 
 
+#noinspection PyProtectedMember
+class TestIndexedSquare(unittest.TestCase):
+    def test_has_edges_left_right_top_bottom(self):
+        square, _ = square_row1_col2_with_specification_data()
+        left_right_top_bottom = ('left', 'right', 'top', 'bottom')
+        self.assertItemsEqual(square.EDGE_NAMES, left_right_top_bottom)
+
+    def test_neighbor_index_by_edge_returns_each_neighbor_correctly(self):
+        square, spec_data = square_with_neighbors_with_spec_data()
+        # confirm neighbors are correct
+        top_neighbor_spec = spec_data['top neighbor']
+        left_neighbor_spec = spec_data['left neighbor']
+        right_neighbor_spec = spec_data['right neighbor']
+        bottom_neighbor_index = (square.index()[0] + 1, square.index()[1])
+        self.assertEqual(square._neighbor_index_by_edge(square.TOP),
+                         top_neighbor_spec.index())
+        self.assertEqual(square._neighbor_index_by_edge(square.LEFT),
+                         left_neighbor_spec.index())
+        self.assertEqual(square._neighbor_index_by_edge(square.RIGHT),
+                         right_neighbor_spec.index())
+        self.assertEqual(square._neighbor_index_by_edge(square.BOTTOM),
+                         bottom_neighbor_index)
+
+    def test_shared_edge_lookup_returns_neighbors_name_for_shared_edge(self):
+        square, _ = square_row1_col2_with_specification_data()
+        # top edge: neighbor calls it bottom
+        self.assertEqual(square._shared_edge_lookup(square.TOP),
+                         square.BOTTOM)
+        # bottom edge: neighbor calls it top
+        self.assertEqual(square._shared_edge_lookup(square.BOTTOM),
+                         square.TOP)
+        # left edge: neighbor calls it right
+        self.assertEqual(square._shared_edge_lookup(square.LEFT),
+                         square.RIGHT)
+        # right edge: neighbor calls it left
+        self.assertEqual(square._shared_edge_lookup(square.RIGHT),
+                         square.LEFT)
+
+    def test_edge_end_points_returns_same_points_as_hand_calculation(self):
+        square, spec_data = square_row1_col2_with_specification_data()
+        # get the actual points
+        top_edge_points = square._edge_end_points(square.TOP)
+        bottom_edge_points = square._edge_end_points(square.BOTTOM)
+        left_edge_points = square._edge_end_points(square.LEFT)
+        right_edge_points = square._edge_end_points(square.RIGHT)
+        # confirm they are as expected
+        self.assertItemsEqual(spec_data['top edge points'],
+                              top_edge_points)
+        self.assertItemsEqual(spec_data['bottom edge points'],
+                              bottom_edge_points)
+        self.assertItemsEqual(spec_data['left edge points'],
+                              left_edge_points)
+        self.assertItemsEqual(spec_data['right edge points'],
+                              right_edge_points)
+
+
 class TestEdge(unittest.TestCase):
     def test_points_returns_same_points_as_hand_calculation(self):
         triangle, spec_data = triangle_row1_col2_with_specification_data()
@@ -357,3 +413,64 @@ def triangle_row1_col2_with_specification_data():
     _map = polymaze.PolygonMap(polymaze.IndexedTriangle)
     triangle = _map.create_polygon(index)
     return triangle, spec_data
+
+
+def square_row1_col2_with_specification_data():
+    index = (1, 2)
+    # base assumptions
+    row_height = 1.0
+    col_width = 1.0
+    # point coordinates
+    top_left = (row_height, 2 * col_width)
+    top_right = (row_height, 3 * col_width)
+    bottom_left = (2 * row_height, 2 * col_width)
+    bottom_right = (2 * row_height, 3 * col_width)
+    # edge points
+    top_edge_points = (top_left, top_right)
+    bottom_edge_points = (bottom_left, bottom_right)
+    left_edge_points = (top_left, bottom_left)
+    right_edge_points = (top_right, bottom_right)
+    spec_data = {'top left point': top_left,
+                 'top right point': top_right,
+                 'bottom left point': bottom_left,
+                 'bottom right point': bottom_right,
+                 'top edge points': top_edge_points,
+                 'bottom edge points': bottom_edge_points,
+                 'left edge points': left_edge_points,
+                 'right edge points': right_edge_points}
+    # also return the real thing to be used in tests
+    _map = polymaze.PolygonMap(polymaze.IndexedSquare)
+    triangle = _map.create_polygon(index)
+    return triangle, spec_data
+
+
+def square_with_neighbors_with_spec_data():
+    # base parts
+    main_index = (1, 2)
+    top_index, bottom_index = (0, 2), (2, 2)
+    left_index, right_index = (1, 1), (1, 3)
+    _map = polymaze.PolygonMap(polymaze.IndexedSquare)
+    # create the neighborhood (top, left, right) no bottom
+    main = _map.create_polygon(main_index)
+    top = _map.create_polygon(top_index)
+    left = _map.create_polygon(left_index)
+    right = _map.create_polygon(right_index)
+    # get the edges of the main triangle
+    TOP, BOTTOM, LEFT, RIGHT = main.TOP, main.BOTTOM, main.LEFT, main.RIGHT
+    top_edge, bottom_edge = main.edge(TOP), main.edge(BOTTOM)
+    left_edge, right_edge = main.edge(LEFT), main.edge(RIGHT)
+    # get a sequence of all edges in the neighborhood
+    all_edges = (top_edge, bottom_edge, left_edge, right_edge,
+                 top.edge(TOP), top.edge(LEFT), top.edge(RIGHT),
+                 left.edge(TOP), left.edge(LEFT), left.edge(BOTTOM),
+                 right.edge(TOP), right.edge(RIGHT), right.edge(BOTTOM))
+    spec_data = {'top neighbor': top,
+                 'top edge': top_edge,
+                 'bottom neighbor': None,
+                 'bottom edge': bottom_edge,
+                 'left neighbor': left,
+                 'left edge': left_edge,
+                 'right neighbor': right,
+                 'right edge': right_edge,
+                 'all map edges': all_edges}
+    return main, spec_data

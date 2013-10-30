@@ -366,5 +366,58 @@ class IndexedTriangle(IndexedPolygonBase):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+class IndexedSquare(IndexedPolygonBase):
+    """Specific type of indexed polygon for use in a PolygonMap."""
+    TOP = 'top'
+    BOTTOM = 'bottom'
+    LEFT = 'left'
+    RIGHT = 'right'
+
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Begin Implementation of base polygon requirements
+    #
+    EDGE_NAMES = (TOP, RIGHT, BOTTOM, LEFT)
+    SIDES_PER_INDEX = (1.0, 1.0)  # simple for squares
+
+    def _neighbor_index_by_edge(self, edge_name):
+        """Return the index of the neighbor sharing the edge."""
+        row, col = self.index()
+        neighbor_row = {self.TOP: row - 1,
+                        self.BOTTOM: row + 1,
+                        self.LEFT: row,
+                        self.RIGHT: row}[edge_name]
+        neighbor_col = {self.TOP: col,
+                        self.BOTTOM: col,
+                        self.LEFT: col - 1,
+                        self.RIGHT: col + 1}[edge_name]
+        neighbor_index = (neighbor_row, neighbor_col)
+        return neighbor_index
+
+    def _shared_edge_lookup(self, edge_name):
+        """Return the neighbors name for a shared edge."""
+        return {self.TOP: self.BOTTOM,
+                self.BOTTOM: self.TOP,
+                self.LEFT: self.RIGHT,
+                self.RIGHT: self.LEFT}[edge_name]
+
+    def _edge_end_points(self, edge_name):
+        """Return a pair of realized coordinate tuples for edge end points."""
+        row, col = self.index()
+        row_size, col_size = self.SIDES_PER_INDEX
+        # todo: a lot of unnecessary calculation... fix it when it's an issue
+        top_left_point = (row_size * row, col_size * col)
+        top_right_point = (row_size * row, col_size * (col + 1))
+        bottom_left_point = (row_size * (row + 1), col_size * col)
+        bottom_right_point = (row_size * (row + 1), col_size * (col + 1))
+        edge_lookup = {self.TOP: (top_left_point, top_right_point),
+                       self.BOTTOM: (bottom_left_point, bottom_right_point),
+                       self.LEFT: (top_left_point, bottom_left_point),
+                       self.RIGHT: (top_right_point, bottom_right_point)}
+        return edge_lookup[edge_name]
+
+    # End implementation of base polygon requirements
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
 if __name__ == '__main__':
     main()
