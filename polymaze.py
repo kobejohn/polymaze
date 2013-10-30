@@ -19,9 +19,14 @@ class PolyMaze(object):
     WALL = 'wall'
     PATH = 'path'
 
-    def __init__(self):
-        #todo: allow selection of type
-        self._map = PolygonMap(IndexedTriangle)
+    def __init__(self, indexed_polygon_class=None):
+        """Create a maze from a grid of polygons.
+
+        kwargs:
+        indexed_polygon_class: any class that implements the IndexedPolygonBase
+        """
+        polygon_class = indexed_polygon_class or IndexedTriangle
+        self._map = PolygonMap(polygon_class)
         #todo: allow user-centric creation of the grid. this is debug
         for row in range(20):
             for col in range(30):
