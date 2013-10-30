@@ -87,7 +87,7 @@ class PolyMaze(object):
                               int(round(scale * row_a))),
                              (int(round(scale * col_b)),
                               int(round(scale * row_b)))),
-                            fill=black)
+                            fill=black, width=2)
         return image
 
     def _mazify_map(self, _map):
