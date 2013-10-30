@@ -81,7 +81,6 @@ class TestPolyMaze(unittest.TestCase):
         some_width_limit, some_height_limit = 200, 100
         image = maze.image(some_height_limit, some_width_limit)
         image_width, image_height = image.size
-        print image.size
         ratio = float(image_height) / image_width
         # confirm the image size and specified size match
         self.assertAlmostEqual(ratio, ratio_spec, places=1)
@@ -229,7 +228,7 @@ class TestIndexedPolygonBase(unittest.TestCase):
         self.assertEqual(empty_neighbor, empty_neighbor_spec)
 
 
-#todo: need to DRY this to work for any polygon
+#todo: need to DRY the polynomial design so it works for any regular grid
 #noinspection PyProtectedMember
 class TestIndexedTriangle(unittest.TestCase):
     def test_neighbor_index_by_edge_returns_each_neighbor_correctly(self):
