@@ -231,6 +231,11 @@ class TestIndexedPolygonBase(unittest.TestCase):
 #todo: need to DRY the polynomial design so it works for any regular grid
 #noinspection PyProtectedMember
 class TestIndexedTriangle(unittest.TestCase):
+    def test_has_edges_left_right_middle(self):
+        triangle, _ = triangle_row1_col2_with_specification_data()
+        left_right_middle = ('left', 'right', 'middle')
+        self.assertItemsEqual(triangle.EDGE_NAMES, left_right_middle)
+
     def test_neighbor_index_by_edge_returns_each_neighbor_correctly(self):
         triangle, spec_data = triangle_with_neighbors_with_spec_data()
         # confirm neighbors are correct
