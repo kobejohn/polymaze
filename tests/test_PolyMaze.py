@@ -402,8 +402,7 @@ def triangle_row1_col2_with_specification_data():
     left_edge_points = (left_point, middle_point)
     middle_edge_points = (left_point, right_point)
     right_edge_points = (middle_point, right_point)
-    spec_data = {'index': index,
-                 'left point': left_point,
+    spec_data = {'left point': left_point,
                  'middle point': middle_point,
                  'right point': right_point,
                  'left edge points': left_edge_points,
