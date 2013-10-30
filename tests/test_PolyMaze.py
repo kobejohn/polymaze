@@ -236,10 +236,13 @@ class TestIndexedTriangle(unittest.TestCase):
         # confirm neighbors are correct
         left_neighbor_spec = spec_data['left neighbor']
         bottom_neighbor_spec = spec_data['bottom neighbor']
+        right_neighbor_index = (triangle.index()[0], triangle.index()[1] + 1)
         self.assertEqual(triangle._neighbor_index_by_edge(triangle.LEFT),
                          left_neighbor_spec.index())
         self.assertEqual(triangle._neighbor_index_by_edge(triangle.MIDDLE),
                          bottom_neighbor_spec.index())
+        self.assertEqual(triangle._neighbor_index_by_edge(triangle.RIGHT),
+                         right_neighbor_index)
 
     def test_shared_edge_lookup_returns_neighbors_name_for_shared_edge(self):
         triangle, _ = triangle_row1_col2_with_specification_data()
