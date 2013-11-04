@@ -2,7 +2,12 @@ import unittest
 import math
 import os
 
-import polymaze
+#todo: next clean up / DRY polygon testing
+#todo: next test holes
+#todo: next specify and allow undefined spaces
+#todo: next either player/position or hexagon
+#todo: profile to find out what is taking so much time. it's slow.
+from shapemaze import polymaze_old
 
 
 class Testmain(unittest.TestCase):
@@ -16,7 +21,7 @@ class Testmain(unittest.TestCase):
         except Exception:
             pass
         # run main and check for demo
-        polymaze.main()
+        polymaze_old.main()
         self.assertTrue(os.path.exists(image_path_spec))
         # remove the image when done
         try:
@@ -89,8 +94,8 @@ class TestPolyMaze(unittest.TestCase):
 #noinspection PyProtectedMember
 class TestPolygonMap(unittest.TestCase):
     def setUp(self):
-        self.polygon_class = polymaze.IndexedTriangle
-        self.map = polymaze.PolygonMap(self.polygon_class)
+        self.polygon_class = polymaze_old.IndexedTriangle
+        self.map = polymaze_old.PolygonMap(self.polygon_class)
 
     def test_create_polygon_creates_based_on_the_class_stored_at_creation(self):
         # make a polygon
@@ -164,8 +169,8 @@ class TestIndexedPolygonBase(unittest.TestCase):
 
     def test_map_returns_same_map_set_on_creation(self):
         some_index = (1, 2)
-        original_map = polymaze.PolygonMap(polymaze.IndexedTriangle)
-        triangle = polymaze.IndexedTriangle(original_map, some_index)
+        original_map = polymaze_old.PolygonMap(polymaze_old.IndexedTriangle)
+        triangle = polymaze_old.IndexedTriangle(original_map, some_index)
         self.assertIs(triangle.map(), original_map)
 
     def test_creation_takes_ownership_of_all_unowned_edges(self):
@@ -204,7 +209,7 @@ class TestIndexedPolygonBase(unittest.TestCase):
         triangle, _ = triangle_row1_col2_with_specification_data()
         for edge_name in triangle.EDGE_NAMES:
             edge = triangle.edge(edge_name)
-            self.assertTrue(isinstance(edge, polymaze.Edge))
+            self.assertTrue(isinstance(edge, polymaze_old.Edge))
 
     def test_neighbor_returns_each_neighbor_and_shared_name(self):
         triangle, spec_data = triangle_with_neighbors_with_spec_data()
@@ -336,9 +341,9 @@ class TestEdge(unittest.TestCase):
     def test_points_returns_same_points_as_hand_calculation(self):
         triangle, spec_data = triangle_row1_col2_with_specification_data()
         # get the actual points
-        left_edge_points = polymaze.Edge(triangle, triangle.LEFT).points()
-        middle_edge_points = polymaze.Edge(triangle, triangle.MIDDLE).points()
-        right_edge_points = polymaze.Edge(triangle, triangle.RIGHT).points()
+        left_edge_points = polymaze_old.Edge(triangle, triangle.LEFT).points()
+        middle_edge_points = polymaze_old.Edge(triangle, triangle.MIDDLE).points()
+        right_edge_points = polymaze_old.Edge(triangle, triangle.RIGHT).points()
         # confirm they are as expected
         self.assertItemsEqual(spec_data['left edge points'],
                               left_edge_points)
@@ -352,20 +357,20 @@ UNSPECIFIED = '<<unspecified>>'
 
 
 def generic_polymaze():
-    return polymaze.PolyMaze()
+    return polymaze_old.PolyMaze()
 
 
 def generic_indexedpolygonbase(index=UNSPECIFIED):
     if index == UNSPECIFIED:
         index = (1, 2)
-    p = polymaze.IndexedPolygonBase(UNSPECIFIED, index)
+    p = polymaze_old.IndexedPolygonBase(UNSPECIFIED, index)
     return p
 
 
 def triangle_with_neighbors_with_spec_data():
     # base parts
     left_index, right_index, bottom_index = (0, 1), (0, 2), (1, 2)
-    _map = polymaze.PolygonMap(polymaze.IndexedTriangle)
+    _map = polymaze_old.PolygonMap(polymaze_old.IndexedTriangle)
     # create the neighborhood
     left = _map.create_polygon(left_index)
     main = _map.create_polygon(right_index)
@@ -409,7 +414,7 @@ def triangle_row1_col2_with_specification_data():
                  'middle edge points': middle_edge_points,
                  'right edge points': right_edge_points}
     # also return the real thing to be used in tests
-    _map = polymaze.PolygonMap(polymaze.IndexedTriangle)
+    _map = polymaze_old.PolygonMap(polymaze_old.IndexedTriangle)
     triangle = _map.create_polygon(index)
     return triangle, spec_data
 
@@ -438,7 +443,7 @@ def square_row1_col2_with_specification_data():
                  'left edge points': left_edge_points,
                  'right edge points': right_edge_points}
     # also return the real thing to be used in tests
-    _map = polymaze.PolygonMap(polymaze.IndexedSquare)
+    _map = polymaze_old.PolygonMap(polymaze_old.IndexedSquare)
     triangle = _map.create_polygon(index)
     return triangle, spec_data
 
@@ -448,7 +453,7 @@ def square_with_neighbors_with_spec_data():
     main_index = (1, 2)
     top_index, bottom_index = (0, 2), (2, 2)
     left_index, right_index = (1, 1), (1, 3)
-    _map = polymaze.PolygonMap(polymaze.IndexedSquare)
+    _map = polymaze_old.PolygonMap(polymaze_old.IndexedSquare)
     # create the neighborhood (top, left, right) no bottom
     main = _map.create_polygon(main_index)
     top = _map.create_polygon(top_index)
@@ -473,3 +478,35 @@ def square_with_neighbors_with_spec_data():
                  'right edge': right_edge,
                  'all map edges': all_edges}
     return main, spec_data
+
+
+def generic_polygon_with_neighbors(polygon_class=None, index=None):
+    polygon_class = polygon_class or TestIndexedPolygonBase  # base default
+    index = index or (1, 2)  # some index
+
+
+
+    ## base parts
+    #left_index, right_index, bottom_index = (0, 1), (0, 2), (1, 2)
+    #_map = polymaze.PolygonMap(polymaze.IndexedTriangle)
+    ## create the neighborhood
+    #left = _map.create_polygon(left_index)
+    #main = _map.create_polygon(right_index)
+    #bottom = _map.create_polygon(bottom_index)
+    ## get the edges of the main triangle
+    #LEFT, RIGHT, MIDDLE = main.LEFT, main.RIGHT, main.MIDDLE
+    #left_edge = main.edge(LEFT)
+    #right_edge = main.edge(RIGHT)
+    #bottom_edge = main.edge(MIDDLE)
+    ## get the remaining edges
+    #all_edges = (left_edge, right_edge, bottom_edge,
+    #             left.edge(LEFT), left.edge(MIDDLE),
+    #             bottom.edge(LEFT), bottom.edge(RIGHT))
+    #spec_data = {'left neighbor': left,
+    #             'left edge': left_edge,
+    #             'bottom neighbor': bottom,
+    #             'bottom edge': bottom_edge,
+    #             'right neighbor': None,
+    #             'right edge': right_edge,
+    #             'all map edges': all_edges}
+    #return main, spec_data

@@ -8,10 +8,10 @@ import PIL.ImageDraw
 
 def main():
     """Demonstrate how to use polymaze."""
-    polymaze = PolyMaze()
-    image = polymaze.image(600, 1100)
+    polymaze = PolyMaze(indexed_polygon_class=IndexedSquare)
+    image = polymaze.image(1200, 1200)
     image.save('polymaze demo.png', 'PNG', **image.info)
-    image.show()
+    #image.show()
 
 
 class PolyMaze(object):
@@ -28,8 +28,8 @@ class PolyMaze(object):
         polygon_class = indexed_polygon_class or IndexedTriangle
         self._map = PolygonMap(polygon_class)
         #todo: allow user-centric creation of the grid. this is debug
-        for row in range(20):
-            for col in range(30):
+        for row in range(300):
+            for col in range(300):
                 index = (row, col)
                 self._map.create_polygon(index)
         # create maze and make entrance / exit available
