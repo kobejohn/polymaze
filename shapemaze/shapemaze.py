@@ -29,16 +29,22 @@ class ShapeMaze(object):
         """
         self._grid = ShapeGrid(shape_creator)
         #todo: allow user-centric creation of the grid. this is debug
+        # create a debug grid
         rows = 10
-        cols = 20
+        cols = 15
         for row in range(rows):
             for col in range(cols):
                 index = (row, col)
                 self._grid.create(index)
-        for i in range(5):
+        # debug create random gaps in the grid
+        for i in range(int(round(0.05 * rows * cols))):
             # delete some spaces to see if it still works well
             index = random.randrange(rows), random.randrange(cols)
             self._grid.remove(index)
+        # debug remove a corner from the grid
+        for row in range(int(round(0.2 * rows))):
+            for col in range(int(round(0.2 * cols))):
+                self._grid.remove((row, col))
         # create maze and make entrance / exit available
         self._entrance_space, self._exit_space = self._mazify_grid()
 
