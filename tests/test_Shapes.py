@@ -3,6 +3,31 @@ import unittest
 from shapemaze import shapes, shapegrid
 
 
+# the spec functions below produce the data required for automated testing
+# of each IndexedShape implementation.
+# Details are in class TestIndexedShapeImplementations
+def square_spec():
+    s = {'maker': shapes.Square,
+         'shapes': {'only one': {'idx': (1, 1),
+                                 'edges': {'top': {'idx': (0, 1),
+                                                   'pts': ((1.0, 1.0),
+                                                           (1.0, 2.0))},
+                                           'bottom': {'idx': (2, 1),
+                                                      'pts': ((2.0, 1.0),
+                                                              (2.0, 2.0))},
+                                           'left': {'idx': (1, 0),
+                                                    'pts': ((1.0, 1.0),
+                                                            (2.0, 1.0))},
+                                           'right': {'idx': (1, 2),
+                                                     'pts': ((1.0, 2.0),
+                                                             (2.0, 2.0))}}}}}
+    return s
+
+
+# edit this to add new shapes to automated testing
+all_shape_implementation_specs = (square_spec(),)
+
+
 #noinspection PyProtectedMember
 class TestIndexedShapeBase(unittest.TestCase):
     def test_creating_raises_NotImplementedError(self):
@@ -167,23 +192,8 @@ class TestIndexedShapeImplementations(unittest.TestCase):
     - edge_points - a pair of hand-calculated values that define each edge
     """
     # all specifications in this list
-    s = [{'maker': shapes.Square,
-          'shapes': {'only one': {'idx': (1, 1),
-                                  'edges': {'top': {'idx': (0, 1),
-                                                    'pts': ((1.0, 1.0),
-                                                            (1.0, 2.0))},
-                                            'bottom': {'idx': (2, 1),
-                                                       'pts': ((2.0, 1.0),
-                                                               (2.0, 2.0))},
-                                            'left': {'idx': (1, 0),
-                                                     'pts': ((1.0, 1.0),
-                                                             (2.0, 1.0))},
-                                            'right': {'idx': (1, 2),
-                                                      'pts': ((1.0, 2.0),
-                                                              (2.0, 2.0))}}}}}]
-
     def test_confirm_neighbor_indexes_of_each_component(self):
-        for spec in self.s:
+        for spec in all_shape_implementation_specs:
             grid = shapegrid.ShapeGrid(spec['maker'])
             # create each component shape
             for _, component_data in spec['shapes'].items():
@@ -204,7 +214,7 @@ class TestIndexedShapeImplementations(unittest.TestCase):
                 self.assertItemsEqual(edge_endpoints, edge_endpoints_spec)
 
     def test_edge_endpoints_of_neighbors_coincide(self):
-        for spec in self.s:
+        for spec in all_shape_implementation_specs:
             grid = shapegrid.ShapeGrid(spec['maker'])
             # create each component shape
             for _, component_data in spec['shapes'].items():
