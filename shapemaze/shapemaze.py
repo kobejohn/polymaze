@@ -11,7 +11,7 @@ from shapes import IndexedSquare
 def main():
     """Demonstrate how to use polymaze."""
     polymaze = ShapeMaze(IndexedSquare)
-    image = polymaze.image(1200, 1200)
+    image = polymaze.image(700, 1200)
     image.save('polymaze demo.png', 'PNG', **image.info)
     image.show()
 
