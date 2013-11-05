@@ -167,7 +167,7 @@ class TestIndexedShapeImplementations(unittest.TestCase):
     - edge_points - a pair of hand-calculated values that define each edge
     """
     # all specifications in this list
-    s = [{'maker': shapes.IndexedSquare,
+    s = [{'maker': shapes.Square,
           'shapes': {'only one': {'idx': (1, 1),
                                   'edges': {'top': {'idx': (0, 1),
                                                     'pts': ((1.0, 1.0),
@@ -221,7 +221,7 @@ class TestIndexedShapeImplementations(unittest.TestCase):
 
 def generic_shape(shape_maker=None, index=None, grid=None):
     # provide test defaults
-    shape_maker = shape_maker or shapes.IndexedSquare
+    shape_maker = shape_maker or shapes.Square
     grid = grid or shapegrid.ShapeGrid(shape_maker)
     index = index or (1, 2)
     # get a shape

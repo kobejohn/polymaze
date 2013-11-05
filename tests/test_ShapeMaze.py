@@ -1,14 +1,14 @@
 import unittest
 import os
 
-from shapemaze import shapemaze
+from shapemaze import maze
 from shapemaze import shapes
 
 
 class TestDemo(unittest.TestCase):
     def test_saves_a_demo_image_in_working_directory(self):
         cwd = os.getcwd()
-        image_name_spec = 'ShapeMaze Demo.png'
+        image_name_spec = 'Maze Demo.png'
         image_full_path_spec = os.path.join(cwd, image_name_spec)
         # delete the file in case it is already there
         try:
@@ -16,7 +16,7 @@ class TestDemo(unittest.TestCase):
         except OSError:
             pass  # no problem - the file just didn't exist yet
         # run the demo and confirm the file exists
-        shapemaze.demo()
+        maze.demo()
         self.assertTrue(os.path.exists(image_full_path_spec))
         # delete the file
         os.remove(image_full_path_spec)
@@ -97,8 +97,8 @@ class TestShapeMaze(unittest.TestCase):
 
 
 def generic_maze():
-    creator = shapes.IndexedSquare
-    return shapemaze.ShapeMaze(creator)
+    creator = shapes.Square
+    return maze.Maze(creator)
 
 
 if __name__ == '__main__':

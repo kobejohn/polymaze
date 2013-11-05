@@ -1,2 +1,2 @@
-from shapemaze import ShapeMaze
+from maze import Maze
 import shapes

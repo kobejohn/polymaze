@@ -108,7 +108,7 @@ class IndexedShapeBase(object):
                 del self._owned_edges[n_index]
 
 
-class IndexedSquare(IndexedShapeBase):
+class Square(IndexedShapeBase):
     """A square that fits by index into a regular grid of squares."""
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -166,7 +166,6 @@ class Edge(object):
             requesting_shape = self._grid.get(requesting_shape_index)
             if requesting_shape is None:
                 requesting_shape_index = self._neighbor_2_index
-                requesting_shape = self._grid.get(requesting_shape_index)
         if requesting_shape_index == self._neighbor_1_index:
             n_index = self._neighbor_2_index
         elif requesting_shape_index == self._neighbor_2_index:

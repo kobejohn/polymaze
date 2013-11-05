@@ -6,7 +6,7 @@ from shapemaze import shapes, shapegrid
 #noinspection PyProtectedMember
 class TestShapeGrid(unittest.TestCase):
     def test_create_shape_uses_the_creator_stored_at_creation(self):
-        creator = shapes.IndexedSquare
+        creator = shapes.Square
         grid = generic_grid(creator=creator)
         some_index = (1, 2)
         shape = grid.create(some_index)
@@ -27,7 +27,7 @@ class TestShapeGrid(unittest.TestCase):
 
     def test_shapes_generates_each_shape_exactly_once(self):
         # make a grid with a center square and a neighbor on each side
-        known_creator = shapes.IndexedSquare  # 4 sides
+        known_creator = shapes.Square  # 4 sides
         some_index = (1, 2)
         grid = generic_grid(creator=known_creator,
                             neighborhood_center_index=some_index)
@@ -40,7 +40,7 @@ class TestShapeGrid(unittest.TestCase):
 
     def test_edges_generates_each_edge_exactly_once(self):
         # make a grid with a center square and a neighbor on each side
-        known_creator = shapes.IndexedSquare  # 4 sides
+        known_creator = shapes.Square  # 4 sides
         some_index = (1, 2)
         grid = generic_grid(creator=known_creator,
                             neighborhood_center_index=some_index)
@@ -59,7 +59,7 @@ class TestShapeGrid(unittest.TestCase):
 
     def test_border_shapes_generates_all_shapes_with_any_empty_neighbors(self):
         # make a grid with a center square and a neighbor on each side
-        known_creator = shapes.IndexedSquare
+        known_creator = shapes.Square
         center_index = (1, 1)
         grid = generic_grid(creator=known_creator,
                             neighborhood_center_index=center_index)
@@ -136,7 +136,7 @@ class TestShapeGrid(unittest.TestCase):
 #noinspection PyProtectedMember
 def generic_grid(creator=None, neighborhood_center_index=None):
     # provide defaults
-    creator = creator or shapes.IndexedSquare
+    creator = creator or shapes.Square
     grid = shapegrid.ShapeGrid(creator)
     if neighborhood_center_index:
         # create a neighborhood based on whatever creator is being used

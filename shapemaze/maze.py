@@ -5,18 +5,18 @@ import PIL.Image
 import PIL.ImageDraw
 
 from shapegrid import ShapeGrid
-from shapes import IndexedSquare
+from shapes import Square
 
 
 def demo():
     """Demonstrate how to use polymaze."""
-    polymaze = ShapeMaze(IndexedSquare)
+    polymaze = Maze(Square)
     image = polymaze.image(700, 1200)
-    image.save('ShapeMaze Demo.png', 'PNG', **image.info)
+    image.save('Maze Demo.png', 'PNG', **image.info)
     image.show()
 
 
-class ShapeMaze(object):
+class Maze(object):
     """Generate, manipulate and output a maze based on regular shapes."""
     WALL = 'wall'
     PATH = 'path'
