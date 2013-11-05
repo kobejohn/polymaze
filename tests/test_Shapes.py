@@ -81,13 +81,72 @@ class TestIndexedShapeBase(unittest.TestCase):
             self.assertIsNone(neighbor)
 
 
+#noinspection PyProtectedMember
 class TestEdge(unittest.TestCase):
-    def test_endpoints_returns_endpoints_provided_on_creation(self):
-        endpoints_spec = (1.0, 2.0), (1.0, 3.0)
-        edge = shapes.Edge(endpoints_spec)
-        self.assertEqual(edge.endpoints(), endpoints_spec)
+    def test_endpoints_returns_endpoints_from_indicated_shape(self):
+        """Each shape may/will have a different order for the same endpoints."""
+        # make a shape and any neighbor
+        some_index = (1, 2)
+        shape_1 = generic_shape(index=some_index)
+        n_index = shape_1._neighbor_indexes[0]
+        shape_2 = shape_1._grid.create(n_index)
+        # get the shared edge
+        edge = shape_1.edge(shape_2.index())
+        # get the endpoints from the edge
+        endpoints_1 = edge.endpoints(shape_1.index())
+        endpoints_2 = edge.endpoints(shape_2.index())
+        # confirm the end points came from the indicated shape
+        self.assertIs(endpoints_1, shape_1._edge_endpoints[shape_2.index()])
+        self.assertIs(endpoints_2, shape_2._edge_endpoints[shape_1.index()])
+
+    def test_endpoints_returns_from_neighbor_1_if_not_specified(self):
+        # make a shape and any neighbor
+        some_index = (1, 2)
+        shape_a = generic_shape(index=some_index)
+        n_index = shape_a._neighbor_indexes[0]
+        shape_b = shape_a._grid.create(n_index)
+        grid = shape_a._grid
+        # get the shared edge
+        edge = shape_a.edge(shape_b.index())
+        # get the endpoints from the edge without specifying the shape index
+        endpoints = edge.endpoints()
+        # confirm the end points came from neighbor_1
+        neighbor_1 = grid.get(edge._neighbor_1_index)
+        neighbor_2 = grid.get(edge._neighbor_2_index)
+        self.assertIs(endpoints, neighbor_1._edge_endpoints[neighbor_2.index()])
+
+    def test_endpoints_returns_from_neighbor_2_if_not_specified_and_1None(self):
+        # make a shape and any neighbor
+        some_index = (1, 2)
+        shape_a = generic_shape(index=some_index)
+        n_index = shape_a._neighbor_indexes[0]
+        shape_b = shape_a._grid.create(n_index)
+        grid = shape_a._grid
+        # get the shared edge
+        edge = shape_a.edge(shape_b.index())
+        # find and remove the shape at index stored for neighbor_1
+        neighbor_1_index = edge._neighbor_1_index
+        grid.remove(neighbor_1_index)
+        # get the endpoints from the edge without specifying the shape index
+        endpoints = edge.endpoints()
+        # confirm the end points came from neighbor_2 (since neighbor_1 gone)
+        neighbor_2 = grid.get(edge._neighbor_2_index)
+        self.assertIs(endpoints, neighbor_2._edge_endpoints[neighbor_1_index])
+
+    def test_endpoints_raises_valueerror_for_non_neighbor_index(self):
+        # make a shape
+        some_index = (1, 2)
+        shape = generic_shape(index=some_index)
+        # get a non neighboring index
+        non_neighbor_index = (1000, 2000)
+        self.assertNotIn(non_neighbor_index, shape._neighbor_indexes)
+        # confirm ValueError when non neighbor used to specify endpoint order
+        _, any_edge = tuple(shape.edges())[0]
+        self.assertRaises(ValueError,
+                          any_edge.endpoints, *(non_neighbor_index,))
 
 
+#noinspection PyProtectedMember
 class TestIndexedShapeImplementations(unittest.TestCase):
     """Run all implemented shapes through standard verification tests.
 
@@ -143,6 +202,21 @@ class TestIndexedShapeImplementations(unittest.TestCase):
                                        for _, edge_data in edges_data.items())
                 #flattened_spec = tuple(itertools.chain(edge_endpoints_spec))
                 self.assertItemsEqual(edge_endpoints, edge_endpoints_spec)
+
+    def test_edge_endpoints_of_neighbors_coincide(self):
+        for spec in self.s:
+            grid = shapegrid.ShapeGrid(spec['maker'])
+            # create each component shape
+            for _, component_data in spec['shapes'].items():
+                main = grid.create(component_data['idx'])
+                # confirm shared edges match INTERNALLY, not through edge object
+                for n_index, neighbor in main.neighbors():
+                    if neighbor is None:
+                        # test weakness - doesn't test supershape boundaries
+                        continue
+                    endpoints_main = main._edge_endpoints[n_index]
+                    endpoints_neighbor = neighbor._edge_endpoints[main.index()]
+                    self.assertItemsEqual(endpoints_main, endpoints_neighbor)
 
 
 def generic_shape(shape_maker=None, index=None, grid=None):

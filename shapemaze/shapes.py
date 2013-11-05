@@ -11,10 +11,6 @@ class IndexedShapeBase(object):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     # Begin Implementation requirements
 
-
-    #todo: BUG: sorting doesn't help as is because...
-    #todo: the direction for a shape and its neighbor is opposite
-
     def _identify_and_sort_edges(self):
         """Return a dict identifying each neighbor with a semantic edge name
         and a tuple indicating the clockwise order of the edges.
@@ -99,8 +95,7 @@ class IndexedShapeBase(object):
                 if self.index() in neighbor._owned_edges:
                     continue
             # create edges that didn't exist in self or neighbor
-            endpoints = self._edge_endpoints[n_index]
-            grabbed_edges[n_index] = Edge(endpoints)
+            grabbed_edges[n_index] = Edge(self._grid, self.index(), n_index)
         self._owned_edges.update(grabbed_edges)
 
     def _give_away_edges(self):
@@ -153,8 +148,30 @@ class IndexedSquare(IndexedShapeBase):
 
 
 class Edge(object):
-    def __init__(self, end_points):
-        self._end_points = end_points
+    def __init__(self, grid, neighbor_1_index, neighbor_2_index):
+        self._grid = grid
+        self._neighbor_1_index = neighbor_1_index
+        self._neighbor_2_index = neighbor_2_index
 
-    def endpoints(self):
-        return self._end_points
+    def endpoints(self, requesting_shape_index=None):
+        """Return the xy, xy end points of this edge.
+
+        kwargs: requesting_shape_index - if the clockwise order of vertices is
+                    desired, provide this so the edge knows which way to sort
+        """
+        # default if the sorting doesn't matter
+        if requesting_shape_index is None:
+            # use neighbor_1 UNLESS it doesn't exist in the grid
+            requesting_shape_index = self._neighbor_1_index
+            requesting_shape = self._grid.get(requesting_shape_index)
+            if requesting_shape is None:
+                requesting_shape_index = self._neighbor_2_index
+                requesting_shape = self._grid.get(requesting_shape_index)
+        if requesting_shape_index == self._neighbor_1_index:
+            n_index = self._neighbor_2_index
+        elif requesting_shape_index == self._neighbor_2_index:
+            n_index = self._neighbor_1_index
+        else:
+            raise ValueError('The requesting shape is not one of the sharing'
+                             ' neighbors of this edge.')
+        return self._grid.get(requesting_shape_index)._edge_endpoints[n_index]

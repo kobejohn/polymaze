@@ -29,10 +29,16 @@ class ShapeMaze(object):
         """
         self._grid = ShapeGrid(shape_creator)
         #todo: allow user-centric creation of the grid. this is debug
-        for row in range(-8, 0):
-            for col in range(-10, 0):
+        rows = 10
+        cols = 20
+        for row in range(rows):
+            for col in range(cols):
                 index = (row, col)
                 self._grid.create(index)
+        for i in range(5):
+            # delete some spaces to see if it still works well
+            index = random.randrange(rows), random.randrange(cols)
+            self._grid.remove(index)
         # create maze and make entrance / exit available
         self._entrance_space, self._exit_space = self._mazify_grid()
 
@@ -137,42 +143,39 @@ class ShapeMaze(object):
         # create the base image
         white = (255, 255, 255)
         black = (0, 0, 0)
+        gray = (128, 128, 128)  #todo: make the background transparent
         light_red = (255, 128, 128)
         light_green = (128, 255, 128)
-        image = PIL.Image.new('RGB', size, white)
+        image = PIL.Image.new('RGB', size, gray)
         drawer = PIL.ImageDraw.Draw(image)
         # calculate total offset including padding and centering
         vert_offset_in_edges = -1 * min(x_values)
         horz_offset_in_edges = -1 * min(y_values)
         vert_offset = padding_px + int(round(vert_offset_in_edges * scale))
         horz_offset = padding_px + int(round(horz_offset_in_edges * scale))
+        # mark all spaces white before drawing anything else
+        for space in self._grid.shapes():
+            space_polygon_points = list()
+            for _, edge in space.edges():
+                (row_a, col_a), _ = edge.endpoints(space.index())
+                point_a = (int(round(col_a * scale)) + horz_offset,
+                           int(round(row_a * scale)) + vert_offset)
+                space_polygon_points.append(point_a)
+            drawer.polygon(space_polygon_points, fill=white)
         # mark the entrance and exit before drawing walls
         entrance_polygon_points = list()
         for _, edge in self.entrance_space().edges():
-            (row_a, col_a), (row_b, col_b) = edge.endpoints()
+            (row_a, col_a), _ = edge.endpoints(self.entrance_space().index())
             point_a = (int(round(col_a * scale)) + horz_offset,
                        int(round(row_a * scale)) + vert_offset)
             entrance_polygon_points.append(point_a)
-            #point_b = (int(round(col_b * scale)) + horz_offset,
-            #           int(round(row_b * scale)) + vert_offset)
-            # only add each point once to the list to be drawn
-            #if point_a not in entrance_polygon_points:
-            #    entrance_polygon_points.append(point_a)
-            #if point_b not in entrance_polygon_points:
-            #    entrance_polygon_points.append(point_b)
         drawer.polygon(entrance_polygon_points, fill=light_red)
         exit_polygon_points = list()
         for _, edge in self.exit_space().edges():
-            (row_a, col_a), (row_b, col_b) = edge.endpoints()
+            (row_a, col_a), _ = edge.endpoints(self.exit_space().index())
             point_a = (int(round(col_a * scale)) + horz_offset,
                        int(round(row_a * scale)) + vert_offset)
             exit_polygon_points.append(point_a)
-            #point_b = (int(round(col_b * scale)) + horz_offset,
-            #           int(round(row_b * scale)) + vert_offset)
-            #if point_a not in exit_polygon_points:
-            #    exit_polygon_points.append(point_a)
-            #if point_b not in exit_polygon_points:
-            #    exit_polygon_points.append(point_b)
         drawer.polygon(exit_polygon_points, fill=light_green)
         # draw each wall edge and don't draw each path edge
         for edge in self._grid.edges():
