@@ -1,71 +1,104 @@
 import unittest
+import os
+
+from shapemaze import shapemaze
+from shapemaze import shapes
+
+
+class TestDemo(unittest.TestCase):
+    def test_saves_a_demo_image_in_working_directory(self):
+        cwd = os.getcwd()
+        image_name_spec = 'ShapeMaze Demo.png'
+        image_full_path_spec = os.path.join(cwd, image_name_spec)
+        # delete the file in case it is already there
+        try:
+            os.remove(image_full_path_spec)
+        except OSError:
+            pass  # no problem - the file just didn't exist yet
+        # run the demo and confirm the file exists
+        shapemaze.demo()
+        self.assertTrue(os.path.exists(image_full_path_spec))
+        # delete the file
+        os.remove(image_full_path_spec)
 
 
 #noinspection PyProtectedMember
 class TestShapeMaze(unittest.TestCase):
-    pass
+    #todo: to really test this, need to create a tree and verify no cycles
+
+    def test_entrance_and_exit_are_available_after_creation(self):
+        maze = generic_maze()
+        self.assertTrue(hasattr(maze, 'entrance_space'))
+        self.assertTrue(hasattr(maze, 'exit_space'))
+
+    def test_mazify_map_returns_two_spaces(self):
+        maze = generic_maze()
+        returned_spaces = maze._mazify_grid()
+        self.assertEqual(len(returned_spaces), 2)
+
+    def test_is_pathable_returns_true_if_edges_are_all_walls(self):
+        maze = generic_maze()
+        # choose any space from the maze's grid and set all edges to wall
+        some_index = tuple(maze._grid.shapes())[0].index()
+        space = maze._grid.get(some_index)
+        for _, edge in space.edges():
+            edge.status = maze.WALL
+        # confirm that the space is pathable
+        self.assertTrue(maze._is_pathable(space))
+
+    def test_is_pathable_returns_false_if_any_edge_is_a_path(self):
+        maze = generic_maze()
+        # choose any space from the maze's grid and set all edges to wall
+        some_index = tuple(maze._grid.shapes())[0].index()
+        space = maze._grid.get(some_index)
+        for _, edge in space.edges():
+            edge.status = maze.WALL
+        # set any edge to path
+        tuple(space.edges())[0][1].status = maze.PATH
+        # confirm that the space is not pathable
+        self.assertFalse(maze._is_pathable(space))
+
+    def test_image_returns_image_with_same_rect_ratio_as_map_space(self):
+        maze = generic_maze()
+        all_xy = list()
+        for edge in maze._grid.edges():
+            xy_1, xy_2 = edge.endpoints()
+            all_xy.append(xy_1)
+            all_xy.append(xy_2)
+        x_values, y_values = zip(*all_xy)
+        height_in_shape_edges = max(x_values) - min(x_values)
+        width_in_shape_edges = max(y_values) - min(y_values)
+        ratio_spec = float(height_in_shape_edges) / width_in_shape_edges
+        # get the image and size
+        some_width_limit, some_height_limit = 1000, 1000
+        image = maze.image(some_height_limit, some_width_limit)
+        image_width, image_height = image.size
+        ratio = float(image_height) / image_width
+        # confirm the image size and specified size match
+        self.assertAlmostEqual(ratio, ratio_spec, places=1)
+
+    def test_image_is_bound_by_both_max_heigh_and_max_width(self):
+        # create a maze
+        maze = generic_maze()
+        large_limit = 4000
+        normal_limit = 400
+        # create an image with a normal height and large width
+        # and confirm it is bound by both limits
+        wide_image = maze.image(normal_limit, large_limit)
+        wide_image_width, wide_image_height = wide_image.size
+        self.assertLessEqual(wide_image_width, large_limit)
+        self.assertLessEqual(wide_image_height, normal_limit)
+        # create an image with a normal width and large height
+        # and confirm it is bound by both limits
+        tall_image = maze.image(large_limit, normal_limit)
+        tall_image_width, tall_image_height = tall_image.size
+        self.assertLessEqual(tall_image_width, normal_limit)
+        self.assertLessEqual(tall_image_height, large_limit)
 
 
-#    def test_entrance_and_exit_are_available_after_creation(self):
-#        maze = generic_polymaze()
-#        self.assertTrue(hasattr(maze, 'entrance_space'))
-#        self.assertTrue(hasattr(maze, 'exit_space'))
-#
-#    def test_mazify_map_returns_two_spaces(self):
-#        maze = generic_polymaze()
-#        returned_spaces = maze._mazify_map(maze._map)
-#        self.assertEqual(len(returned_spaces), 2)
-#
-#    #todo: to really test this, need to create a tree and verify no cycles
-#
-#    def test_is_pathable_returns_true_if_edges_are_walls_except_previous(self):
-#        maze = generic_polymaze()
-#        # replace the map with a simple neighborhood map
-#        center, spec_data = triangle_with_neighbors_with_spec_data()
-#        left = spec_data['left neighbor']
-#        bottom = spec_data['bottom neighbor']
-#        neighborhood_map = center.map()
-#        maze._map = neighborhood_map
-#        # set wall status on all edges
-#        for edge in maze._map.all_edges():
-#            setattr(edge, 'status', maze.WALL)
-#        # confirm that all neighbor directions are pathable
-#        self.assertTrue(maze._is_pathable(left, center))
-#        self.assertTrue(maze._is_pathable(bottom, center))
-#        self.assertTrue(maze._is_pathable(center, bottom))
-#        self.assertTrue(maze._is_pathable(center, left))
-#        # break a path from one side to the other of the neighborhood
-#        LEFT, RIGHT, MIDDLE = center.LEFT, center.RIGHT, center.MIDDLE
-#        left.edge(LEFT).status = maze.PATH
-#        left.edge(RIGHT).status = maze.PATH
-#        center.edge(MIDDLE).status = maze.PATH
-#        bottom.edge(RIGHT).status = maze.PATH
-#        # confirm that none of the spaces are pathable
-#        self.assertFalse(maze._is_pathable(left, center))
-#        self.assertFalse(maze._is_pathable(bottom, center))
-#        self.assertFalse(maze._is_pathable(center, bottom))
-#        self.assertFalse(maze._is_pathable(center, left))
-#
-#    def test_image_returns_image_with_same_rect_ratio_as_map_space(self):
-#        maze = generic_polymaze()
-#        # find min/max indexes of the maze's map
-#        rows, cols = zip(*maze._map._map)
-#        row_min, row_max = min(rows), max(rows)
-#        col_min, col_max = min(cols), max(cols)
-#        # convert the min/max indexes to side units
-#        sides_per_row, sides_per_col = maze._map._polygon_class.SIDES_PER_INDEX
-#        vert_size = sides_per_row * (row_max - row_min + 1)
-#        horz_size = sides_per_col * (col_max - col_min + 1)
-#        ratio_spec = float(vert_size) / horz_size
-#        # get the image and size
-#        some_width_limit, some_height_limit = 200, 100
-#        image = maze.image(some_height_limit, some_width_limit)
-#        image_width, image_height = image.size
-#        ratio = float(image_height) / image_width
-#        # confirm the image size and specified size match
-#        self.assertAlmostEqual(ratio, ratio_spec, places=1)
-
-
+def generic_maze():
+    creator = shapes.IndexedSquare
+    return shapemaze.ShapeMaze(creator)
 
 
 if __name__ == '__main__':

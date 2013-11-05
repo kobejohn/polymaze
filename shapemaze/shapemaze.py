@@ -8,11 +8,11 @@ from shapegrid import ShapeGrid
 from shapes import IndexedSquare
 
 
-def main():
+def demo():
     """Demonstrate how to use polymaze."""
     polymaze = ShapeMaze(IndexedSquare)
     image = polymaze.image(700, 1200)
-    image.save('polymaze demo.png', 'PNG', **image.info)
+    image.save('ShapeMaze Demo.png', 'PNG', **image.info)
     image.show()
 
 
@@ -126,8 +126,9 @@ class ShapeMaze(object):
             all_xy.append(xy_1)
             all_xy.append(xy_2)
         x_values, y_values = zip(*all_xy)
-        height_in_shape_edges = max(x_values) - min(x_values)
-        width_in_shape_edges = max(y_values) - min(y_values)
+        pad_edges = 1
+        height_in_shape_edges = max(x_values) - min(x_values) + 2 * pad_edges
+        width_in_shape_edges = max(y_values) - min(y_values) + 2 * pad_edges
         # then convert shape sides to pixels based on limiting bound
         edge_ratio = float(height_in_shape_edges) / width_in_shape_edges
         bound_ratio = float(max_height_px) / max_width_px
@@ -137,13 +138,13 @@ class ShapeMaze(object):
         else:
             # width is the limiting boundary (or both are equally limiting)
             scale = float(max_width_px) / width_in_shape_edges
-        padding_px = 5
-        size = (int(round(scale * width_in_shape_edges)) + 2 * padding_px,
-                int(round(scale * height_in_shape_edges)) + 2 * padding_px)
+        padding_px = int(round(scale * pad_edges))
+        size = (int(round(scale * width_in_shape_edges)),
+                int(round(scale * height_in_shape_edges)))
         # create the base image
         white = (255, 255, 255)
         black = (0, 0, 0)
-        gray = (128, 128, 128)  #todo: make the background transparent
+        gray = (128, 128, 128)
         light_red = (255, 128, 128)
         light_green = (128, 255, 128)
         image = PIL.Image.new('RGB', size, gray)
@@ -190,4 +191,4 @@ class ShapeMaze(object):
 
 
 if __name__ == '__main__':
-    main()
+    demo()
