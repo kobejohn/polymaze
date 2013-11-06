@@ -141,10 +141,9 @@ class Maze(object):
         # create the base image
         white = (255, 255, 255)
         black = (0, 0, 0)
-        gray = (128, 128, 128)
         light_red = (255, 128, 128)
         light_green = (128, 255, 128)
-        image = PIL.Image.new('RGB', size, gray)
+        image = PIL.Image.new('RGBA', size)
         drawer = PIL.ImageDraw.Draw(image)
         # calculate total offset including padding and centering
         vert_offset_in_edges = -1 * min(x_values)
