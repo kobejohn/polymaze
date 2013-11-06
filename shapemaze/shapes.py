@@ -143,7 +143,7 @@ class Square(IndexedShapeBase):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-def up_down_triangle_creator(grid, index):
+def UpDownTriangle_factory(grid, index):
     """Provides up or down triangle class."""
     odd = sum(index) % 2
     if odd:
