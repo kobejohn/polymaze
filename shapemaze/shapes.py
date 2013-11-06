@@ -11,7 +11,7 @@ class IndexedShapeBase(object):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     # Begin Implementation requirements
 
-    def _identify_and_sort_edges(self):
+    def _identify_and_sort_neighbors(self):
         """Return a dict identifying each neighbor with a semantic edge name
         and a tuple indicating the clockwise order of the edges.
 
@@ -38,7 +38,7 @@ class IndexedShapeBase(object):
     def __init__(self, grid, index):
         self._grid = grid
         self._index = index
-        edge_names, clockwise_indexes = self._identify_and_sort_edges()
+        edge_names, clockwise_indexes = self._identify_and_sort_neighbors()
         self._edge_names = edge_names
         self._neighbor_indexes = clockwise_indexes
         self._edge_endpoints = self._calc_edge_endpoints()
@@ -113,11 +113,13 @@ class Square(IndexedShapeBase):
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     # Begin Implementation requirements
-    def _identify_and_sort_edges(self):
+    def _identify_and_sort_neighbors(self):
         """Implements base class requirements."""
         row, col = self.index()
-        top, right, bottom, left = ((row - 1, col), (row, col + 1),
-                                    (row + 1, col), (row, col - 1))
+        top, bottom, left, right = ((row - 1, col),
+                                    (row + 1, col),
+                                    (row, col - 1),
+                                    (row, col + 1))
         return ({top: 'top', right: 'right', bottom: 'bottom', left: 'left'},
                 (top, right, bottom, left))
 

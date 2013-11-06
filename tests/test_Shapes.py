@@ -7,8 +7,9 @@ from shapemaze import shapes, shapegrid
 # of each IndexedShape implementation.
 # Details are in class TestIndexedShapeImplementations
 def square_spec():
-    s = {'maker': shapes.Square,
+    s = {'super shape creator': shapes.Square,
          'shapes': {'only one': {'idx': (1, 1),
+                                 'creator': shapes.Square,
                                  'edges': {'top': {'idx': (0, 1),
                                                    'pts': ((1.0, 1.0),
                                                            (1.0, 2.0))},
@@ -26,6 +27,89 @@ def square_spec():
 
 # edit this to add new shapes to automated testing
 all_shape_implementation_specs = (square_spec(),)
+
+
+#noinspection PyProtectedMember
+class TestIndexedShapeImplementations(unittest.TestCase):
+    """Run all implemented shapes through standard verification tests.
+
+    Each implemented shape requires a standard set of data to test it:
+
+    {'super shape creator': super_shape_creator,
+     'shapes': {component_name: {'idx': component_index,
+                                 'creator': component_creator
+                                 'edges': {edge_name: {'idx': edge_index,
+                                                       'pts': edge_points},
+                                           ...}}
+                ...}}
+
+    - super_shape_creator - top level callable for grid when creating shapes
+    - component_name - semantic name for each component within a super shape
+    - component_index - the index for each component shape
+    - component_creator - creator callable for component shapes
+    - edge_name - semantic name for each edge of a component shape
+    - edge_index - the index for each edge
+    - edge_points - a pair of hand-calculated values that define each edge
+    """
+    # all specifications in this list
+    def test_confirm_neighbor_indexes_of_each_component(self):
+        for super_shape_spec in all_shape_implementation_specs:
+            super_shape_creator = super_shape_spec['super shape creator']
+            grid = shapegrid.ShapeGrid(super_shape_creator)
+            # create each component shape
+            for part_name, part_spec in super_shape_spec['shapes'].items():
+                part = grid.create(part_spec['idx'])
+                # confirm the component creator is correct
+                self.assertIsInstance(part, part_spec['creator'],
+                                      'Looks like the super shape creator is'
+                                      ' using the wrong part creator.'
+                                      'Expected {} but got an instance of {}'
+                                      ''.format(part_spec['creator'],
+                                                type(part)))
+                # confirm the neighbor indexes
+                edges_spec = part_spec['edges']
+                edges_indexes = tuple(n_idx for n_idx, _ in part.edges())
+                edges_indexes_spec = tuple(edge_spec['idx'] for
+                                           _, edge_spec in edges_spec.items())
+                self.assertItemsEqual(edges_indexes, edges_indexes_spec,
+                                      'Mismatch of neighbor indexes for'
+                                      ' {} component ({} @ {})'
+                                      '\nof {}:\nspec:{}\nactual:{}'
+                                      ''.format(part_name, part,
+                                                part.index(),
+                                                super_shape_creator,
+                                                edges_indexes_spec,
+                                                edges_indexes))
+                # confirm the edge endpoints
+                edges_endpoints = tuple((set(edge.endpoints())
+                                         for _, edge in part.edges()))
+                #flattened = tuple(itertools.chain(edge_endpoints))
+                edges_endpoints_spec = tuple((set(edge_data['pts'])
+                                              for _, edge_data
+                                              in edges_spec.items()))
+                #flattened_spec = tuple(itertools.chain(edge_endpoints_spec))
+                self.assertItemsEqual(edges_endpoints, edges_endpoints_spec,
+                                      'The end points for the {} component'
+                                      '({} @ {}) do not match the spec.'
+                                      '\nExpected {}\nbut got {}'
+                                      ''.format(part_name, part, part.index(),
+                                                edges_endpoints_spec,
+                                                edges_endpoints))
+
+    def test_edge_endpoints_of_neighbors_coincide(self):
+        for spec in all_shape_implementation_specs:
+            grid = shapegrid.ShapeGrid(spec['super shape creator'])
+            # create each component shape
+            for _, part_spec in spec['shapes'].items():
+                main = grid.create(part_spec['idx'])
+                # confirm shared edges match INTERNALLY, not through edge object
+                for n_index, neighbor in main.neighbors():
+                    if neighbor is None:
+                        # test weakness - doesn't test supershape boundaries
+                        continue
+                    endpoints_main = main._edge_endpoints[n_index]
+                    endpoints_neighbor = neighbor._edge_endpoints[main.index()]
+                    self.assertItemsEqual(endpoints_main, endpoints_neighbor)
 
 
 #noinspection PyProtectedMember
@@ -169,64 +253,6 @@ class TestEdge(unittest.TestCase):
         _, any_edge = tuple(shape.edges())[0]
         self.assertRaises(ValueError,
                           any_edge.endpoints, *(non_neighbor_index,))
-
-
-#noinspection PyProtectedMember
-class TestIndexedShapeImplementations(unittest.TestCase):
-    """Run all implemented shapes through standard verification tests.
-
-    Each implemented shape requires a standard set of data to test it:
-
-    {'maker': maker_callable,
-     'shapes': {component_name: {'idx': component_index,
-                                 'edges': {edge_name: {'idx': edge_index,
-                                                       'pts': edge_points},
-                                           ...}}
-                ...}}
-
-    - maker_callable - what ShapeGrid requires on creation.
-    - component_name - semantic name for each component within a super shape
-    - component_index - the index for each component shape
-    - edge_name - semantic name for each edge of a component shape
-    - edge_index - the index for each edge
-    - edge_points - a pair of hand-calculated values that define each edge
-    """
-    # all specifications in this list
-    def test_confirm_neighbor_indexes_of_each_component(self):
-        for spec in all_shape_implementation_specs:
-            grid = shapegrid.ShapeGrid(spec['maker'])
-            # create each component shape
-            for _, component_data in spec['shapes'].items():
-                component = grid.create(component_data['idx'])
-                edges_data = component_data['edges']
-                # confirm the neighbor indexes
-                edge_indexes = (n_index for n_index, _ in component.edges())
-                edge_indexes_spec = (edge_data['idx']
-                                     for _, edge_data in edges_data.items())
-                self.assertItemsEqual(edge_indexes, edge_indexes_spec)
-                # confirm the edge endpoints
-                edge_endpoints = (set(edge.endpoints())
-                                  for _, edge in component.edges())
-                #flattened = tuple(itertools.chain(edge_endpoints))
-                edge_endpoints_spec = (set(edge_data['pts'])
-                                       for _, edge_data in edges_data.items())
-                #flattened_spec = tuple(itertools.chain(edge_endpoints_spec))
-                self.assertItemsEqual(edge_endpoints, edge_endpoints_spec)
-
-    def test_edge_endpoints_of_neighbors_coincide(self):
-        for spec in all_shape_implementation_specs:
-            grid = shapegrid.ShapeGrid(spec['maker'])
-            # create each component shape
-            for _, component_data in spec['shapes'].items():
-                main = grid.create(component_data['idx'])
-                # confirm shared edges match INTERNALLY, not through edge object
-                for n_index, neighbor in main.neighbors():
-                    if neighbor is None:
-                        # test weakness - doesn't test supershape boundaries
-                        continue
-                    endpoints_main = main._edge_endpoints[n_index]
-                    endpoints_neighbor = neighbor._edge_endpoints[main.index()]
-                    self.assertItemsEqual(endpoints_main, endpoints_neighbor)
 
 
 def generic_shape(shape_maker=None, index=None, grid=None):

@@ -4,8 +4,8 @@ import random
 import PIL.Image
 import PIL.ImageDraw
 
-from shapegrid import ShapeGrid
-from shapes import Square
+import shapegrid
+import shapes
 
 
 def demo():
@@ -27,7 +27,7 @@ class Maze(object):
         args:
         shape_creator: callable that returns an IndexedShape
         """
-        self._grid = ShapeGrid(shape_creator)
+        self._grid = shapegrid.ShapeGrid(shape_creator)
         #todo: allow user-centric creation of the grid. this is debug
         # create a debug grid
         rows = 10
