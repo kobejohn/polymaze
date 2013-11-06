@@ -10,7 +10,7 @@ import shapes
 
 def demo():
     """Demonstrate how to use polymaze."""
-    polymaze = Maze(Square)
+    polymaze = Maze(shapes.up_down_triangle_creator)
     image = polymaze.image(700, 1200)
     image.save('Maze Demo.png', 'PNG', **image.info)
     image.show()

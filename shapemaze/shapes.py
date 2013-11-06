@@ -1,8 +1,4 @@
-def composite_x_factory(index):
-    """Return the appropriate shape for the given index."""
-    # probably reduce index with % composite_row_size % composite col size?
-    # then simple dict that describes the composite shape?
-    pass
+import math
 
 
 class IndexedShapeBase(object):
@@ -31,7 +27,6 @@ class IndexedShapeBase(object):
             If all shapes have the same edge length, that's a good unit value.
         """
         raise NotImplementedError
-
     # End implementation requirements
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -144,7 +139,97 @@ class Square(IndexedShapeBase):
         edge_endpoints = {n_index: named_lookup[n_name] for n_index, n_name
                           in self._edge_names.items()}
         return edge_endpoints
+    # End implementation requirements
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+
+def up_down_triangle_creator(grid, index):
+    """Provides up or down triangle class."""
+    odd = sum(index) % 2
+    if odd:
+        return _UpDownTriangle_Down(grid, index)
+    else:
+        return _UpDownTriangle_Up(grid, index)
+
+
+class _UpDownTriangle_Base(IndexedShapeBase):
+    # base calculations
+    side = 1.0
+    h = side * math.sin(math.pi / 3.0)
+
+
+class _UpDownTriangle_Up(_UpDownTriangle_Base):
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Begin Implementation requirements
+    def _identify_and_sort_neighbors(self):
+        """Implements base class requirements."""
+        row, col = self.index()
+        left, right, down = ((row, col - 1),
+                             (row, col + 1),
+                             (row + 1, col))
+        return ({left: 'left', right: 'right', down: 'down'},
+                (left, right, down))
+
+    def _calc_edge_endpoints(self):
+        """Implements base class requirements."""
+        row, col = self.index()
+        # origin-based coordinates
+        origin_left_pt = (self.h, -1.0 * self.side / 2.0)
+        origin_right_pt = (self.h, self.side / 2.0)
+        origin_top_pt = (0.0, 0.0)
+        # offset within the super shape
+        ss_offset = (0.0, 0.0)
+        # index-based offset
+        index_offset = (row * self.h, col * self.side / 2.0)
+        # final coordinates
+        left_pt = sum_tuples((origin_left_pt, ss_offset, index_offset))
+        right_pt = sum_tuples((origin_right_pt, ss_offset, index_offset))
+        top_pt = sum_tuples((origin_top_pt, ss_offset, index_offset))
+        # paired points per edge
+        named_lookup = {'left': (left_pt, top_pt),
+                        'right': (top_pt, right_pt),
+                        'down': (right_pt, left_pt)}
+        edge_endpoints = {n_index: named_lookup[n_name] for n_index, n_name
+                          in self._edge_names.items()}
+        return edge_endpoints
+    # End implementation requirements
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+class _UpDownTriangle_Down(_UpDownTriangle_Base):
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Begin Implementation requirements
+    def _identify_and_sort_neighbors(self):
+        """Implements base class requirements."""
+        row, col = self.index()
+        left, right, up = ((row, col - 1),
+                           (row, col + 1),
+                           (row - 1, col))  # key difference row +/- 1
+        return ({left: 'left', right: 'right', up: 'up'},
+                (up, right, left))
+
+    def _calc_edge_endpoints(self):
+        """Implements base class requirements."""
+        row, col = self.index()
+        # origin-based coordinates
+        origin_left_pt = (0.0, 0.0)
+        origin_right_pt = (0.0, self.side)
+        origin_bottom_pt = (self.h, self.side / 2.0)
+        # offset within the super shape
+        ss_offset = (0.0, 0.0)
+        # index-based offset
+        index_offset = (row * self.h, (col - 1) * self.side / 2.0)
+        # final coordinates
+        left_pt = sum_tuples((origin_left_pt, ss_offset, index_offset))
+        right_pt = sum_tuples((origin_right_pt, ss_offset, index_offset))
+        middle_pt = sum_tuples((origin_bottom_pt, ss_offset, index_offset))
+        # paired points per edge
+        named_lookup = {'up': (left_pt, right_pt),
+                        'right': (right_pt, middle_pt),
+                        'left': (middle_pt, left_pt)}
+        edge_endpoints = {n_index: named_lookup[n_name] for n_index, n_name
+                          in self._edge_names.items()}
+        return edge_endpoints
     # End implementation requirements
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -176,3 +261,12 @@ class Edge(object):
             raise ValueError('The requesting shape is not one of the sharing'
                              ' neighbors of this edge.')
         return self._grid.get(requesting_shape_index)._edge_endpoints[n_index]
+
+
+def sum_tuples(sequence_of_tuples):
+    # not efficient but works
+    a_sum, b_sum = 0, 0  # will be converted to float if any floats added
+    for a, b in sequence_of_tuples:
+        a_sum += a
+        b_sum += b
+    return a_sum, b_sum

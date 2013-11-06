@@ -1,4 +1,5 @@
 import unittest
+import math
 
 from shapemaze import shapes, shapegrid
 
@@ -25,8 +26,45 @@ def square_spec():
     return s
 
 
+#noinspection PyProtectedMember
+def up_down_triangle_spec():
+    side = 1.0
+    h = math.sin(math.pi / 3.0)
+    up_top_pt = (0.0, 0.0)
+    up_left_pt = (h, -1 * side / 2.0)
+    up_right_pt = (h, side / 2.0)
+    dn_bottom_pt = up_right_pt
+    dn_left_pt = up_top_pt
+    dn_right_pt = (0.0, side)
+    s = {'super shape creator': shapes.up_down_triangle_creator,
+         'shapes': {'up': {'idx': (0, 0),
+                           'creator': shapes._UpDownTriangle_Up,
+                           'edges': {'left': {'idx': (0, -1),
+                                              'pts': (up_left_pt,
+                                                      up_top_pt)},
+                                     'right': {'idx': (0, 1),
+                                               'pts': (up_top_pt,
+                                                       up_right_pt)},
+                                     'down': {'idx': (1, 0),
+                                              'pts': (up_right_pt,
+                                                      up_left_pt)}}},
+                    'dn': {'idx': (0, 1),
+                           'creator': shapes._UpDownTriangle_Down,
+                           'edges': {'up': {'idx': (-1, 1),
+                                            'pts': (dn_left_pt,
+                                                    dn_right_pt)},
+                                     'right': {'idx': (0, 2),
+                                               'pts': (dn_right_pt,
+                                                       dn_bottom_pt)},
+                                     'left': {'idx': (0, 0),
+                                              'pts': (dn_bottom_pt,
+                                                      dn_left_pt)}}}}}
+    return s
+
+
 # edit this to add new shapes to automated testing
-all_shape_implementation_specs = (square_spec(),)
+all_shape_implementation_specs = (square_spec(),
+                                  up_down_triangle_spec())
 
 
 #noinspection PyProtectedMember
