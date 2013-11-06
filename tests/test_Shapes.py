@@ -36,7 +36,7 @@ def up_down_triangle_spec():
     dn_bottom_pt = up_right_pt
     dn_left_pt = up_top_pt
     dn_right_pt = (0.0, side)
-    s = {'super shape creator': shapes.up_down_triangle_creator,
+    s = {'super shape creator': shapes.UpDownTriangle_factory,
          'shapes': {'up': {'idx': (0, 0),
                            'creator': shapes._UpDownTriangle_Up,
                            'edges': {'left': {'idx': (0, -1),

@@ -5,15 +5,6 @@ import PIL.Image
 import PIL.ImageDraw
 
 import shapegrid
-import shapes
-
-
-def demo():
-    """Demonstrate how to use polymaze."""
-    polymaze = Maze(shapes.up_down_triangle_creator)
-    image = polymaze.image(700, 1200)
-    image.save('Maze Demo.png', 'PNG', **image.info)
-    image.show()
 
 
 class Maze(object):
@@ -21,7 +12,7 @@ class Maze(object):
     WALL = 'wall'
     PATH = 'path'
 
-    def __init__(self, shape_creator):
+    def __init__(self, shape_creator, vertical_shapes=10, horizontal_shapes=15):
         """Create a maze from a grid of shapes.
 
         args:
@@ -30,8 +21,8 @@ class Maze(object):
         self._grid = shapegrid.ShapeGrid(shape_creator)
         #todo: allow user-centric creation of the grid. this is debug
         # create a debug grid
-        rows = 10
-        cols = 15
+        rows = vertical_shapes
+        cols = horizontal_shapes
         for row in range(rows):
             for col in range(cols):
                 index = (row, col)
@@ -42,8 +33,8 @@ class Maze(object):
             index = random.randrange(rows), random.randrange(cols)
             self._grid.remove(index)
         # debug remove a corner from the grid
-        for row in range(int(round(0.2 * rows))):
-            for col in range(int(round(0.2 * cols))):
+        for row in range(int(round(0.3 * rows))):
+            for col in range(int(round(0.3 * cols))):
                 self._grid.remove((row, col))
         # create maze and make entrance / exit available
         self._entrance_space, self._exit_space = self._mazify_grid()
@@ -197,4 +188,4 @@ class Maze(object):
 
 
 if __name__ == '__main__':
-    demo()
+    pass

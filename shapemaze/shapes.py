@@ -270,3 +270,7 @@ def sum_tuples(sequence_of_tuples):
         a_sum += a
         b_sum += b
     return a_sum, b_sum
+
+
+if __name__ == '__main__':
+    pass

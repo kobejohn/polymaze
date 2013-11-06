@@ -48,3 +48,7 @@ class ShapeGrid(object):
                 if neighbor is None:
                     yield shape
                     break  # only yield a shape once
+
+
+if __name__ == '__main__':
+    pass
