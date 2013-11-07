@@ -119,20 +119,20 @@ class TestIndexedShapeImplementations(unittest.TestCase):
                                                 edges_indexes_spec,
                                                 edges_indexes))
                 # confirm the edge endpoints
-                edges_endpoints = tuple((set(edge.endpoints())
-                                         for _, edge in part.edges()))
-                #flattened = tuple(itertools.chain(edge_endpoints))
-                edges_endpoints_spec = tuple((set(edge_data['pts'])
-                                              for _, edge_data
-                                              in edges_spec.items()))
-                #flattened_spec = tuple(itertools.chain(edge_endpoints_spec))
-                self.assertItemsEqual(edges_endpoints, edges_endpoints_spec,
-                                      'The end points for the {} component'
-                                      '({} @ {}) do not match the spec.'
-                                      '\nExpected {}\nbut got {}'
-                                      ''.format(part_name, part, part.index(),
-                                                edges_endpoints_spec,
-                                                edges_endpoints))
+                edges_points_spec = {edge_spec['idx']: edge_spec['pts'] for
+                                     edge_spec in edges_spec.values()}
+                edges_points = {n_index: edge.endpoints() for
+                                n_index, edge in part.edges()}
+                for n_index, edge_points in edges_points.items():
+                    edge_points_spec = edges_points_spec[n_index]
+                    self.assertItemsEqual(edge_points, edge_points_spec,
+                                          'Edge endpoints did not match for'
+                                          ' {} @ {} for neighbor @ {}'
+                                          '\nexcpected: {}'
+                                          '\nactual: {}'
+                                          ''.format(part, part.index(), n_index,
+                                                    edge_points_spec,
+                                                    edge_points))
 
     def test_edge_endpoints_of_neighbors_coincide(self):
         for spec in all_shape_implementation_specs:
