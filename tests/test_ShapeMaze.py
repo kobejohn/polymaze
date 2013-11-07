@@ -5,23 +5,6 @@ from shapemaze import maze
 from shapemaze import shapes
 
 
-class TestDemo(unittest.TestCase):
-    def test_saves_a_demo_image_in_working_directory(self):
-        cwd = os.getcwd()
-        image_name_spec = 'Maze Demo.png'
-        image_full_path_spec = os.path.join(cwd, image_name_spec)
-        # delete the file in case it is already there
-        try:
-            os.remove(image_full_path_spec)
-        except OSError:
-            pass  # no problem - the file just didn't exist yet
-        # run the demo and confirm the file exists
-        maze.demo()
-        self.assertTrue(os.path.exists(image_full_path_spec))
-        # delete the file
-        os.remove(image_full_path_spec)
-
-
 #noinspection PyProtectedMember
 class TestShapeMaze(unittest.TestCase):
     #todo: to really test this, need to create a tree and verify no cycles
