@@ -3,7 +3,9 @@ from shapemaze import Maze, shapes
 
 # these are the various shapes that can be used to create a maze
 creators = {'Squares': shapes.Square,
-            'Up-Down Triangles': shapes.UpDownTriangle_factory}
+            'Up-Down Triangles': shapes.UpDownTriangle_factory,
+            'Hexagons': shapes.Hexagon}
+
 for name, creator in creators.items():
     maze = Maze(creator, vertical_shapes=20, horizontal_shapes=30)
     image = maze.image(700, 1200)

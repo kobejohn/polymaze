@@ -26,6 +26,53 @@ def square_spec():
     return s
 
 
+def hexagon_spec():
+    side = 1.0
+    h = side * math.sin(math.pi / 3)
+    index = row, col = 1, 1
+    # index offset
+    x_offset = col * 1.5 * side
+    y_offset = row * 2.0 * h - col * 1.0 * h
+    # base coordinates
+    top = -1.0 * h + y_offset
+    v_mid = 0.0 + y_offset
+    bottom = 1.0 * h + y_offset
+    left = 0.0 + x_offset
+    midleft = 0.5 * side + x_offset
+    midright = 1.5 * side + x_offset
+    right = 2.0 * side + x_offset
+    # final points
+    left_pt = (v_mid, left)
+    top_left_pt = (top, midleft)
+    top_right_pt = (top, midright)
+    right_pt = (v_mid, right)
+    bottom_right_pt = (bottom, midright)
+    bottom_left_pt = (bottom, midleft)
+
+    s = {'super shape creator': shapes.Hexagon,
+         'shapes': {'only one': {'idx': index,
+                                 'creator': shapes.Hexagon,
+                                 'edges': {'up': {'idx': (0, 1),
+                                                  'pts': (top_left_pt,
+                                                          top_right_pt)},
+                                           'uright': {'idx': (1, 2),
+                                                      'pts': (top_right_pt,
+                                                              right_pt)},
+                                           'dright': {'idx': (2, 2),
+                                                      'pts': (right_pt,
+                                                              bottom_right_pt)},
+                                           'down': {'idx': (2, 1),
+                                                    'pts': (bottom_right_pt,
+                                                            bottom_left_pt)},
+                                           'dleft': {'idx': (1, 0),
+                                                     'pts': (bottom_left_pt,
+                                                             left_pt)},
+                                           'uleft': {'idx': (0, 0),
+                                                     'pts': (left_pt,
+                                                             top_left_pt)}}}}}
+    return s
+
+
 #noinspection PyProtectedMember
 def up_down_triangle_spec():
     side = 1.0
@@ -64,7 +111,8 @@ def up_down_triangle_spec():
 
 # edit this to add new shapes to automated testing
 all_shape_implementation_specs = (square_spec(),
-                                  up_down_triangle_spec())
+                                  up_down_triangle_spec(),
+                                  hexagon_spec())
 
 
 #noinspection PyProtectedMember

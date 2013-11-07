@@ -143,6 +143,60 @@ class Square(IndexedShapeBase):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+class Hexagon(IndexedShapeBase):
+    # base calculations
+    side = 1.0
+    h = side * math.sin(math.pi / 3.0)
+
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Begin Implementation requirements
+    def _identify_and_sort_neighbors(self):
+        """Implements base class requirements."""
+        row, col = self.index()
+        up, uright, dright, down, dleft, uleft = ((row - 1, col),
+                                                  (row, col + 1),
+                                                  (row + 1, col + 1),
+                                                  (row + 1, col),
+                                                  (row, col - 1),
+                                                  (row - 1, col - 1))
+        return ({up: 'up', uright: 'uright', dright: 'dright',
+                 down: 'down', dleft: 'dleft', uleft: 'uleft'},
+                (up, uright, dright, down, dleft, uleft))
+
+    def _calc_edge_endpoints(self):
+        """Implements base class requirements."""
+        row, col = self.index()
+        x_offset = col * 1.5 * self.side
+        y_offset = row * 2.0 * self.h - col * 1.0 * self.h
+        # shared side coordinates
+        top = -1.0 * self.h + y_offset
+        v_middle = 0.0 + y_offset
+        bottom = 1.0 * self.h + y_offset
+        left = 0.0 + x_offset
+        h_midleft = 0.5 * self.side + x_offset
+        h_midright = 1.5 * self.side + x_offset
+        right = 2.0 * self.side + x_offset
+        # point coordinates
+        left_pt = (v_middle, left)
+        top_left_pt = (top, h_midleft)
+        top_right_pt = (top, h_midright)
+        right_pt = (v_middle, right)
+        bottom_right_pt = (bottom, h_midright)
+        bottom_left_pt = (bottom, h_midleft)
+        # paired points per edge
+        named_lookup = {'uleft': (left_pt, top_left_pt),
+                        'up': (top_left_pt, top_right_pt),
+                        'uright': (top_right_pt, right_pt),
+                        'dright': (right_pt, bottom_right_pt),
+                        'down': (bottom_right_pt, bottom_left_pt),
+                        'dleft': (bottom_left_pt, left_pt)}
+        edge_endpoints = {n_index: named_lookup[n_name] for n_index, n_name
+                          in self._edge_names.items()}
+        return edge_endpoints
+    # End implementation requirements
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
 def UpDownTriangle_factory(grid, index):
     """Provides up or down triangle class."""
     odd = sum(index) % 2
