@@ -288,6 +288,144 @@ class _UpDownTriangle_Down(_UpDownTriangle_Base):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+def OctaDiamond_factory(grid, index):
+    row, col = index
+    odd = col % 2
+    if odd:
+        return _OctaDiamond_Diamond(grid, index)
+    else:
+        return _OctaDiamond_Octagon(grid, index)
+
+class _OctaDiamond_Base(IndexedShapeBase):
+    # base values
+    side = 1.0
+    h = side / math.sqrt(2.0)
+    # origin-based coordinates
+    # vertical line reference values
+    oct_left = -1.0 * (side + h)
+    oct_midleft = -1.0 * side
+    oct_midright = 0.0
+    oct_right = h
+    dmd_left = oct_midright
+    dmd_h_mid = oct_right
+    dmd_right = 2.0 * h
+    # horiztonal line reference values
+    oct_top = 0.0
+    oct_midtop = h
+    oct_midbottom = side + h
+    oct_bottom = side + 2.0 * h
+    dmd_top = -1.0 * h
+    dmd_v_mid = oct_top
+    dmd_bottom = oct_midtop
+    # use a clock analogy to build octagon points
+    clk_1_pt = (oct_top, oct_midright)
+    clk_2_pt = (oct_midtop, oct_right)
+    clk_4_pt = (oct_midbottom, oct_right)
+    clk_5_pt = (oct_bottom, oct_midright)
+    clk_7_pt = (oct_bottom, oct_midleft)
+    clk_8_pt = (oct_midbottom, oct_left)
+    clk_10_pt = (oct_midtop, oct_left)
+    clk_11_pt = (oct_top, oct_midleft)
+    # use a diamong analogy for the rotated square
+    dmd_left_pt = clk_1_pt
+    dmd_top_pt = (dmd_top, dmd_h_mid)
+    dmd_right_pt = (dmd_v_mid, dmd_right)
+    dmd_bottom_pt = clk_2_pt
+
+class _OctaDiamond_Octagon(_OctaDiamond_Base):
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Begin Implementation requirements
+    def _identify_and_sort_neighbors(self):
+        """Implements base class requirements."""
+        row, col = self.index()
+        up = (row - 1, col)  # octagon of super shape above
+        uright = (row, col + 1)  # same super shape diamond
+        right = (row, col + 2)  # octagon of supershape to the right
+        dright = (row + 1, col + 1)  # diamond of supershape below
+        down = (row + 1, col)  # octagon of supershape below
+        dleft = (row + 1, col - 1)  # diamond of super shape below and left
+        left = (row, col - 2)  # octagon of supershape to the left
+        uleft = (row, col - 1)  # diamond of supershape to the left
+        return ({up: 'up', uright: 'uright', right: 'right', dright: 'dright',
+                 down: 'down', dleft: 'dleft', left: 'left', uleft: 'uleft'},
+                (up, uright, right, dright, down, dleft, left, uleft))
+
+    def _calc_edge_endpoints(self):
+        """Implements base class requirements."""
+        row, col = self.index()
+        # offset within the super shape
+        ss_offset = (0.0, 0.0)
+        # index-based offset
+        index_offset = (row * (self.side + 2 * self.h),
+                        (col // 2) * (self.side + 2 * self.h))
+        # total offset
+        offset = sum_tuples((ss_offset, index_offset))
+        # final coordinates
+        clk_1_pt = sum_tuples((self.clk_1_pt, offset))
+        clk_2_pt = sum_tuples((self.clk_2_pt, offset))
+        clk_4_pt = sum_tuples((self.clk_4_pt, offset))
+        clk_5_pt = sum_tuples((self.clk_5_pt, offset))
+        clk_7_pt = sum_tuples((self.clk_7_pt, offset))
+        clk_8_pt = sum_tuples((self.clk_8_pt, offset))
+        clk_10_pt = sum_tuples((self.clk_10_pt, offset))
+        clk_11_pt = sum_tuples((self.clk_11_pt, offset))
+        # paired points per edge
+        named_lookup = {'up': (clk_11_pt, clk_1_pt),
+                        'uright': (clk_1_pt, clk_2_pt),
+                        'right': (clk_2_pt, clk_4_pt),
+                        'dright': (clk_4_pt, clk_5_pt),
+                        'down': (clk_5_pt, clk_7_pt),
+                        'dleft': (clk_7_pt, clk_8_pt),
+                        'left': (clk_8_pt, clk_10_pt),
+                        'uleft': (clk_10_pt, clk_11_pt)}
+        edge_endpoints = {n_index: named_lookup[n_name] for n_index, n_name
+                          in self._edge_names.items()}
+        return edge_endpoints
+    # End implementation requirements
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+class _OctaDiamond_Diamond(_OctaDiamond_Base):
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Begin Implementation requirements
+    def _identify_and_sort_neighbors(self):
+        """Implements base class requirements."""
+        row, col = self.index()
+        uleft = (row - 1, col - 1)  # octagon of supershape above
+        uright = (row - 1, col + 1)  # octagon of supershape above and left
+        dright = (row, col + 1)  # octagon of supershape left
+        dleft = (row, col - 1)  # octagon of same supershape
+        return ({uleft: 'uleft', uright: 'uright',
+                 dright: 'dright', dleft: 'dleft'},
+                (uleft, uright, dright, dleft))
+
+    def _calc_edge_endpoints(self):
+        """Implements base class requirements."""
+        row, col = self.index()
+        # offset within the super shape
+        ss_offset = (0.0, 0.0)
+        # index-based offset
+        index_offset = (row * (self.side + 2 * self.h),
+                        (col // 2) * (self.side + 2 * self.h))
+        # total offset
+        offset = sum_tuples((ss_offset, index_offset))
+        # final coordinates
+        dmd_left_pt = sum_tuples((self.dmd_left_pt, offset))
+        dmd_top_pt = sum_tuples((self.dmd_top_pt, offset))
+        dmd_right_pt = sum_tuples((self.dmd_right_pt, offset))
+        dmd_bottom_pt = sum_tuples((self.dmd_bottom_pt, offset))
+        # paired points per edge
+        named_lookup = {'uleft': (dmd_left_pt, dmd_top_pt),
+                        'uright': (dmd_top_pt, dmd_right_pt),
+                        'dright': (dmd_right_pt, dmd_bottom_pt),
+                        'dleft': (dmd_bottom_pt, dmd_left_pt)}
+        edge_endpoints = {n_index: named_lookup[n_name] for n_index, n_name
+                          in self._edge_names.items()}
+        return edge_endpoints
+    # End implementation requirements
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
 class Edge(object):
     def __init__(self, grid, neighbor_1_index, neighbor_2_index):
         self._grid = grid

@@ -109,10 +109,90 @@ def up_down_triangle_spec():
     return s
 
 
+#noinspection PyProtectedMember
+def octadiamond_spec():
+    side = 1.0
+    h = side / math.sqrt(2)
+    # vertical line reference values
+    oct_left = -1.0 * (side + h)
+    oct_midleft = -1.0 * side
+    oct_midright = 0.0
+    oct_right = h
+    dmd_left = oct_midright
+    dmd_h_mid = oct_right
+    dmd_right = 2.0 * h
+    # horiztonal line reference values
+    oct_top = 0.0
+    oct_midtop = h
+    oct_midbottom = side + h
+    oct_bottom = side + 2.0 * h
+    dmd_top = -1.0 * h
+    dmd_v_mid = oct_top
+    dmd_bottom = oct_midtop
+    # use a clock analogy to build octagon points
+    clk_1_pt = (oct_top, oct_midright)
+    clk_2_pt = (oct_midtop, oct_right)
+    clk_4_pt = (oct_midbottom, oct_right)
+    clk_5_pt = (oct_bottom, oct_midright)
+    clk_7_pt = (oct_bottom, oct_midleft)
+    clk_8_pt = (oct_midbottom, oct_left)
+    clk_10_pt = (oct_midtop, oct_left)
+    clk_11_pt = (oct_top, oct_midleft)
+    # use a diamong analogy for the rotated square
+    dmd_left_pt = clk_1_pt
+    dmd_top_pt = (dmd_top, dmd_h_mid)
+    dmd_right_pt = (dmd_v_mid, dmd_right)
+    dmd_bottom_pt = clk_2_pt
+
+    s = {'super shape creator': shapes.OctaDiamond_factory,
+         'shapes': {'octa': {'idx': (0, 0),
+                             'creator': shapes._OctaDiamond_Octagon,
+                             'edges': {'up': {'idx': (-1, 0),
+                                              'pts': (clk_11_pt,
+                                                      clk_1_pt)},
+                                       'uright': {'idx': (0, 1),
+                                                  'pts': (clk_1_pt,
+                                                          clk_2_pt)},
+                                       'right': {'idx': (0, 2),
+                                                 'pts': (clk_2_pt,
+                                                         clk_4_pt)},
+                                       'dright': {'idx': (1, 1),
+                                                  'pts': (clk_4_pt,
+                                                          clk_5_pt)},
+                                       'down': {'idx': (1, 0),
+                                                'pts': (clk_5_pt,
+                                                        clk_7_pt)},
+                                       'dleft': {'idx': (1, -1),
+                                                 'pts': (clk_7_pt,
+                                                         clk_8_pt)},
+                                       'left': {'idx': (0, -2),
+                                                'pts': (clk_8_pt,
+                                                        clk_10_pt)},
+                                       'uleft': {'idx': (0, -1),
+                                                 'pts': (clk_10_pt,
+                                                         clk_11_pt)}}},
+                    'diamond': {'idx': (0, 1),
+                                'creator': shapes._OctaDiamond_Diamond,
+                                'edges': {'uleft': {'idx': (-1, 0),
+                                                    'pts': (dmd_left_pt,
+                                                            dmd_top_pt)},
+                                          'uright': {'idx': (-1, 2),
+                                                     'pts': (dmd_top_pt,
+                                                             dmd_right_pt)},
+                                          'dright': {'idx': (0, 2),
+                                                     'pts': (dmd_right_pt,
+                                                             dmd_bottom_pt)},
+                                          'dleft': {'idx': (0, 0),
+                                                    'pts': (dmd_bottom_pt,
+                                                            dmd_left_pt)}}}}}
+    return s
+
+
 # edit this to add new shapes to automated testing
 all_shape_implementation_specs = (square_spec(),
                                   up_down_triangle_spec(),
-                                  hexagon_spec())
+                                  hexagon_spec(),
+                                  octadiamond_spec())
 
 
 #noinspection PyProtectedMember
