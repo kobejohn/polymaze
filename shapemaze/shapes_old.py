@@ -3,76 +3,42 @@ import math
 
 class IndexedShapeBase(object):
     """A shape that fits by index into a grid of other shapes."""
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    #          #          #          #          #          #          #
-    # Begin supershape implementation requirements
-    # standard scale to be used throughout all component shapes
-    # just 1.0 will serve for probably all cases
-    SIDE = None
-    # multiplier describing how the supershape position changes per index
-    SS_VERTEX_OFFSET_PER_ROW = None  # (y_offset_per_row, x_offset_per_row)
-    SS_VERTEX_OFFSET_PER_COL = None  # (y_offset_per_col, x_offset_per_col)
-    # End supershape implementation requirements
-    #          #          #          #          #          #          #
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    #          #          #          #          #          #          #
-    # Begin component implementation requirements
-    # explain the index position of this component within the supershape
-    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = None  # (row_offset, col_offset)
-    # base data used to define a component at a specific index
-    # {index_offset_to_neighbor: {'name': user_friendly_name,
-    #                             'vertex in ss': vertex_from_origin_ss}
-    _BASE_EDGE_DATA = None
-    # for drawing polygons, the edge order is important, this should be a
-    # sequence that tells the Base class how to orderer the named edges
-    # in the base edge data
-    _CLOCKWISE_EDGE_NAMES = None
-    # End component implementation requirements
-    #          #          #          #          #          #          #
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Begin Implementation requirements
+
+    def _identify_and_sort_neighbors(self):
+        """Return a dict identifying each neighbor with a semantic edge name
+        and a tuple indicating the clockwise order of the edges.
+
+        return: ({neighbor_index: semantic_name, ...},
+                 ('semantic_name1', 'semantic_name2', ...))
+        """
+        raise NotImplementedError
+
+    def _calc_edge_endpoints(self):
+        """Return a dict identifying the end points for the edge between
+        self and each neighbor.
+
+        return: {neighbor_index: (float_yx, float_yx), ...}
+
+        Note regarding units:
+            All shapes in grid must agree on the units of the point values.
+            If all shapes have the same edge length, that's a good unit value.
+        """
+        raise NotImplementedError
+    # End implementation requirements
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
     def __init__(self, grid, index):
         self._grid = grid
         self._index = index
-        self._edge_data, self._ordered_n_indexes = self._calc_final_data(index)
+        edge_names, clockwise_indexes = self._identify_and_sort_neighbors()
+        self._edge_names = edge_names
+        self._neighbor_indexes = clockwise_indexes
+        self._edge_endpoints = self._calc_edge_endpoints()
         self._owned_edges = dict()
-        self._owned_edges.update(self._grab_edges())
-
-    def _calc_final_data(self, index):
-        """Return final edge data and sorted neighbors based on index.
-
-        Note: this is combined because the determination of the items is
-              interconnected.
-        """
-        row, col = index
-        # make the shell of the final edge data and get the ordered indexes
-        final_edge_data = dict()
-        ordered_n_indexes = [None] * len(self._BASE_EDGE_DATA)
-        for n_index_offset, base_data in self._BASE_EDGE_DATA.items():
-            n_index = sum_tuples((index, n_index_offset))
-            # create the data dict for this neighbor index
-            final_edge_data[n_index] = dict()
-            # name is just name
-            name = final_edge_data[n_index]['name'] = base_data['name']
-            # convert base vertex within the ss to full vertex at this index
-            base_vertex = base_data['vertex in ss']
-            row_offset = scale_tuple(self.SS_VERTEX_OFFSET_PER_ROW, row)
-            col_offset = scale_tuple(self.SS_VERTEX_OFFSET_PER_COL, col)
-            final_vertex = sum_tuples((base_vertex, row_offset, col_offset))
-            final_edge_data[n_index]['this vertex'] = final_vertex
-            # put n_index into the order indicated by the specification
-            i = self._CLOCKWISE_EDGE_NAMES.index(name)
-            ordered_n_indexes[i] = n_index
-        # go back and fill in the additional vertex data for ease of access
-        for primary_i, primary_n_index in enumerate(ordered_n_indexes):
-            # get each pair of edges
-            next_i = (primary_i + 1) % len(ordered_n_indexes)
-            next_n_index = ordered_n_indexes[next_i]
-            next_vertex = final_edge_data[next_n_index]['this vertex']
-            final_edge_data[primary_n_index]['next vertex'] = next_vertex
-        return final_edge_data, ordered_n_indexes
+        self._grab_edges()
 
     def index(self):
         return self._index
@@ -82,13 +48,14 @@ class IndexedShapeBase(object):
 
         Neighbor is None for nonexistent neighbors.
         """
-        for n_index in self._ordered_n_indexes:
+        for n_index in self._neighbor_indexes:
             yield n_index, self._grid.get(n_index)
 
     def edges(self):
         """Generate each index-edge pair for this shape."""
-        for n_index in self._ordered_n_indexes:
-            yield n_index, self.edge(n_index)
+        for n_index in self._neighbor_indexes:
+            edge = self.edge(n_index)
+            yield n_index, edge
 
     def edge(self, neighbor_index):
         """Return one edge of this shape by the index of the sharing neighbor.
@@ -106,8 +73,6 @@ class IndexedShapeBase(object):
         if neighbor:
             # neighbor stores the shared edge under this shape's index
             return neighbor._owned_edges[self.index()]
-        else:
-            pass  # this is an undefined case. basically runtime error
 
     def _grab_edges(self):
         """Return a dict of new edges for ONLY those that don't exist yet.
@@ -116,16 +81,17 @@ class IndexedShapeBase(object):
         """
         grabbed_edges = dict()
         for n_index, neighbor in self.neighbors():
-            # ignore self owned edges
-            if n_index in self._owned_edges:
-                continue
+            # not strictly necessary so removed
+            ## ignore self owned edges
+            #if n_index in self._owned_edges:
+            #    continue
             # ignore neighbor owned edges
             if neighbor:
                 if self.index() in neighbor._owned_edges:
                     continue
             # create edges that didn't exist in self or neighbor
             grabbed_edges[n_index] = Edge(self._grid, self.index(), n_index)
-        return grabbed_edges
+        self._owned_edges.update(grabbed_edges)
 
     def _give_away_edges(self):
         """Give edges away to neighbors or keep them if no neighbor."""
@@ -139,32 +105,42 @@ class IndexedShapeBase(object):
 
 class Square(IndexedShapeBase):
     """A square that fits by index into a regular grid of squares."""
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    #          #          #          #          #          #          #
-    # Begin supershape implementation requirements
-    SIDE = 1.0
-    SS_VERTEX_OFFSET_PER_ROW = (SIDE, 0.0)
-    SS_VERTEX_OFFSET_PER_COL = (0.0, SIDE)
-    # End supershape implementation requirements
-    #          #          #          #          #          #          #
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    #          #          #          #          #          #          #
-    # Begin component implementation requirements
-    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = (0, 0)
-    _BASE_EDGE_DATA = {(-1, 0): {'name': 'top',
-                                 'vertex in ss': (0.0, 0.0)},
-                       (0, 1): {'name': 'right',
-                                'vertex in ss': (0.0, SIDE)},
-                       (1, 0): {'name': 'bottom',
-                                'vertex in ss': (SIDE, SIDE)},
-                       (0, -1): {'name': 'left',
-                                 'vertex in ss': (SIDE, 0.0)}}
-    _CLOCKWISE_EDGE_NAMES = 'top', 'right', 'bottom', 'left'
-    # End component implementation requirements
-    #          #          #          #          #          #          #
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Begin Implementation requirements
+    def _identify_and_sort_neighbors(self):
+        """Implements base class requirements."""
+        row, col = self.index()
+        top, bottom, left, right = ((row - 1, col),
+                                    (row + 1, col),
+                                    (row, col - 1),
+                                    (row, col + 1))
+        return ({top: 'top', right: 'right', bottom: 'bottom', left: 'left'},
+                (top, right, bottom, left))
+
+    def _calc_edge_endpoints(self):
+        """Implements base class requirements."""
+        row, col = self.index()
+        # shared side coordinates
+        top = float(row)
+        bottom = float(row + 1)
+        left = float(col)
+        right = float(col + 1)
+        # point coordinates
+        top_left = (top, left)
+        top_right = (top, right)
+        bottom_left = (bottom, left)
+        bottom_right = (bottom, right)
+        # paired points per edge
+        named_lookup = {'top': (top_left, top_right),
+                        'right': (top_right, bottom_right),
+                        'bottom': (bottom_right, bottom_left),
+                        'left': (bottom_left, top_left)}
+        edge_endpoints = {n_index: named_lookup[n_name] for n_index, n_name
+                          in self._edge_names.items()}
+        return edge_endpoints
+    # End implementation requirements
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
 class Hexagon(IndexedShapeBase):
@@ -464,7 +440,7 @@ class Edge(object):
         """
         # default if the sorting doesn't matter
         if requesting_shape_index is None:
-            # neighbor_1 is default unless it doesn't exist in the grid
+            # use neighbor_1 UNLESS it doesn't exist in the grid
             requesting_shape_index = self._neighbor_1_index
             requesting_shape = self._grid.get(requesting_shape_index)
             if requesting_shape is None:
@@ -476,10 +452,7 @@ class Edge(object):
         else:
             raise ValueError('The requesting shape is not one of the sharing'
                              ' neighbors of this edge.')
-        requesting_shape = self._grid.get(requesting_shape_index)
-        v1, v2 = (requesting_shape._edge_data[n_index]['this vertex'],
-                  requesting_shape._edge_data[n_index]['next vertex'])
-        return v1, v2
+        return self._grid.get(requesting_shape_index)._edge_endpoints[n_index]
 
 
 def sum_tuples(sequence_of_tuples):
@@ -489,17 +462,6 @@ def sum_tuples(sequence_of_tuples):
         a_sum += a
         b_sum += b
     return a_sum, b_sum
-
-
-def diff_tuples(positive, negative):
-    # not efficient but works
-    a = positive[0] - negative[0]
-    b = positive[1] - negative[1]
-    return a, b
-
-
-def scale_tuple(t, scale):
-    return scale * t[0], scale * t[1]
 
 
 if __name__ == '__main__':
