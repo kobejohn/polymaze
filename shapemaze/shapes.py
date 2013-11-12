@@ -167,58 +167,69 @@ class Square(IndexedShapeBase):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-class Hexagon(IndexedShapeBase):
-    # base calculations
-    side = 1.0
+def _hexagon_startup_data():
+    data = dict()
+    # super shape data
+    data['side'] = side = 1.0
     h = side * math.sin(math.pi / 3.0)
+    data['ss vertex offset per row'] = (2.0 * h, 0.0)
+    data['ss vertex offset per col'] = (-1.0 * h, 1.5 * side)
+    # component shape data
+    data['index offset to ss anchor shape'] = (0, 0)
+    # vertex calculations
+    # shared horizontal and vertical rails
+    top_rail = -1.0 * h
+    v_middle_rail = 0.0
+    bottom_rail = 1.0 * h
+    left_rail = 0.0
+    h_midleft_rail = 0.5 * side
+    h_midright_rail = 1.5 * side
+    right_rail = 2.0 * side
+    # point coordinates
+    left_pt = (v_middle_rail, left_rail)
+    top_left_pt = (top_rail, h_midleft_rail)
+    top_right_pt = (top_rail, h_midright_rail)
+    right_pt = (v_middle_rail, right_rail)
+    bottom_right_pt = (bottom_rail, h_midright_rail)
+    bottom_left_pt = (bottom_rail, h_midleft_rail)
+    data['base edge data'] = {(-1, 0): {'name': 'up',
+                                        'vertex in ss': top_left_pt},
+                              (0, 1): {'name': 'up right',
+                                       'vertex in ss': top_right_pt},
+                              (1, 1): {'name': 'down right',
+                                       'vertex in ss': right_pt},
+                              (1, 0): {'name': 'down',
+                                       'vertex in ss': bottom_right_pt},
+                              (0, -1): {'name': 'down left',
+                                        'vertex in ss': bottom_left_pt},
+                              (-1, -1): {'name': 'up left',
+                                         'vertex in ss': left_pt}}
+    data['clockwise edge names'] = ('up', 'up right', 'down right',
+                                    'down', 'down left', 'up left')
+    return data
 
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    # Begin Implementation requirements
-    def _identify_and_sort_neighbors(self):
-        """Implements base class requirements."""
-        row, col = self.index()
-        up, uright, dright, down, dleft, uleft = ((row - 1, col),
-                                                  (row, col + 1),
-                                                  (row + 1, col + 1),
-                                                  (row + 1, col),
-                                                  (row, col - 1),
-                                                  (row - 1, col - 1))
-        return ({up: 'up', uright: 'uright', dright: 'dright',
-                 down: 'down', dleft: 'dleft', uleft: 'uleft'},
-                (up, uright, dright, down, dleft, uleft))
 
-    def _calc_edge_endpoints(self):
-        """Implements base class requirements."""
-        row, col = self.index()
-        x_offset = col * 1.5 * self.side
-        y_offset = row * 2.0 * self.h - col * 1.0 * self.h
-        # shared side coordinates
-        top = -1.0 * self.h + y_offset
-        v_middle = 0.0 + y_offset
-        bottom = 1.0 * self.h + y_offset
-        left = 0.0 + x_offset
-        h_midleft = 0.5 * self.side + x_offset
-        h_midright = 1.5 * self.side + x_offset
-        right = 2.0 * self.side + x_offset
-        # point coordinates
-        left_pt = (v_middle, left)
-        top_left_pt = (top, h_midleft)
-        top_right_pt = (top, h_midright)
-        right_pt = (v_middle, right)
-        bottom_right_pt = (bottom, h_midright)
-        bottom_left_pt = (bottom, h_midleft)
-        # paired points per edge
-        named_lookup = {'uleft': (left_pt, top_left_pt),
-                        'up': (top_left_pt, top_right_pt),
-                        'uright': (top_right_pt, right_pt),
-                        'dright': (right_pt, bottom_right_pt),
-                        'down': (bottom_right_pt, bottom_left_pt),
-                        'dleft': (bottom_left_pt, left_pt)}
-        edge_endpoints = {n_index: named_lookup[n_name] for n_index, n_name
-                          in self._edge_names.items()}
-        return edge_endpoints
-    # End implementation requirements
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+class Hexagon(IndexedShapeBase):
+    __d = _hexagon_startup_data()  # avoid crowding the namespace
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    #          #          #          #          #          #          #
+    # Begin supershape implementation requirements
+    SIDE = 1.0
+    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
+    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
+    # End supershape implementation requirements
+    #          #          #          #          #          #          #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    #          #          #          #          #          #          #
+    # Begin component implementation requirements
+    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = __d['index offset to ss anchor shape']
+    _BASE_EDGE_DATA = __d['base edge data']
+    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names']
+    # End component implementation requirements
+    #          #          #          #          #          #          #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
 def UpDownTriangle_factory(grid, index):

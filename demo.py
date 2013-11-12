@@ -2,9 +2,9 @@
 from shapemaze import Maze, shapes
 
 # these are the various shapes that can be used to create a maze
-creators = {'Squares': shapes.Square}#,
+creators = {'Squares': shapes.Square,
+            'Hexagons': shapes.Hexagon}
             #'Up-Down Triangles': shapes.UpDownTriangle_factory,
-            #'Hexagons': shapes.Hexagon,
             #'OctaDiamonds': shapes.OctaDiamond_factory}
 
 for name, creator in creators.items():
