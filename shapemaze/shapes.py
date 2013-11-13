@@ -285,7 +285,7 @@ class _Hexagon_UpRight(IndexedShapeBase):
     _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names']
 
 
-ef __updowntriangle_startup_data():
+def __updowntriangle_startup_data():
     data = dict()
     # super shape data
     data['side'] = side = 1.0
