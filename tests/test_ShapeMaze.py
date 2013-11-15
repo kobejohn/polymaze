@@ -1,8 +1,7 @@
 import unittest
-import os
 
 from shapemaze import maze
-from shapemaze import shapes
+
 
 
 #noinspection PyProtectedMember

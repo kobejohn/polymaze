@@ -2,13 +2,15 @@ import unittest
 
 from shapemaze import shapes, shapegrid
 
+supershapes_dict = shapes.supershapes_dict()
+
 
 #noinspection PyProtectedMember
 class TestIndexedShapeImplementations(unittest.TestCase):
     """Run all implemented shapes through standard verification tests."""
     def setUp(self):
         self.shape_neighborhoods = [generic_supershape_neighborhood(ss)
-                                    for ss_name, ss in shapes.supershapes()]
+                                    for ss_name, ss in supershapes_dict.items()]
 
     def test_neighbors_have_each_others_indexes(self):
         for neighborhood in self.shape_neighborhoods:
@@ -102,7 +104,7 @@ class TestIndexedShapeBase(unittest.TestCase):
     def test_creation_does_not_take_ownership_of_claimed_edges(self):
         shape = generic_shape()
         # create a new neighbor which should only claim the new edges
-        a_neighbor_index, _ = tuple(shape.neighbors())[0]  # any edge
+        a_neighbor_index = shape._ordered_n_indexes[0]  # any edge
         neighbor = shape._grid.create(a_neighbor_index)
         # confirm that the original shape still owns the shared edge
         self.assertIn(a_neighbor_index, shape._owned_edges)

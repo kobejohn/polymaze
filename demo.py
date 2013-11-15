@@ -1,5 +1,5 @@
-"""Demonstrate how to use polymaze."""
-from shapemaze import Maze, shapes
+"""Demonstrate some ways to use polymaze."""
+import shapemaze as smz
 
 # these are the various shapes that can be used to create a maze
 for name, supershape in shapes.supershapes():

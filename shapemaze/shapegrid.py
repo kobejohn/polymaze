@@ -1,3 +1,10 @@
+import random
+
+import shapes as _shapes
+
+_supershapes_dict = _shapes.supershapes_dict()
+
+
 class ShapeGrid(object):
     """Sparse grid of shapes."""
     def __init__(self, shape_creator):

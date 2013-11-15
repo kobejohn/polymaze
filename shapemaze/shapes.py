@@ -1,15 +1,17 @@
 import math
 
 
-def supershapes():
-    """Generate all supershape classes in this module with their names."""
+def supershapes_dict():
+    """Return a dict of all supershapes in this module keyed by name."""
+    supershapes = dict()
     for name, obj in globals().items():
         ss_suffix = '_supershape'
         ss_suffix_start = -1 * len(ss_suffix)
         # only pass something that meets the suffix requirement and is callable
         if (name[ss_suffix_start:] == ss_suffix) and callable(obj):
             ss_name = name[:ss_suffix_start]
-            yield ss_name, obj
+            supershapes[ss_name] = obj
+    return supershapes
 
 
 def Square_supershape(grid, index):
@@ -150,8 +152,7 @@ class IndexedShapeBase(object):
         if neighbor:
             # neighbor stores the shared edge under this shape's index
             return neighbor._owned_edges[self.index()]
-        else:
-            pass  # this is an undefined case. basically runtime error
+        # if the code gets here, it's basically a runtime error
 
     def _grab_edges(self):
         """Return a dict of new edges for ONLY those that don't exist yet.
@@ -528,13 +529,6 @@ def sum_tuples(sequence_of_tuples):
         a_sum += a
         b_sum += b
     return a_sum, b_sum
-
-
-def diff_tuples(positive, negative):
-    # not efficient but works
-    a = positive[0] - negative[0]
-    b = positive[1] - negative[1]
-    return a, b
 
 
 def scale_tuple(t, scale):
