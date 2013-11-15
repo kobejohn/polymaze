@@ -10,7 +10,7 @@ def demo():
 
 def use_mazemakers():
     # use customizeable mazemakers for easy-to-make mazes with random shapes
-    for c, maze in smz.mazemakers.string_to_mazes('MAZE'):
+    for c, maze in smz.mazemakers.string_to_mazes('Maze'):
         image = maze.image()
         filename = 'Demo - easy {}.png'.format(c)
         image.save(filename, 'PNG', **image.info)
