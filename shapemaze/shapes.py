@@ -36,6 +36,15 @@ def UpDownTriangle_supershape(grid, index):
         return _UpDownTriangle_Up(grid, index)
 
 
+#def OctaDiamond_supershape(grid, index):
+#    row, col = index
+#    odd_col = col % 2
+#    if odd_col:
+#        return _OctaDiamond_Diamond(grid, index)
+#    else:
+#        return _OctaDiamond_Octagon(grid, index)
+
+
 class IndexedShapeBase(object):
     """A shape that fits by index into a grid of other shapes."""
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -350,14 +359,13 @@ class _UpDownTriangle_Down(IndexedShapeBase):
 
 
 
-#def OctaDiamond_supershape(grid, index):
-#    row, col = index
-#    odd = col % 2
-#    if odd:
-#        return _OctaDiamond_Diamond(grid, index)
-#    else:
-#        return _OctaDiamond_Octagon(grid, index)
-#
+
+
+
+
+
+
+
 #class _OctaDiamond_Base(IndexedShapeBase):
 #    # base values
 #    side = 1.0

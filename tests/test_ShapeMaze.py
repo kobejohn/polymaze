@@ -1,7 +1,33 @@
 import unittest
 
+from shapemaze import gridmakers, mazemakers
 from shapemaze import maze
 
+
+class Testmazemakers(unittest.TestCase):
+    def test_rectangle_maze_is_a_rectangle(self):
+        v_shapes_spec = 23
+        h_shapes_spec = 31
+        rect_maze = mazemakers.rectangle_maze(vertical_shapes=v_shapes_spec,
+                                              horizontal_shapes=h_shapes_spec)
+        grid = rect_maze._grid
+        all_indexes = (shape.index() for shape in grid.shapes())
+        all_indexes_spec = ((row, col)
+                            for row in range(v_shapes_spec)
+                            for col in range(h_shapes_spec))
+        self.assertItemsEqual(all_indexes, all_indexes_spec)
+
+    def test_string_to_mazes_generates_a_maze_for_non_whitespace_chars(self):
+        string_with_whitespace = 'A STRING WITH WHITESPACE'
+        non_ws_chars = tuple(c for s in string_with_whitespace.split()
+                             for c in s)
+        small_maze = 10
+        all_mazes = tuple(mazemakers.string_to_mazes(string_with_whitespace,
+                                                     max_vertical=small_maze,
+                                                     max_horizontal=small_maze))
+        maze_count = len(all_mazes)
+        maze_count_spec = len(non_ws_chars)
+        self.assertEqual(maze_count, maze_count_spec)
 
 
 #noinspection PyProtectedMember
@@ -40,25 +66,6 @@ class TestShapeMaze(unittest.TestCase):
         # confirm that the space is not pathable
         self.assertFalse(maze._is_pathable(space))
 
-    def test_image_returns_image_with_same_rect_ratio_as_map_space(self):
-        maze = generic_maze()
-        all_xy = list()
-        for edge in maze._grid.edges():
-            xy_1, xy_2 = edge.endpoints()
-            all_xy.append(xy_1)
-            all_xy.append(xy_2)
-        x_values, y_values = zip(*all_xy)
-        height_in_shape_edges = max(x_values) - min(x_values)
-        width_in_shape_edges = max(y_values) - min(y_values)
-        ratio_spec = float(height_in_shape_edges) / width_in_shape_edges
-        # get the image and size
-        some_width_limit, some_height_limit = 1000, 1000
-        image = maze.image(some_height_limit, some_width_limit)
-        image_width, image_height = image.size
-        ratio = float(image_height) / image_width
-        # confirm the image size and specified size match
-        self.assertAlmostEqual(ratio, ratio_spec, places=1)
-
     def test_image_is_bound_by_both_max_heigh_and_max_width(self):
         # create a maze
         maze = generic_maze()
@@ -79,8 +86,8 @@ class TestShapeMaze(unittest.TestCase):
 
 
 def generic_maze():
-    creator = shapes.Square
-    return maze.Maze(creator)
+    grid = gridmakers.rectangle(vertical_shapes=5, horizontal_shapes=5)
+    return maze.Maze(grid)
 
 
 if __name__ == '__main__':

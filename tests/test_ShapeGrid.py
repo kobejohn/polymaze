@@ -1,6 +1,33 @@
 import unittest
 
-from shapemaze import shapes, shapegrid
+from shapemaze import shapes, shapegrid, gridmakers
+
+
+class Testgridmakers(unittest.TestCase):
+    def test_rectangle_makes_a_grid_with_indexes_in_provided_dimensions(self):
+        v_shapes_spec = 23
+        h_shapes_spec = 31
+        rect_grid = gridmakers.rectangle(vertical_shapes=v_shapes_spec,
+                                         horizontal_shapes=h_shapes_spec)
+        all_indexes = (shape.index() for shape in rect_grid.shapes())
+        all_indexes_spec = ((row, col)
+                            for row in range(v_shapes_spec)
+                            for col in range(h_shapes_spec))
+        self.assertItemsEqual(all_indexes, all_indexes_spec)
+
+    def test_character_grid_indexes_are_bound_by_provided_bounds(self):
+        v_bound_spec = 23
+        h_bound_spec = 31
+        any_character = 'I'
+        rect_grid = gridmakers.character(any_character,
+                                         max_vertical_indexes=v_bound_spec,
+                                         max_horizontal_indexes=h_bound_spec)
+        all_indexes = (shape.index() for shape in rect_grid.shapes())
+        all_rows, all_cols = zip(*all_indexes)
+        row_range = max(all_rows) - min(all_rows) + 1
+        col_range = max(all_cols) - min(all_cols) + 1
+        self.assertLessEqual(row_range, v_bound_spec)
+        self.assertLessEqual(col_range, h_bound_spec)
 
 
 #noinspection PyProtectedMember

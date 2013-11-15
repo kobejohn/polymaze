@@ -111,6 +111,15 @@ class TestIndexedShapeBase(unittest.TestCase):
         # confirm that the neighbor does not own the shared edge
         self.assertNotIn(shape.index(), neighbor._owned_edges)
 
+    def test_grab_edges_does_not_include_edges_owned_by_self_or_neighbor(self):
+        main_shape = generic_shape()
+        # create a neighbor
+        n_index = main_shape._ordered_n_indexes[0]
+        neighbor = main_shape._grid.create(n_index)
+        # confirm that grab on either shape is empty
+        for shape in (main_shape, neighbor):
+            self.assertFalse(shape._grab_edges())
+
     def test_give_away_edges_moves_ownership_of_edges_to_neighbors(self):
         index_1 = (1, 2)
         index_2 = (1, 3)
@@ -153,24 +162,25 @@ class TestEdge(unittest.TestCase):
     def test_endpoints_returns_endpoints_from_indicated_shape(self):
         """Each shape may/will have a different order for the same endpoints."""
         # make a shape and any neighbor
-        shape_index = (1, 2)
-        shape = generic_shape(index=shape_index)
-        n_index = shape._ordered_n_indexes[0]
-        neighbor = shape._grid.create(n_index)
+        main_index = (1, 2)
+        main_shape = generic_shape(index=main_index)
+        n_index = main_shape._ordered_n_indexes[0]
+        neighbor = main_shape._grid.create(n_index)
         # get the shared edge
-        edge = shape.edge(n_index)
-        # get the endpoints from the edge
-        shape_end_1, shape_end_2 = edge.endpoints(shape_index)
-        n_end_1, n_end_2 = edge.endpoints(n_index)
-        # confirm the end points came from the indicated shape
-        shape_end_1_spec = shape._edge_data[n_index]['this vertex']
-        shape_end_2_spec = shape._edge_data[n_index]['next vertex']
-        n_end_1_spec = neighbor._edge_data[shape_index]['this vertex']
-        n_end_2_spec = neighbor._edge_data[shape_index]['next vertex']
-        self.assertIs(shape_end_1, shape_end_1_spec)
-        self.assertIs(shape_end_2, shape_end_2_spec)
-        self.assertIs(n_end_1, n_end_1_spec)
-        self.assertIs(n_end_2, n_end_2_spec)
+        edge = main_shape.edge(n_index)
+        for shape, other in ((main_shape, neighbor), (neighbor, main_shape)):
+            # get the endpoints from the specified shape
+            shape_end_1, shape_end_2 = edge.endpoints(shape.index())
+            n_end_1, n_end_2 = edge.endpoints(other.index())
+            # confirm the end points came from the indicated shape
+            shape_end_1_spec = shape._edge_data[other.index()]['this vertex']
+            shape_end_2_spec = shape._edge_data[other.index()]['next vertex']
+            n_end_1_spec = other._edge_data[shape.index()]['this vertex']
+            n_end_2_spec = other._edge_data[shape.index()]['next vertex']
+            self.assertIs(shape_end_1, shape_end_1_spec)
+            self.assertIs(shape_end_2, shape_end_2_spec)
+            self.assertIs(n_end_1, n_end_1_spec)
+            self.assertIs(n_end_2, n_end_2_spec)
 
     def test_endpoints_raises_valueerror_for_non_neighbor_index(self):
         # make a shape

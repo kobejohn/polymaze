@@ -7,8 +7,10 @@ _supershapes_dict = _shapes.supershapes_dict()
 
 class ShapeGrid(object):
     """Sparse grid of shapes."""
-    def __init__(self, shape_creator):
-        self._shape_creator = shape_creator
+    def __init__(self, supershape=None):
+        # provide defaults
+        supershape = supershape or random.choice(_supershapes_dict.values())
+        self._shape_creator = supershape
         self._shapes = dict()
 
     def create(self, index):

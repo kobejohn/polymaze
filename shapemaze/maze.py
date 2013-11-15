@@ -12,31 +12,9 @@ class Maze(object):
     WALL = 'wall'
     PATH = 'path'
 
-    def __init__(self, shape_creator, vertical_shapes=10, horizontal_shapes=15):
-        """Create a maze from a grid of shapes.
-
-        args:
-        shape_creator: callable that returns an IndexedShape
-        """
-        self._grid = shapegrid.ShapeGrid(shape_creator)
-        #todo: allow user-centric creation of the grid. this is debug
-        # create a debug grid
-        rows = vertical_shapes
-        cols = horizontal_shapes
-        for row in range(rows):
-            for col in range(cols):
-                index = (row, col)
-                self._grid.create(index)
-        # debug create random gaps in the grid
-        for i in range(int(round(0.05 * rows * cols))):
-            # delete some spaces to see if it still works well
-            index = random.randrange(rows), random.randrange(cols)
-            self._grid.remove(index)
-        # debug remove a corner from the grid
-        for row in range(int(round(0.3 * rows))):
-            for col in range(int(round(0.3 * cols))):
-                self._grid.remove((row, col))
-        # create maze and make entrance / exit available
+    def __init__(self, grid):
+        """Create a maze from a grid of shapes."""
+        self._grid = grid
         self._entrance_space, self._exit_space = self._mazify_grid()
 
     def entrance_space(self):
@@ -111,7 +89,7 @@ class Maze(object):
         # if it couldn't be disqualified, allow it
         return True
 
-    def image(self, max_height_px, max_width_px):
+    def image(self, max_height_px=1200, max_width_px=1200):
         """Return a PILLOW image representation of self.
 
         arguments: max_width/height_px bound the size of the returned image.
