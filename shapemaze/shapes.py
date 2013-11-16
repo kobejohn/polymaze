@@ -36,13 +36,13 @@ def UpDownTriangle_supershape(grid, index):
         return _UpDownTriangle_Up(grid, index)
 
 
-#def OctaDiamond_supershape(grid, index):
-#    row, col = index
-#    odd_col = col % 2
-#    if odd_col:
-#        return _OctaDiamond_Diamond(grid, index)
-#    else:
-#        return _OctaDiamond_Octagon(grid, index)
+def OctaDiamond_supershape(grid, index):
+    row, col = index
+    odd_col = col % 2
+    if odd_col:
+        return _OctaDiamond_Diamond(grid, index)
+    else:
+        return _OctaDiamond_Octagon(grid, index)
 
 
 class IndexedShapeBase(object):
@@ -358,142 +358,103 @@ class _UpDownTriangle_Down(IndexedShapeBase):
     _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names']['down']
 
 
+def __octadiamond_startup_data():
+    data = dict()
+    # super shape data
+    data['side'] = side = 1.0
+    h = side / math.sqrt(2.0)
+    data['ss vertex offset per row'] = (side + 2.0 * h, 0.0)
+    data['ss vertex offset per col'] = (0.0, 0.5 * (side + 2.0 * h))
+    # component shape data
+    data['index offset to ss anchor shape'] = {'octagon': (0, 0),
+                                               'diamond': (0, -1)}
+    # vertex calculations
+    # shared horizontal and vertical rails
+    oct_left_rail = -1.0 * (side + h)
+    oct_midleft_rail = -1.0 * side
+    oct_midright_rail = 0.0
+    oct_right_rail = h
+    #dmd_left_rail = oct_midright_rail  # never used. here for reference
+    dmd_h_mid_rail = oct_right_rail
+    dmd_right_rail = 2.0 * h
+    oct_top_rail = 0.0
+    oct_midtop_rail = h
+    oct_midbottom_rail = side + h
+    oct_bottom_rail = side + 2.0 * h
+    dmd_top_rail = -1.0 * h
+    dmd_v_mid_rail = oct_top_rail
+    #dmd_bottom_rail = oct_midtop_rail  # never used. here for reference
+    # points
+    # origin-based coordinates
+    # use a clock analogy to build octagon points
+    clk_1_pt = (oct_top_rail, oct_midright_rail)
+    clk_2_pt = (oct_midtop_rail, oct_right_rail)
+    clk_4_pt = (oct_midbottom_rail, oct_right_rail)
+    clk_5_pt = (oct_bottom_rail, oct_midright_rail)
+    clk_7_pt = (oct_bottom_rail, oct_midleft_rail)
+    clk_8_pt = (oct_midbottom_rail, oct_left_rail)
+    clk_10_pt = (oct_midtop_rail, oct_left_rail)
+    clk_11_pt = (oct_top_rail, oct_midleft_rail)
+    # use a diamong analogy for the rotated square
+    dmd_left_pt = clk_1_pt
+    dmd_top_pt = (dmd_top_rail, dmd_h_mid_rail)
+    dmd_right_pt = (dmd_v_mid_rail, dmd_right_rail)
+    dmd_bottom_pt = clk_2_pt
+    octagon_base_data = {(-1, 0): {'name': 'up',
+                                   'vertex in ss': clk_11_pt},
+                         (0, 1): {'name': 'uright',
+                                  'vertex in ss': clk_1_pt},
+                         (0, 2): {'name': 'right',
+                                  'vertex in ss': clk_2_pt},
+                         (1, 1): {'name': 'dright',
+                                  'vertex in ss': clk_4_pt},
+                         (1, 0): {'name': 'down',
+                                  'vertex in ss': clk_5_pt},
+                         (1, -1): {'name': 'dleft',
+                                   'vertex in ss': clk_7_pt},
+                         (0, -2): {'name': 'left',
+                                   'vertex in ss': clk_8_pt},
+                         (0, -1): {'name': 'uleft',
+                                   'vertex in ss': clk_10_pt}}
+    diamond_base_data = {(-1, -1): {'name': 'uleft',
+                                    'vertex in ss': dmd_left_pt},
+                         (-1, 1): {'name': 'uright',
+                                   'vertex in ss': dmd_top_pt},
+                         (0, 1): {'name': 'dright',
+                                  'vertex in ss': dmd_right_pt},
+                         (0, -1): {'name': 'dleft',
+                                   'vertex in ss': dmd_bottom_pt}}
+    data['base edge data'] = {'octagon': octagon_base_data,
+                              'diamond': diamond_base_data}
+    data['clockwise edge names'] = {'octagon': ('up', 'uright', 'right',
+                                                'dright', 'down', 'dleft',
+                                                'left', 'uleft'),
+                                    'diamond': ('uleft', 'uright',
+                                                'dright', 'dleft')}
+    return data
+_octadiamond_startup_data = __octadiamond_startup_data()
 
 
+class _OctaDiamond_Octagon(IndexedShapeBase):
+    __d = _octadiamond_startup_data  # avoid crowding the namespace
+    SIDE = __d['side']
+    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
+    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
+    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE =\
+        __d['index offset to ss anchor shape']['octagon']
+    _BASE_EDGE_DATA = __d['base edge data']['octagon']
+    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names']['octagon']
 
 
-
-
-
-
-#class _OctaDiamond_Base(IndexedShapeBase):
-#    # base values
-#    side = 1.0
-#    h = side / math.sqrt(2.0)
-#    # origin-based coordinates
-#    # vertical line reference values
-#    oct_left = -1.0 * (side + h)
-#    oct_midleft = -1.0 * side
-#    oct_midright = 0.0
-#    oct_right = h
-#    dmd_left = oct_midright
-#    dmd_h_mid = oct_right
-#    dmd_right = 2.0 * h
-#    # horiztonal line reference values
-#    oct_top = 0.0
-#    oct_midtop = h
-#    oct_midbottom = side + h
-#    oct_bottom = side + 2.0 * h
-#    dmd_top = -1.0 * h
-#    dmd_v_mid = oct_top
-#    dmd_bottom = oct_midtop
-#    # use a clock analogy to build octagon points
-#    clk_1_pt = (oct_top, oct_midright)
-#    clk_2_pt = (oct_midtop, oct_right)
-#    clk_4_pt = (oct_midbottom, oct_right)
-#    clk_5_pt = (oct_bottom, oct_midright)
-#    clk_7_pt = (oct_bottom, oct_midleft)
-#    clk_8_pt = (oct_midbottom, oct_left)
-#    clk_10_pt = (oct_midtop, oct_left)
-#    clk_11_pt = (oct_top, oct_midleft)
-#    # use a diamong analogy for the rotated square
-#    dmd_left_pt = clk_1_pt
-#    dmd_top_pt = (dmd_top, dmd_h_mid)
-#    dmd_right_pt = (dmd_v_mid, dmd_right)
-#    dmd_bottom_pt = clk_2_pt
-#
-#class _OctaDiamond_Octagon(_OctaDiamond_Base):
-#    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#    # Begin Implementation requirements
-#    def _identify_and_sort_neighbors(self):
-#        """Implements base class requirements."""
-#        row, col = self.index()
-#        up = (row - 1, col)  # octagon of super shape above
-#        uright = (row, col + 1)  # same super shape diamond
-#        right = (row, col + 2)  # octagon of supershape to the right
-#        dright = (row + 1, col + 1)  # diamond of supershape below
-#        down = (row + 1, col)  # octagon of supershape below
-#        dleft = (row + 1, col - 1)  # diamond of super shape below and left
-#        left = (row, col - 2)  # octagon of supershape to the left
-#        uleft = (row, col - 1)  # diamond of supershape to the left
-#        return ({up: 'up', uright: 'uright', right: 'right', dright: 'dright',
-#                 down: 'down', dleft: 'dleft', left: 'left', uleft: 'uleft'},
-#                (up, uright, right, dright, down, dleft, left, uleft))
-#
-#    def _calc_edge_endpoints(self):
-#        """Implements base class requirements."""
-#        row, col = self.index()
-#        # offset within the super shape
-#        ss_offset = (0.0, 0.0)
-#        # index-based offset
-#        index_offset = (row * (self.side + 2 * self.h),
-#                        (col // 2) * (self.side + 2 * self.h))
-#        # total offset
-#        offset = sum_tuples((ss_offset, index_offset))
-#        # final coordinates
-#        clk_1_pt = sum_tuples((self.clk_1_pt, offset))
-#        clk_2_pt = sum_tuples((self.clk_2_pt, offset))
-#        clk_4_pt = sum_tuples((self.clk_4_pt, offset))
-#        clk_5_pt = sum_tuples((self.clk_5_pt, offset))
-#        clk_7_pt = sum_tuples((self.clk_7_pt, offset))
-#        clk_8_pt = sum_tuples((self.clk_8_pt, offset))
-#        clk_10_pt = sum_tuples((self.clk_10_pt, offset))
-#        clk_11_pt = sum_tuples((self.clk_11_pt, offset))
-#        # paired points per edge
-#        named_lookup = {'up': (clk_11_pt, clk_1_pt),
-#                        'uright': (clk_1_pt, clk_2_pt),
-#                        'right': (clk_2_pt, clk_4_pt),
-#                        'dright': (clk_4_pt, clk_5_pt),
-#                        'down': (clk_5_pt, clk_7_pt),
-#                        'dleft': (clk_7_pt, clk_8_pt),
-#                        'left': (clk_8_pt, clk_10_pt),
-#                        'uleft': (clk_10_pt, clk_11_pt)}
-#        edge_endpoints = {n_index: named_lookup[n_name] for n_index, n_name
-#                          in self._edge_names.items()}
-#        return edge_endpoints
-#    # End implementation requirements
-#    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-#
-#class _OctaDiamond_Diamond(_OctaDiamond_Base):
-#    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#    # Begin Implementation requirements
-#    def _identify_and_sort_neighbors(self):
-#        """Implements base class requirements."""
-#        row, col = self.index()
-#        uleft = (row - 1, col - 1)  # octagon of supershape above
-#        uright = (row - 1, col + 1)  # octagon of supershape above and left
-#        dright = (row, col + 1)  # octagon of supershape left
-#        dleft = (row, col - 1)  # octagon of same supershape
-#        return ({uleft: 'uleft', uright: 'uright',
-#                 dright: 'dright', dleft: 'dleft'},
-#                (uleft, uright, dright, dleft))
-#
-#    def _calc_edge_endpoints(self):
-#        """Implements base class requirements."""
-#        row, col = self.index()
-#        # offset within the super shape
-#        ss_offset = (0.0, 0.0)
-#        # index-based offset
-#        index_offset = (row * (self.side + 2 * self.h),
-#                        (col // 2) * (self.side + 2 * self.h))
-#        # total offset
-#        offset = sum_tuples((ss_offset, index_offset))
-#        # final coordinates
-#        dmd_left_pt = sum_tuples((self.dmd_left_pt, offset))
-#        dmd_top_pt = sum_tuples((self.dmd_top_pt, offset))
-#        dmd_right_pt = sum_tuples((self.dmd_right_pt, offset))
-#        dmd_bottom_pt = sum_tuples((self.dmd_bottom_pt, offset))
-#        # paired points per edge
-#        named_lookup = {'uleft': (dmd_left_pt, dmd_top_pt),
-#                        'uright': (dmd_top_pt, dmd_right_pt),
-#                        'dright': (dmd_right_pt, dmd_bottom_pt),
-#                        'dleft': (dmd_bottom_pt, dmd_left_pt)}
-#        edge_endpoints = {n_index: named_lookup[n_name] for n_index, n_name
-#                          in self._edge_names.items()}
-#        return edge_endpoints
-#    # End implementation requirements
-#    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+class _OctaDiamond_Diamond(IndexedShapeBase):
+    __d = _octadiamond_startup_data  # avoid crowding the namespace
+    SIDE = __d['side']
+    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
+    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
+    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE =\
+        __d['index offset to ss anchor shape']['diamond']
+    _BASE_EDGE_DATA = __d['base edge data']['diamond']
+    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names']['diamond']
 
 
 class Edge(object):
