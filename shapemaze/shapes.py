@@ -277,21 +277,25 @@ _hexagon_startup_data = __hexagon_startup_data()
 
 class _Hexagon_DownLeft(IndexedShapeBase):
     __d = _hexagon_startup_data  # avoid crowding the namespace
+    __component_name = 'dleft'
     SIDE = __d['side']
     SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
     SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = __d['index offset to ss anchor shape']['dleft']
-    _BASE_EDGE_DATA = __d['base edge data']['dleft']
+    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
+        __d['index offset to ss anchor shape'][__component_name]
+    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
     _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names']
 
 
 class _Hexagon_UpRight(IndexedShapeBase):
     __d = _hexagon_startup_data  # avoid crowding the namespace
+    __component_name = 'uright'
     SIDE = __d['side']
     SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
     SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = __d['index offset to ss anchor shape']['uright']
-    _BASE_EDGE_DATA = __d['base edge data']['uright']
+    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
+        __d['index offset to ss anchor shape'][__component_name]
+    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
     _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names']
 
 
@@ -338,24 +342,26 @@ _updowntriangle_startup_data = __updowntriangle_startup_data()
 
 class _UpDownTriangle_Up(IndexedShapeBase):
     __d = _updowntriangle_startup_data  # avoid crowding the namespace
+    __component_name = 'up'
     SIDE = __d['side']
     SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
     SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
     INDEX_OFFSET_TO_SS_ANCHOR_SHAPE =\
-        __d['index offset to ss anchor shape']['up']
-    _BASE_EDGE_DATA = __d['base edge data']['up']
-    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names']['up']
+        __d['index offset to ss anchor shape'][__component_name]
+    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
+    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
 
 
 class _UpDownTriangle_Down(IndexedShapeBase):
     __d = _updowntriangle_startup_data  # avoid crowding the namespace
+    __component_name = 'down'
     SIDE = __d['side']
     SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
     SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
     INDEX_OFFSET_TO_SS_ANCHOR_SHAPE =\
-        __d['index offset to ss anchor shape']['down']
-    _BASE_EDGE_DATA = __d['base edge data']['down']
-    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names']['down']
+        __d['index offset to ss anchor shape'][__component_name]
+    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
+    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
 
 
 def __octadiamond_startup_data():
@@ -437,17 +443,27 @@ _octadiamond_startup_data = __octadiamond_startup_data()
 
 class _OctaDiamond_Octagon(IndexedShapeBase):
     __d = _octadiamond_startup_data  # avoid crowding the namespace
+    __component_name = 'octagon'
     SIDE = __d['side']
     SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
     SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
     INDEX_OFFSET_TO_SS_ANCHOR_SHAPE =\
-        __d['index offset to ss anchor shape']['octagon']
-    _BASE_EDGE_DATA = __d['base edge data']['octagon']
-    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names']['octagon']
+        __d['index offset to ss anchor shape'][__component_name]
+    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
+    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
 
 
 class _OctaDiamond_Diamond(IndexedShapeBase):
     __d = _octadiamond_startup_data  # avoid crowding the namespace
+    __component_name = 'diamond'
+    SIDE = __d['side']
+    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
+    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
+    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE =\
+        __d['index offset to ss anchor shape'][__component_name]
+    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
+    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
+
     SIDE = __d['side']
     SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
     SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
