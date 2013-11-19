@@ -8,8 +8,8 @@ class Testmazemakers(unittest.TestCase):
     def test_rectangle_maze_is_a_rectangle(self):
         v_shapes_spec = 23
         h_shapes_spec = 31
-        rect_maze = mazemakers.rectangle_maze(vertical_shapes=v_shapes_spec,
-                                              horizontal_shapes=h_shapes_spec)
+        rect_maze = mazemakers.rectangle(grid_v_bound=v_shapes_spec,
+                                         grid_h_bound=h_shapes_spec)
         grid = rect_maze._grid
         all_indexes = (shape.index() for shape in grid.shapes())
         all_indexes_spec = ((row, col)
@@ -22,9 +22,9 @@ class Testmazemakers(unittest.TestCase):
         non_ws_chars = tuple(c for s in string_with_whitespace.split()
                              for c in s)
         small_maze = 10
-        all_mazes = tuple(mazemakers.string_to_mazes(string_with_whitespace,
-                                                     max_vertical=small_maze,
-                                                     max_horizontal=small_maze))
+        all_mazes = tuple(mazemakers.string(string_with_whitespace,
+                                            grid_v_bound=small_maze,
+                                            grid_h_bound=small_maze))
         maze_count = len(all_mazes)
         maze_count_spec = len(non_ws_chars)
         self.assertEqual(maze_count, maze_count_spec)
