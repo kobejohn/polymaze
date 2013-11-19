@@ -14,9 +14,11 @@ _content_dir = os.path.join(_base_dir, 'resources')
 _supershapes_dict = _shapes.supershapes_dict()
 
 
-def rectangle(vertical_shapes=40, horizontal_shapes=80, supershape=None):
+def rectangle(vertical_shapes=None, horizontal_shapes=None, supershape=None):
     # provide defaults
     supershape = supershape or random.choice(_supershapes_dict.values())
+    vertical_shapes = vertical_shapes or 40
+    horizontal_shapes = horizontal_shapes or 80
     # create a grid
     grid = _shapegrid.ShapeGrid(supershape)
     for row in range(vertical_shapes):

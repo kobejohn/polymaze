@@ -89,11 +89,14 @@ class Maze(object):
         # if it couldn't be disqualified, allow it
         return True
 
-    def image(self, max_height_px=1200, max_width_px=1200):
+    def image(self, max_height_px=None, max_width_px=None):
         """Return a PILLOW image representation of self.
 
         arguments: max_width/height_px bound the size of the returned image.
         """
+        # provide defaults
+        max_height_px = max_height_px or 1200
+        max_width_px = max_width_px or 1200
         # calculate the size of the final image first in terms of shape points
         all_xy = list()
         for edge in self._grid.edges():
