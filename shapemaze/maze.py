@@ -4,8 +4,6 @@ import random
 import PIL.Image
 import PIL.ImageDraw
 
-import shapegrid
-
 
 class Maze(object):
     """Generate, manipulate and output a maze based on regular shapes."""
@@ -89,36 +87,42 @@ class Maze(object):
         # if it couldn't be disqualified, allow it
         return True
 
-    def image(self, max_height_px=None, max_width_px=None):
-        """Return a PILLOW image representation of self.
+    def image(self, image_w_limit=None, image_h_limit=None,
+              image_padding_in_edges=None):
+        """Return a PIL(LOW) image representation of self.
 
         arguments: max_width/height_px bound the size of the returned image.
         """
         # provide defaults
-        max_height_px = max_height_px or 1200
-        max_width_px = max_width_px or 1200
-        # calculate the size of the final image first in terms of shape points
-        all_xy = list()
+        image_padding_in_edges = image_padding_in_edges or 1.0
+        # first calculate the graph size of the final image
+        x_values, y_values = list(), list()
         for edge in self._grid.edges():
-            xy_1, xy_2 = edge.endpoints()
-            all_xy.append(xy_1)
-            all_xy.append(xy_2)
-        x_values, y_values = zip(*all_xy)
-        pad_edges = 1
-        height_in_shape_edges = max(x_values) - min(x_values) + 2 * pad_edges
-        width_in_shape_edges = max(y_values) - min(y_values) + 2 * pad_edges
-        # then convert shape sides to pixels based on limiting bound
-        edge_ratio = float(height_in_shape_edges) / width_in_shape_edges
-        bound_ratio = float(max_height_px) / max_width_px
-        if edge_ratio > bound_ratio:
-            # height is the limiting boundary
-            scale = float(max_height_px) / height_in_shape_edges
-        else:
-            # width is the limiting boundary (or both are equally limiting)
-            scale = float(max_width_px) / width_in_shape_edges
-        padding_px = int(round(scale * pad_edges))
-        size = (int(round(scale * width_in_shape_edges)),
-                int(round(scale * height_in_shape_edges)))
+            (y1, x1), (y2, x2) = edge.endpoints()
+            x_values.extend((x1, x2))
+            y_values.extend((y1, y2))
+        graph_height = max(y_values) - min(y_values) + 2*image_padding_in_edges
+        graph_width = max(x_values) - min(x_values) + 2*image_padding_in_edges
+        # handle graph --> image scaling reasonably
+        px_per_graph_unit = 15.0
+        scale = float(px_per_graph_unit)  # default scale for no limits
+        if image_h_limit and image_w_limit:
+            # scaling: both limits provided --> scale to the more limiting one
+            graph_relative_height = float(graph_height) / graph_width
+            relative_height_limit = float(image_h_limit) / image_w_limit
+            if graph_relative_height > relative_height_limit:
+                scale = float(image_h_limit) / graph_height  # height bound
+            else:
+                scale = float(image_w_limit) / graph_width  # width bound
+        elif image_h_limit or image_w_limit:
+            # scaling: one limit provided --> scale to the provided limit
+            if image_h_limit:
+                scale = float(image_h_limit) / graph_height  # height bound
+            else:
+                scale = float(image_w_limit) / graph_width  # width bound
+        # pad the image
+        size = (int(round(scale * graph_width)),
+                int(round(scale * graph_height)))
         # create the base image
         white = (255, 255, 255)
         black = (0, 0, 0)
@@ -127,42 +131,44 @@ class Maze(object):
         image = PIL.Image.new('RGBA', size)
         drawer = PIL.ImageDraw.Draw(image)
         # calculate total offset including padding and centering
-        vert_offset_in_edges = -1 * min(x_values)
-        horz_offset_in_edges = -1 * min(y_values)
-        vert_offset = padding_px + int(round(vert_offset_in_edges * scale))
-        horz_offset = padding_px + int(round(horz_offset_in_edges * scale))
+        vert_offset_in_edges = min(y_values)
+        horz_offset_in_edges = min(x_values)
+        vert_offset_px = int(round((image_padding_in_edges
+                                    - vert_offset_in_edges) * scale))
+        horz_offset_px = int(round((image_padding_in_edges
+                                    - horz_offset_in_edges) * scale))
         # mark all spaces white before drawing anything else
         for space in self._grid.shapes():
             space_polygon_points = list()
             for _, edge in space.edges():
                 (row_a, col_a), _ = edge.endpoints(space.index())
-                point_a = (int(round(col_a * scale)) + horz_offset,
-                           int(round(row_a * scale)) + vert_offset)
+                point_a = (int(round(col_a * scale)) + horz_offset_px,
+                           int(round(row_a * scale)) + vert_offset_px)
                 space_polygon_points.append(point_a)
             drawer.polygon(space_polygon_points, fill=white)
         # mark the entrance and exit before drawing walls
         entrance_polygon_points = list()
         for _, edge in self.entrance_space().edges():
             (row_a, col_a), _ = edge.endpoints(self.entrance_space().index())
-            point_a = (int(round(col_a * scale)) + horz_offset,
-                       int(round(row_a * scale)) + vert_offset)
+            point_a = (int(round(col_a * scale)) + horz_offset_px,
+                       int(round(row_a * scale)) + vert_offset_px)
             entrance_polygon_points.append(point_a)
         drawer.polygon(entrance_polygon_points, fill=light_red)
         exit_polygon_points = list()
         for _, edge in self.exit_space().edges():
             (row_a, col_a), _ = edge.endpoints(self.exit_space().index())
-            point_a = (int(round(col_a * scale)) + horz_offset,
-                       int(round(row_a * scale)) + vert_offset)
+            point_a = (int(round(col_a * scale)) + horz_offset_px,
+                       int(round(row_a * scale)) + vert_offset_px)
             exit_polygon_points.append(point_a)
         drawer.polygon(exit_polygon_points, fill=light_green)
         # draw each wall edge and don't draw each path edge
         for edge in self._grid.edges():
             if edge.status == self.WALL:
                 (row_a, col_a), (row_b, col_b) = edge.endpoints()
-                drawer.line(((int(round(scale * col_a)) + horz_offset,
-                              int(round(scale * row_a)) + vert_offset),
-                             (int(round(scale * col_b)) + horz_offset,
-                              int(round(scale * row_b)) + vert_offset)),
+                drawer.line(((int(round(scale * col_a)) + horz_offset_px,
+                              int(round(scale * row_a)) + vert_offset_px),
+                             (int(round(scale * col_b)) + horz_offset_px,
+                              int(round(scale * row_b)) + vert_offset_px)),
                             fill=black, width=2)
         return image
 

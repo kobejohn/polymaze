@@ -30,7 +30,7 @@ def commandline():
         except TypeError:
             pass
         full_name = '{} ({:03} of {:03}).png'.format(base_name, i+1, len(mazes))
-        image = maze.image(max_height_px=image_max_h, max_width_px=image_max_w)
+        image = maze.image(image_h_limit=image_max_h, image_w_limit=image_max_w)
         image.save(full_name, 'PNG', **image.info)
 
 
