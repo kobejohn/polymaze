@@ -38,10 +38,10 @@ class TestIndexedShapeImplementations(unittest.TestCase):
                     # confirm self vertexes match neighbor vertexes
                     # don't use .edge(index) which may use the data from the
                     # same object for both .edge() calls
-                    self_vertexes = [shape._edge_data[n_index]['this vertex'],
-                                     shape._edge_data[n_index]['next vertex']]
-                    n_vertexes = [neighbor._edge_data[s_index]['this vertex'],
-                                  neighbor._edge_data[s_index]['next vertex']]
+                    self_vertexes = [shape._edge_data[n_index]['anticlockwise_vertex'],
+                                     shape._edge_data[n_index]['clockwise_vertex']]
+                    n_vertexes = [neighbor._edge_data[s_index]['anticlockwise_vertex'],
+                                  neighbor._edge_data[s_index]['clockwise_vertex']]
                     # sort so we can use AlmostEqual
                     self_vertexes.sort()
                     n_vertexes.sort()
@@ -70,8 +70,8 @@ class TestIndexedShapeImplementations(unittest.TestCase):
                     edge_data = shape._edge_data[n_index]
                     next_data = shape._edge_data[next_n_index]
                     # confirm points are like this: a -- b/c -- d
-                    a, b = edge_data['this vertex'], edge_data['next vertex']
-                    c, d = next_data['this vertex'], next_data['next vertex']
+                    a, b = edge_data['anticlockwise_vertex'], edge_data['clockwise_vertex']
+                    c, d = next_data['anticlockwise_vertex'], next_data['clockwise_vertex']
                     # convert to imaginary numbers so assertion possible
                     a, b = complex(*a), complex(*b)
                     c, d = complex(*c), complex(*d)
@@ -82,12 +82,7 @@ class TestIndexedShapeImplementations(unittest.TestCase):
 
 
 #noinspection PyProtectedMember
-class TestIndexedShapeBase(unittest.TestCase):
-    def test_creating_raises_NotImplementedError(self):
-        dummy_args = (None, None)
-        self.assertRaises(NotImplementedError, shapes.IndexedShapeBase,
-                          *dummy_args)
-
+class TestComponentShape(unittest.TestCase):
     def test_index_returns_same_index_set_on_creation(self):
         index_spec = (10, 20)
         #noinspection PyTypeChecker
@@ -118,7 +113,7 @@ class TestIndexedShapeBase(unittest.TestCase):
         neighbor = main_shape._grid.create(n_index)
         # confirm that grab on either shape is empty
         for shape in (main_shape, neighbor):
-            self.assertFalse(shape._grab_edges())
+            self.assertFalse(shape._grab_edges(shape._owned_edges))
 
     def test_give_away_edges_moves_ownership_of_edges_to_neighbors(self):
         index_1 = (1, 2)
@@ -173,10 +168,10 @@ class TestEdge(unittest.TestCase):
             shape_end_1, shape_end_2 = edge.endpoints(shape.index())
             n_end_1, n_end_2 = edge.endpoints(other.index())
             # confirm the end points came from the indicated shape
-            shape_end_1_spec = shape._edge_data[other.index()]['this vertex']
-            shape_end_2_spec = shape._edge_data[other.index()]['next vertex']
-            n_end_1_spec = other._edge_data[shape.index()]['this vertex']
-            n_end_2_spec = other._edge_data[shape.index()]['next vertex']
+            shape_end_1_spec = shape._edge_data[other.index()]['anticlockwise_vertex']
+            shape_end_2_spec = shape._edge_data[other.index()]['clockwise_vertex']
+            n_end_1_spec = other._edge_data[shape.index()]['anticlockwise_vertex']
+            n_end_2_spec = other._edge_data[shape.index()]['clockwise_vertex']
             self.assertIs(shape_end_1, shape_end_1_spec)
             self.assertIs(shape_end_2, shape_end_2_spec)
             self.assertIs(n_end_1, n_end_1_spec)

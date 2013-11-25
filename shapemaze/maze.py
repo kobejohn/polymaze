@@ -6,7 +6,7 @@ import PIL.ImageDraw
 
 
 class Maze(object):
-    """Generate, manipulate and output a maze based on regular shapes."""
+    """A maze based on a shape pattern."""
     WALL = 'wall'
     PATH = 'path'
 
@@ -87,39 +87,37 @@ class Maze(object):
         # if it couldn't be disqualified, allow it
         return True
 
-    def image(self, image_w_limit=None, image_h_limit=None,
-              image_padding_in_edges=None):
+    def image(self, w_limit=None, h_limit=None):
         """Return a PIL(LOW) image representation of self.
 
         arguments: max_width/height_px bound the size of the returned image.
         """
-        # provide defaults
-        image_padding_in_edges = image_padding_in_edges or 1.0
         # first calculate the graph size of the final image
         x_values, y_values = list(), list()
         for edge in self._grid.edges():
             (y1, x1), (y2, x2) = edge.endpoints()
             x_values.extend((x1, x2))
             y_values.extend((y1, y2))
+        image_padding_in_edges = 1.0
         graph_height = max(y_values) - min(y_values) + 2*image_padding_in_edges
         graph_width = max(x_values) - min(x_values) + 2*image_padding_in_edges
         # handle graph --> image scaling reasonably
-        px_per_graph_unit = 15.0
+        px_per_graph_unit = 20.0
         scale = float(px_per_graph_unit)  # default scale for no limits
-        if image_h_limit and image_w_limit:
+        if h_limit and w_limit:
             # scaling: both limits provided --> scale to the more limiting one
             graph_relative_height = float(graph_height) / graph_width
-            relative_height_limit = float(image_h_limit) / image_w_limit
+            relative_height_limit = float(h_limit) / w_limit
             if graph_relative_height > relative_height_limit:
-                scale = float(image_h_limit) / graph_height  # height bound
+                scale = float(h_limit) / graph_height  # height bound
             else:
-                scale = float(image_w_limit) / graph_width  # width bound
-        elif image_h_limit or image_w_limit:
+                scale = float(w_limit) / graph_width  # width bound
+        elif h_limit or w_limit:
             # scaling: one limit provided --> scale to the provided limit
-            if image_h_limit:
-                scale = float(image_h_limit) / graph_height  # height bound
+            if h_limit:
+                scale = float(h_limit) / graph_height  # height bound
             else:
-                scale = float(image_w_limit) / graph_width  # width bound
+                scale = float(w_limit) / graph_width  # width bound
         # pad the image
         size = (int(round(scale * graph_width)),
                 int(round(scale * graph_height)))

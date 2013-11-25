@@ -10,12 +10,15 @@ class ShapeGrid(object):
     def __init__(self, supershape=None):
         # provide defaults
         supershape = supershape or random.choice(_supershapes_dict.values())
-        self._shape_creator = supershape
+        self._supershape = supershape
         self._shapes = dict()
+
+    def supershape(self):
+        return self._supershape
 
     def create(self, index):
         """Create (or replace) a shape at index."""
-        self._shapes[index] = new_shape = self._shape_creator(self, index)
+        self._shapes[index] = new_shape = self._supershape(self, index)
         return new_shape
 
     def remove(self, index):

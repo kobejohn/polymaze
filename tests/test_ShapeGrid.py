@@ -1,45 +1,110 @@
+import mock
 import unittest
 
-from shapemaze import shapes, shapegrid, gridmakers
+import PIL.Image
+
+from shapemaze import gridmakers as _gridmakers
+from shapemaze import shapes as _shapes
+from shapemaze import shapegrid as _shapegrid
 
 
 class Testgridmakers(unittest.TestCase):
-    def test_rectangle_makes_a_grid_with_indexes_in_provided_dimensions(self):
-        v_shapes_spec = 23
-        h_shapes_spec = 31
-        rect_grid = gridmakers.rectangle(vertical_shapes=v_shapes_spec,
-                                         horizontal_shapes=h_shapes_spec)
-        all_indexes = (shape.index() for shape in rect_grid.shapes())
-        all_indexes_spec = ((row, col)
-                            for row in range(v_shapes_spec)
-                            for col in range(h_shapes_spec))
-        self.assertItemsEqual(all_indexes, all_indexes_spec)
-
-    def test_character_grid_indexes_are_bound_by_provided_bounds(self):
-        v_bound_spec = 23
-        h_bound_spec = 31
-        any_character = 'I'
-        rect_grid = gridmakers.character(any_character,
-                                         max_vertical_indexes=v_bound_spec,
-                                         max_horizontal_indexes=h_bound_spec)
-        all_indexes = (shape.index() for shape in rect_grid.shapes())
+    def test_rectangle_produces_a_rectangular_grid(self):
+        grid = _gridmakers.rectangle()
+        # get the bounds to be checked
+        all_indexes = [s.index() for s in grid.shapes()]
         all_rows, all_cols = zip(*all_indexes)
-        row_range = max(all_rows) - min(all_rows) + 1
-        col_range = max(all_cols) - min(all_cols) + 1
-        self.assertLessEqual(row_range, v_bound_spec)
-        self.assertLessEqual(col_range, h_bound_spec)
+        row_min, row_max = min(all_rows), max(all_rows)
+        col_min, col_max = min(all_cols), max(all_cols)
+        # confirm that the shape count is exactly the index area of rectangle
+        shape_count_spec = (row_max - row_min + 1) * (col_max - col_min + 1)
+        shape_count = len(all_indexes)
+        self.assertEqual(shape_count, shape_count_spec)
+        # confirm that every index exists
+        for row in range(row_min, row_max + 1):
+            for col in range(col_min, col_max + 1):
+                self.assertIsNotNone(grid.get((row, col)))
+
+    def test_character_gets_a_char_image_for_provided_char(self):
+        character_spec = 'C'
+        with mock.patch('shapemaze.gridmakers._character_image') as m_c_image:
+            try:
+                _gridmakers.character(character_spec)
+            except Exception:
+                pass  # ignore fallout....
+            self.assertIsNone(m_c_image.assert_called_with(character_spec))
+
+    def test_character_calcs_grid_bounds_with_aspect_if_provided(self):
+        any_char = 'c'
+        aspect_h_spec = 3
+        aspect_w_spec = 5
+        with mock.patch('shapemaze.gridmakers._calc_index_bounds') as m_bounds:
+            try:
+                _gridmakers.character(any_char, aspect_h=aspect_h_spec,
+                                      aspect_w=aspect_w_spec)
+            except Exception:
+                pass  # ignore fallout.... haven't considered the risks
+            call_kwargs = m_bounds.call_args[1]
+            self.assertIn(('aspect_h', aspect_h_spec), call_kwargs.items())
+            self.assertIn(('aspect_w', aspect_w_spec), call_kwargs.items())
+
+    def test_character_calcs_grid_bounds_with_image_if_aspct_not_provided(self):
+        any_char = 'c'
+        image_w_spec, image_h_spec = 113, 237
+        with mock.patch('shapemaze.gridmakers._calc_index_bounds') as m_bounds:
+            with mock.patch('shapemaze.gridmakers._character_image') as m_c_im:
+                m_c_im.return_value.size = (image_w_spec, image_h_spec)
+                try:
+                    _gridmakers.character(any_char)
+                except Exception:
+                    pass  # ignore fallout.... haven't considered the risks
+                call_kwargs = m_bounds.call_args[1]
+                self.assertIn(('aspect_h', image_h_spec), call_kwargs.items())
+                self.assertIn(('aspect_w', image_w_spec), call_kwargs.items())
+
+    def test_character_converts_image_to_shapes(self):
+        character_spec = 'C'
+        with mock.patch('shapemaze.gridmakers._image_white_to_shapes') as m_i2s:
+            try:
+                _gridmakers.character(character_spec)
+            except Exception:
+                pass  # ignore fallout....
+            self.assertEqual(m_i2s.call_count, 1)
+
+    def test_image_white_to_shapes_returns_grid_with_max_provided_size(self):
+        rows_spec, cols_spec = 20, 30
+        _image_size = 200, 300  # not part of spec
+        _white_im = PIL.Image.new('L', _image_size, color=255)
+        grid = _shapegrid.ShapeGrid()
+        grid = _gridmakers._image_white_to_shapes(_white_im, grid,
+                                                  rows_spec, cols_spec)
+        # confirm that the shape count is exactly the index area of rectangle
+        shape_count_spec = rows_spec * cols_spec
+        all_indexes = [s.index() for s in grid.shapes()]
+        shape_count = len(all_indexes)
+        self.assertEqual(shape_count, shape_count_spec)
+        # confirm that every index exists
+        for row in range(rows_spec):
+            for col in range(cols_spec):
+                self.assertIsNotNone(grid.get((row, col)))
+
+    def test_image_white_to_shapes_converts_multi_channels_to_mono(self):
+        _some_dim = 20  # not part of spec
+        not_mono = 'RGB'
+        mono = 'L'
+        grid = _shapegrid.ShapeGrid()
+        m_image = mock.MagicMock()
+        m_image.getbands.return_value = not_mono
+        try:
+            _gridmakers._image_white_to_shapes(m_image, grid,
+                                               _some_dim, _some_dim)
+        except Exception:
+            pass
+        m_image.assert_has_calls(mock.call.convert(mono))
 
 
 #noinspection PyProtectedMember
 class TestShapeGrid(unittest.TestCase):
-    def test_create_shape_uses_the_creator_stored_at_creation(self):
-        creator = shapes.Square
-        grid = generic_grid(creator=creator)
-        some_index = (1, 2)
-        shape = grid.create(some_index)
-        # this is not true for super shapes. need a mock check to be complete
-        self.assertIsInstance(shape, creator)
-
     def test_get_returns_shape_created_with_same_index(self):
         grid = generic_grid()
         some_index = (1, 2)
@@ -54,9 +119,9 @@ class TestShapeGrid(unittest.TestCase):
 
     def test_shapes_generates_each_shape_exactly_once(self):
         # make a grid with a center square and a neighbor on each side
-        known_creator = shapes.Square  # 4 sides
+        known_creator = _shapes.Square  # 4 sides
         some_index = (1, 2)
-        grid = generic_grid(creator=known_creator,
+        grid = generic_grid(supershape=known_creator,
                             neighborhood_center_index=some_index)
         all_shapes_spec = grid._shapes.values()
         # confirm expected number of shapes (center + 4 neighbors)
@@ -67,9 +132,9 @@ class TestShapeGrid(unittest.TestCase):
 
     def test_edges_generates_each_edge_exactly_once(self):
         # make a grid with a center square and a neighbor on each side
-        known_creator = shapes.Square  # 4 sides
+        known_creator = _shapes.Square  # 4 sides
         some_index = (1, 2)
-        grid = generic_grid(creator=known_creator,
+        grid = generic_grid(supershape=known_creator,
                             neighborhood_center_index=some_index)
         edges_spec = list()
         for shape in grid.shapes():
@@ -86,9 +151,9 @@ class TestShapeGrid(unittest.TestCase):
 
     def test_border_shapes_generates_all_shapes_with_any_empty_neighbors(self):
         # make a grid with a center square and a neighbor on each side
-        known_creator = shapes.Square
+        known_creator = _shapes.Square
         center_index = (1, 1)
-        grid = generic_grid(creator=known_creator,
+        grid = generic_grid(supershape=known_creator,
                             neighborhood_center_index=center_index)
         # confirm that exactly each neighbor is a border (has empty neighbors)
         tblr_indexes = (0, 1), (2, 1), (1, 0), (1, 2)
@@ -161,10 +226,10 @@ class TestShapeGrid(unittest.TestCase):
 
 
 #noinspection PyProtectedMember
-def generic_grid(creator=None, neighborhood_center_index=None):
+def generic_grid(supershape=None, neighborhood_center_index=None):
     # provide defaults
-    creator = creator or shapes.Square
-    grid = shapegrid.ShapeGrid(creator)
+    creator = supershape or _shapes.Square
+    grid = _shapegrid.ShapeGrid(creator)
     if neighborhood_center_index:
         # create a neighborhood based on whatever creator is being used
         # the neighborhood is defined as a central shape with a neighbor
