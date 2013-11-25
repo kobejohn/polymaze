@@ -10,7 +10,7 @@ import shapegrid as _shapegrid
 
 _BASE_DIR = os.path.dirname(__file__)
 _RESOURCE_DIR = os.path.join(_BASE_DIR, 'resources')
-_EDGES_PER_COMPLEXITY = 7000.0  # arbitrary tweakable number
+_EDGES_PER_COMPLEXITY = 7000.0  # yields easy mazes at complexity 1
 
 
 def rectangle(supershape=None, complexity=None, aspect_h=None, aspect_w=None):
