@@ -9,7 +9,7 @@ import shapegrid as _shapegrid
 
 
 _BASE_DIR = os.path.dirname(__file__)
-_CONTENT_DIR = os.path.join(_BASE_DIR, 'resources')
+_RESOURCE_DIR = os.path.join(_BASE_DIR, 'resources')
 _EDGES_PER_COMPLEXITY = 7000.0  # arbitrary tweakable number
 
 
@@ -49,16 +49,19 @@ def _character_image(c):
     image = PIL.Image.new('L', (300, 300), color=black)
     # draw the text
     draw = PIL.ImageDraw.Draw(image)
-    try:
-        font = PIL.ImageFont.truetype('impact.ttf', 200)  # has upper/lower case
-    except IOError:
+    # choose a font
+    override_font = os.path.join(_RESOURCE_DIR, 'font')  # custom font
+    base_font = 'impact.ttf'  # common font with a high surface area
+    font_priority = (override_font, base_font)
+    for font_path in font_priority:
+        try:
+            font = PIL.ImageFont.truetype(font_path, 200)
+            break  # break when a font works
+        except IOError:
+            pass
+    else:
         font = None
-    if font is None:
-        # font by WLM Fonts
-        # http://www.fontspace.com/wlm-fonts/wlm-carton
-        font_path = os.path.join(os.path.dirname(__file__),
-                                 'resources', 'wlm_carton.ttf')
-        font = PIL.ImageFont.truetype(font_path, 400)  # has only upper case
+        print 'Unable to find standard or custom font. Using default.'
     draw.text((10, 10), c, fill=white, font=font)
     # isolate the text and return it
     c_box = image.getbbox()

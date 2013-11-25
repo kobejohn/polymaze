@@ -1,3 +1,4 @@
+# coding=utf-8
 """Demonstrate some ways to use polymaze."""
 import shapemaze as smz
 
@@ -10,9 +11,10 @@ def demo():
 
 def use_mazemakers():
     # use customizeable mazemakers for easy-to-make mazes with random shapes
-    s = 'Shapes?'
+    # put a custom font at resources/font
+    s = u'Shapes?'
     for i, (c, maze) in enumerate(smz.mazemakers.string(s, complexity=2)):
-        filename = 'Demo_{:02} ({}).png'.format(i, c if c.isalnum() else '-')
+        filename = u'Demo_{:02} ({}).png'.format(i, c if c.isalnum() else u'-')
         maze.image().save(filename)
         print c,
 
