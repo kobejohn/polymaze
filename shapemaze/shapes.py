@@ -378,6 +378,95 @@ class Triangle(_SuperShape):
         return origin_row, origin_col
 
 
+class OctaDiamond(_SuperShape):
+    """Octagons and diamonds living together. Oh my!"""
+    @classmethod
+    def _make_specification(cls):
+        """Return a dict that describes this supershape."""
+        side = 1.0
+        h = side / math.sqrt(2.0)
+        # component shape data
+        # vertex calculations
+        # shared horizontal and vertical rails
+        oct_left_rail = -1.0 * (side + h)
+        oct_midleft_rail = -1.0 * side
+        oct_midright_rail = 0.0
+        oct_right_rail = h
+        #dmd_left_rail = oct_midright_rail  # never used. here for reference
+        dmd_h_mid_rail = oct_right_rail
+        dmd_right_rail = 2.0 * h
+        oct_top_rail = 0.0
+        oct_midtop_rail = h
+        oct_midbottom_rail = side + h
+        oct_bottom_rail = side + 2.0 * h
+        dmd_top_rail = -1.0 * h
+        dmd_v_mid_rail = oct_top_rail
+        #dmd_bottom_rail = oct_midtop_rail  # never used. here for reference
+        # points
+        # origin-based coordinates
+        # use a clock analogy to build octagon points
+        clk_1_pt = (oct_top_rail, oct_midright_rail)
+        clk_2_pt = (oct_midtop_rail, oct_right_rail)
+        clk_4_pt = (oct_midbottom_rail, oct_right_rail)
+        clk_5_pt = (oct_bottom_rail, oct_midright_rail)
+        clk_7_pt = (oct_bottom_rail, oct_midleft_rail)
+        clk_8_pt = (oct_midbottom_rail, oct_left_rail)
+        clk_10_pt = (oct_midtop_rail, oct_left_rail)
+        clk_11_pt = (oct_top_rail, oct_midleft_rail)
+        # use a diamong analogy for the rotated square
+        dmd_left_pt = clk_1_pt
+        dmd_top_pt = (dmd_top_rail, dmd_h_mid_rail)
+        dmd_right_pt = (dmd_v_mid_rail, dmd_right_rail)
+        dmd_bottom_pt = clk_2_pt
+        # build components separately to avoid long lines
+        c = {(0, 0): {'name': 'octagon',
+                      'clockwise_edge_names': ('left', 'top left', 'top',
+                                               'top right', 'right',
+                                               'bottom right', 'bottom',
+                                               'bottom left'),
+                      'edges': {(0, -2): {'name': 'left',
+                                          'counter_vertex': clk_8_pt},
+                                (0, -1): {'name': 'top left',
+                                          'counter_vertex': clk_10_pt},
+                                (-1, 0): {'name': 'top',
+                                          'counter_vertex': clk_11_pt},
+                                (0, 1): {'name': 'top right',
+                                         'counter_vertex': clk_1_pt},
+                                (0, 2): {'name': 'right',
+                                         'counter_vertex': clk_2_pt},
+                                (1, 1): {'name': 'bottom right',
+                                         'counter_vertex': clk_4_pt},
+                                (1, 0): {'name': 'bottom',
+                                         'counter_vertex': clk_5_pt},
+                                (1, -1): {'name': 'bottom left',
+                                          'counter_vertex': clk_7_pt}}},
+             (0, 1): {'name': 'diamond',
+                      'clockwise_edge_names': ('top left', 'top right',
+                                               'bottom right', 'bottom left'),
+                      'edges': {(-1, 0): {'name': 'top left',
+                                          'counter_vertex': dmd_left_pt},
+                                (-1, 2): {'name': 'top right',
+                                          'counter_vertex': dmd_top_pt},
+                                (0, 2): {'name': 'bottom right',
+                                         'counter_vertex': dmd_right_pt},
+                                (0, 0): {'name': 'bottom left',
+                                         'counter_vertex': dmd_bottom_pt}}}}
+        d = {'reference_length': side,
+             'graph_offset_per_row': (side + 2.0 * h, 0.0),
+             'graph_offset_per_col': (0.0, 0.5 * (side + 2.0 * h)),
+             'components': c}
+        return d
+
+    @classmethod
+    def origin_index(cls, index):
+        """Return the equivalent index when the supershape is at the origin."""
+        row, col = index
+        # Octadiamond is a simple horizontal 2 shapes so only need to check col
+        origin_row = 0
+        origin_col = col % 2
+        return origin_row, origin_col
+
+
 class Polycat(_SuperShape):
     """Multi-shape tessellation with tiling chosen to look like a cat face."""
     @classmethod
