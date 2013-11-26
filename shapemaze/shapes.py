@@ -304,551 +304,251 @@ class Hexagon(_SuperShape):
         return origin_row, origin_col
 
 
+class Triangle(_SuperShape):
+    """A horizontal arrangement of triangles pointing up / down."""
+    @classmethod
+    def _make_specification(cls):
+        """Return a dict that describes this supershape."""
+        side = 1.0
+        h = side * math.sin(math.pi / 3.0)
+        # vertex calculations
+        # shared horizontal and vertical rails
+        top_rail = 0.0
+        v_mid_rail = h
+        bottom_rail = 2.0 * h
+        left_rail = -0.5 * side
+        midleft_rail = 0.0
+        midright_rail = 0.5 * side
+        right_rail = side
+        # points
+        left_pt = (v_mid_rail, left_rail)
+        topleft_pt = (top_rail, midleft_rail)
+        mid_pt = (v_mid_rail, midright_rail)
+        topright_pt = (top_rail, right_rail)
+        bottomleft_pt = (bottom_rail, midleft_rail)
+        bottomright_pt = (bottom_rail, right_rail)
+        # build components separately to avoid long lines
+        c = {(0, 0): {'name': 'tl_up',
+                      'clockwise_edge_names': ('left', 'right', 'bottom'),
+                      'edges': {(0, -1): {'name': 'left',
+                                          'counter_vertex': left_pt},
+                                (0, 1): {'name': 'right',
+                                         'counter_vertex': topleft_pt},
+                                (1, 0): {'name': 'bottom',
+                                         'counter_vertex': mid_pt}}},
+             (1, 1): {'name': 'br_up',
+                      'clockwise_edge_names': ('left', 'right', 'bottom'),
+                      'edges': {(1, 0): {'name': 'left',
+                                         'counter_vertex': bottomleft_pt},
+                                (1, 2): {'name': 'right',
+                                         'counter_vertex': mid_pt},
+                                (2, 1): {'name': 'bottom',
+                                         'counter_vertex': bottomright_pt}}},
+             (0, 1): {'name': 'tr_down',
+                      'clockwise_edge_names': ('left', 'top', 'right'),
+                      'edges': {(0, 0): {'name': 'left',
+                                         'counter_vertex': mid_pt},
+                                (-1, 1): {'name': 'top',
+                                          'counter_vertex': topleft_pt},
+                                (0, 2): {'name': 'right',
+                                         'counter_vertex': topright_pt}}},
+             (1, 0): {'name': 'bl_down',
+                      'clockwise_edge_names': ('left', 'top', 'right'),
+                      'edges': {(1, -1): {'name': 'left',
+                                          'counter_vertex': bottomleft_pt},
+                                (0, 0): {'name': 'top',
+                                         'counter_vertex': left_pt},
+                                (1, 1): {'name': 'right',
+                                         'counter_vertex': mid_pt}}}}
+        # make the data dict
+        d = {'reference_length': side,
+             'graph_offset_per_row': (h, 0.0),
+             'graph_offset_per_col': (0.0, 0.5 * side),
+             'components': c}
+        return d
 
-#def UpDownTriangle_supershape(grid, index):
-#    """Provides up or down triangle class."""
-#    odd = sum(index) % 2
-#    if odd:
-#        return _UpDownTriangle_Down(grid, index)
-#    else:
-#        return _UpDownTriangle_Up(grid, index)
-#
-#
-#def OctaDiamond_supershape(grid, index):
-#    row, col = index
-#    odd_col = col % 2
-#    if odd_col:
-#        return _OctaDiamond_Diamond(grid, index)
-#    else:
-#        return _OctaDiamond_Octagon(grid, index)
-#
-#
-#def Polycat_supershape(grid, index):
-#    row, col = index
-#    # offset the index back to the supershape at the origin index
-#    origin_based_index = (row % 2, col % 6)
-#    component_lookup = {(0, 0): _Polycat_LU_Whiskers,
-#                        (1, 0): _Polycat_LD_Whiskers,
-#                        (0, 1): _Polycat_L_Eye,
-#                        (1, 1): _Polycat_LD_Square,
-#                        (0, 2): _Polycat_L_Ear,
-#                        (1, 2): _Polycat_L_Nose,
-#                        (0, 3): _Polycat_Forehead,
-#                        (1, 3): _Polycat_Chin,
-#                        (0, 4): _Polycat_R_Ear,
-#                        (1, 4): _Polycat_R_Nose,
-#                        (0, 5): _Polycat_R_Eye,
-#                        (1, 5): _Polycat_RD_Square}
-#    return component_lookup[origin_based_index](grid, index)
-#
-#
-#
-#
-#class _Hexagon_DownLeft(IndexedShapeBase):
-#    __d = _hexagon_startup_data  # avoid crowding the namespace
-#    __component_name = 'dleft'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names']
-#
-#
-#class _Hexagon_UpRight(IndexedShapeBase):
-#    __d = _hexagon_startup_data  # avoid crowding the namespace
-#    __component_name = 'uright'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names']
-#
-#
-#def __updowntriangle_startup_data():
-#    data = dict()
-#    # super shape data
-#    data['side'] = side = 1.0
-#    h = side * math.sin(math.pi / 3.0)
-#    data['ss vertex offset per row'] = (h, 0.0)
-#    data['ss vertex offset per col'] = (0.0, 0.5 * side)
-#    # component shape data
-#    data['index offset to ss anchor shape'] = {'up': (0, 0),
-#                                               'down': (0, -1)}
-#    # vertex calculations
-#    # shared horizontal and vertical rails
-#    top_rail = 0.0
-#    bottom_rail = h
-#    left_rail = -0.5 * side
-#    midleft_rail = 0.0
-#    midright_rail = 0.5 * side
-#    right_rail = side
-#    # points
-#    left_pt = (bottom_rail, left_rail)
-#    midleft_pt = (top_rail, midleft_rail)
-#    midright_pt = (bottom_rail, midright_rail)
-#    right_pt = (top_rail, right_rail)
-#    data['base edge data'] = {'up': {(0, -1): {'name': 'left',
-#                                               'vertex in ss': left_pt},
-#                                     (0, 1): {'name': 'right',
-#                                              'vertex in ss': midleft_pt},
-#                                     (1, 0): {'name': 'down',
-#                                              'vertex in ss': midright_pt}},
-#                              'down': {(0, -1): {'name': 'left',
-#                                                 'vertex in ss': midright_pt},
-#                                       (-1, 0): {'name': 'up',
-#                                                 'vertex in ss': midleft_pt},
-#                                       (0, 1): {'name': 'right',
-#                                                'vertex in ss': right_pt}}}
-#    data['clockwise edge names'] = {'up': ('left', 'right', 'down'),
-#                                    'down': ('left', 'up', 'right')}
-#    return data
-#_updowntriangle_startup_data = __updowntriangle_startup_data()
-#
-#
-#class _UpDownTriangle_Up(IndexedShapeBase):
-#    __d = _updowntriangle_startup_data  # avoid crowding the namespace
-#    __component_name = 'up'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE =\
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _UpDownTriangle_Down(IndexedShapeBase):
-#    __d = _updowntriangle_startup_data  # avoid crowding the namespace
-#    __component_name = 'down'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE =\
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#def __octadiamond_startup_data():
-#    data = dict()
-#    # super shape data
-#    data['side'] = side = 1.0
-#    h = side / math.sqrt(2.0)
-#    data['ss vertex offset per row'] = (side + 2.0 * h, 0.0)
-#    data['ss vertex offset per col'] = (0.0, 0.5 * (side + 2.0 * h))
-#    # component shape data
-#    data['index offset to ss anchor shape'] = {'octagon': (0, 0),
-#                                               'diamond': (0, -1)}
-#    # vertex calculations
-#    # shared horizontal and vertical rails
-#    oct_left_rail = -1.0 * (side + h)
-#    oct_midleft_rail = -1.0 * side
-#    oct_midright_rail = 0.0
-#    oct_right_rail = h
-#    #dmd_left_rail = oct_midright_rail  # never used. here for reference
-#    dmd_h_mid_rail = oct_right_rail
-#    dmd_right_rail = 2.0 * h
-#    oct_top_rail = 0.0
-#    oct_midtop_rail = h
-#    oct_midbottom_rail = side + h
-#    oct_bottom_rail = side + 2.0 * h
-#    dmd_top_rail = -1.0 * h
-#    dmd_v_mid_rail = oct_top_rail
-#    #dmd_bottom_rail = oct_midtop_rail  # never used. here for reference
-#    # points
-#    # origin-based coordinates
-#    # use a clock analogy to build octagon points
-#    clk_1_pt = (oct_top_rail, oct_midright_rail)
-#    clk_2_pt = (oct_midtop_rail, oct_right_rail)
-#    clk_4_pt = (oct_midbottom_rail, oct_right_rail)
-#    clk_5_pt = (oct_bottom_rail, oct_midright_rail)
-#    clk_7_pt = (oct_bottom_rail, oct_midleft_rail)
-#    clk_8_pt = (oct_midbottom_rail, oct_left_rail)
-#    clk_10_pt = (oct_midtop_rail, oct_left_rail)
-#    clk_11_pt = (oct_top_rail, oct_midleft_rail)
-#    # use a diamong analogy for the rotated square
-#    dmd_left_pt = clk_1_pt
-#    dmd_top_pt = (dmd_top_rail, dmd_h_mid_rail)
-#    dmd_right_pt = (dmd_v_mid_rail, dmd_right_rail)
-#    dmd_bottom_pt = clk_2_pt
-#    octagon_base_data = {(-1, 0): {'name': 'up',
-#                                   'vertex in ss': clk_11_pt},
-#                         (0, 1): {'name': 'uright',
-#                                  'vertex in ss': clk_1_pt},
-#                         (0, 2): {'name': 'right',
-#                                  'vertex in ss': clk_2_pt},
-#                         (1, 1): {'name': 'dright',
-#                                  'vertex in ss': clk_4_pt},
-#                         (1, 0): {'name': 'down',
-#                                  'vertex in ss': clk_5_pt},
-#                         (1, -1): {'name': 'dleft',
-#                                   'vertex in ss': clk_7_pt},
-#                         (0, -2): {'name': 'left',
-#                                   'vertex in ss': clk_8_pt},
-#                         (0, -1): {'name': 'uleft',
-#                                   'vertex in ss': clk_10_pt}}
-#    diamond_base_data = {(-1, -1): {'name': 'uleft',
-#                                    'vertex in ss': dmd_left_pt},
-#                         (-1, 1): {'name': 'uright',
-#                                   'vertex in ss': dmd_top_pt},
-#                         (0, 1): {'name': 'dright',
-#                                  'vertex in ss': dmd_right_pt},
-#                         (0, -1): {'name': 'dleft',
-#                                   'vertex in ss': dmd_bottom_pt}}
-#    data['base edge data'] = {'octagon': octagon_base_data,
-#                              'diamond': diamond_base_data}
-#    data['clockwise edge names'] = {'octagon': ('up', 'uright', 'right',
-#                                                'dright', 'down', 'dleft',
-#                                                'left', 'uleft'),
-#                                    'diamond': ('uleft', 'uright',
-#                                                'dright', 'dleft')}
-#    return data
-#_octadiamond_startup_data = __octadiamond_startup_data()
-#
-#
-#class _OctaDiamond_Octagon(IndexedShapeBase):
-#    __d = _octadiamond_startup_data  # avoid crowding the namespace
-#    __component_name = 'octagon'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE =\
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _OctaDiamond_Diamond(IndexedShapeBase):
-#    __d = _octadiamond_startup_data  # avoid crowding the namespace
-#    __component_name = 'diamond'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE =\
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#def __polycat_startup_data():
-#    data = dict()
-#    # super shape data
-#    data['side'] = side = 1.0
-#    h = side * math.sin(math.pi / 3.0)
-#    d_s_partial2 = side * (1.0 - math.tan(math.pi / 6.0))
-#    d_corner_h = d_s_partial2 * math.cos(math.pi / 6.0)
-#    d_corner_v = d_s_partial2 * math.sin(math.pi / 6.0)
-#    d_i_partialv = side / math.sin(math.pi / 3.0)
-#    # component shape data
-#    data['index offset to ss anchor shape'] = {'l ear': (0, -2),
-#                                               'r ear': (0, -4),
-#                                               'forehead': (0, -3),
-#                                               'l eye': (0, -1),
-#                                               'r eye': (0, -5),
-#                                               'lu whiskers': (0, 0),
-#                                               'ld whiskers': (-1, 0),
-#                                               'l nose': (-1, -2),
-#                                               'r nose': (-1, -4),
-#                                               'ld square': (-1, -1),
-#                                               'rd square': (-1, -5),
-#                                               'chin': (-1, -3)}
-#    # vertex calculations
-#    # shared vertical rails
-#    l_dmd_left_rail = 0.0
-#    l_dmd_mid_rail = 0.5 * side
-#    m_dmd_left_rail = side
-#    m_dmd_mleft_rail = side + d_corner_h
-#    m_dmd_mid_rail = side + h
-#    m_dmd_mright_rail = side + 2.0 * h - d_corner_h
-#    m_dmd_right_rail = side + 2.0 * h
-#    r_dmd_mid_rail = 1.5 * side + 2.0 * h
-#    # shared horizontal rails
-#    v_mid_rail = 0.0
-#    l_dmd_top_rail = -1.0 * h
-#    l_dmd_bottom_rail = -1.0 * l_dmd_top_rail
-#    m_dmd_top_rail = -0.5 * side
-#    m_dmd_bottom_rail = -1.0 * m_dmd_top_rail
-#    ear_v_mid_rail = -1.0 * (d_i_partialv + d_corner_v)
-#    top_rail = -1.0 * (h + side)
-#    bottom_rail = -1.0 * ear_v_mid_rail
-#    # supershape origin offset per index
-#    data['ss vertex offset per row'] = (bottom_rail, 0.0)
-#    data['ss vertex offset per col'] = (0.0, (side + 2.0 * h) / 6.0)
-#    # points
-#    l_dmd_left_pt = (v_mid_rail, l_dmd_left_rail)
-#    l_dmd_top_pt = (l_dmd_top_rail, l_dmd_mid_rail)
-#    l_dmd_bottom_pt = (l_dmd_bottom_rail, l_dmd_mid_rail)
-#    l_ear_right_pt = (ear_v_mid_rail, m_dmd_mleft_rail)
-#    l_ear_top_pt = (top_rail, l_dmd_mid_rail)
-#    r_ear_left_pt = (ear_v_mid_rail, m_dmd_mright_rail)
-#    r_ear_top_pt = (top_rail, r_dmd_mid_rail)
-#    m_dmd_left_pt = (v_mid_rail, m_dmd_left_rail)
-#    m_dmd_top_pt = (m_dmd_top_rail, m_dmd_mid_rail)
-#    m_dmd_right_pt = (v_mid_rail, m_dmd_right_rail)
-#    m_dmd_bottom_pt = (m_dmd_bottom_rail, m_dmd_mid_rail)
-#    chin_left_pt = (bottom_rail, m_dmd_mleft_rail)
-#    chin_right_pt = (bottom_rail, m_dmd_mright_rail)
-#    r_dmd_top_pt = (l_dmd_top_rail, r_dmd_mid_rail)
-#    r_dmd_bottom_pt = (l_dmd_bottom_rail, r_dmd_mid_rail)
-#    # origin-based coordinates
-#    l_ear_base_data = {(0, -4): {'name': 'left',
-#                                 'vertex in ss': l_dmd_top_pt},
-#                       (-1, -1): {'name': 'right',
-#                                  'vertex in ss': l_ear_top_pt},
-#                       (0, -1): {'name': 'bottom',
-#                                 'vertex in ss': l_ear_right_pt}}
-#    r_ear_base_data = {(-1, 1): {'name': 'left',
-#                                 'vertex in ss': r_ear_left_pt},
-#                       (0, 4): {'name': 'right',
-#                                'vertex in ss': r_ear_top_pt},
-#                       (0, 1): {'name': 'bottom',
-#                                'vertex in ss': r_dmd_top_pt}}
-#    forehead_base_data = {(0, -2): {'name': 'left',
-#                                    'vertex in ss': m_dmd_top_pt},
-#                          (-1, 0): {'name': 'top',
-#                                    'vertex in ss': l_ear_right_pt},
-#                          (0, 2): {'name': 'right',
-#                                   'vertex in ss': r_ear_left_pt}}
-#    l_eye_base_data = {(0, 1): {'name': 'uleft',
-#                                'vertex in ss': l_dmd_top_pt},
-#                       (0, 2): {'name': 'uright',
-#                                'vertex in ss': l_ear_right_pt},
-#                       (1, 1): {'name': 'dright',
-#                                'vertex in ss': m_dmd_top_pt},
-#                       (0, -1): {'name': 'dleft',
-#                                 'vertex in ss': m_dmd_left_pt}}
-#    r_eye_base_data = {(0, -2): {'name': 'uleft',
-#                                 'vertex in ss': m_dmd_top_pt},
-#                       (0, -1): {'name': 'uright',
-#                                 'vertex in ss': r_ear_left_pt},
-#                       (0, 1): {'name': 'dright',
-#                                'vertex in ss': r_dmd_top_pt},
-#                       (1, -1): {'name': 'dleft',
-#                                 'vertex in ss': m_dmd_right_pt}}
-#    lu_whiskers_base_data = {(0, -1): {'name': 'left',
-#                                       'vertex in ss': l_dmd_left_pt},
-#                             (0, 1): {'name': 'right',
-#                                      'vertex in ss': l_dmd_top_pt},
-#                             (1, 0): {'name': 'bottom',
-#                                      'vertex in ss': m_dmd_left_pt}}
-#    ld_whiskers_base_data = {(0, -1): {'name': 'left',
-#                                       'vertex in ss': l_dmd_bottom_pt},
-#                             (-1, 0): {'name': 'top',
-#                                       'vertex in ss': l_dmd_left_pt},
-#                             (0, 1): {'name': 'right',
-#                                      'vertex in ss': m_dmd_left_pt}}
-#    l_nose_base_data = {(0, -1): {'name': 'bottom',
-#                                  'vertex in ss': m_dmd_bottom_pt},
-#                        (-1, -1): {'name': 'top',
-#                                   'vertex in ss': m_dmd_left_pt},
-#                        (0, 2): {'name': 'right',
-#                                 'vertex in ss': m_dmd_top_pt}}
-#    r_nose_base_data = {(0, -2): {'name': 'left',
-#                                  'vertex in ss': m_dmd_bottom_pt},
-#                        (-1, 1): {'name': 'top',
-#                                  'vertex in ss': m_dmd_top_pt},
-#                        (0, 1): {'name': 'bottom',
-#                                 'vertex in ss': m_dmd_right_pt}}
-#    ld_square_base_data = {(0, -1): {'name': 'uleft',
-#                                     'vertex in ss': l_dmd_bottom_pt},
-#                           (0, 1): {'name': 'uright',
-#                                    'vertex in ss': m_dmd_left_pt},
-#                           (0, 2): {'name': 'dright',
-#                                    'vertex in ss': m_dmd_bottom_pt},
-#                           (1, 1): {'name': 'dleft',
-#                                    'vertex in ss': chin_left_pt}}
-#    rd_square_base_data = {(0, -1): {'name': 'uleft',
-#                                     'vertex in ss': m_dmd_bottom_pt},
-#                           (0, 1): {'name': 'uright',
-#                                    'vertex in ss': m_dmd_right_pt},
-#                           (1, -1): {'name': 'dright',
-#                                     'vertex in ss': r_dmd_bottom_pt},
-#                           (0, -2): {'name': 'dleft',
-#                                     'vertex in ss': chin_right_pt}}
-#    chin_base_data = {(0, -2): {'name': 'left',
-#                                'vertex in ss': chin_left_pt},
-#                      (0, 2): {'name': 'right',
-#                               'vertex in ss': m_dmd_bottom_pt},
-#                      (1, 0): {'name': 'bottom',
-#                               'vertex in ss': chin_right_pt}}
-#    data['base edge data'] = {'l ear': l_ear_base_data,
-#                              'r ear': r_ear_base_data,
-#                              'forehead': forehead_base_data,
-#                              'l eye': l_eye_base_data,
-#                              'r eye': r_eye_base_data,
-#                              'lu whiskers': lu_whiskers_base_data,
-#                              'ld whiskers': ld_whiskers_base_data,
-#                              'l nose': l_nose_base_data,
-#                              'r nose': r_nose_base_data,
-#                              'ld square': ld_square_base_data,
-#                              'rd square': rd_square_base_data,
-#                              'chin': chin_base_data}
-#    data['clockwise edge names'] = {'l ear': ('left', 'right', 'bottom'),
-#                                    'r ear': ('left', 'right', 'bottom'),
-#                                    'forehead': ('left', 'top', 'right'),
-#                                    'l eye': ('uleft', 'uright', 'dright',
-#                                              'dleft'),
-#                                    'r eye': ('uleft', 'uright', 'dright',
-#                                              'dleft'),
-#                                    'lu whiskers': ('left', 'right', 'bottom'),
-#                                    'ld whiskers': ('left', 'top', 'right'),
-#                                    'l nose': ('bottom', 'top', 'right'),
-#                                    'r nose': ('left', 'top', 'bottom'),
-#                                    'ld square': ('uleft', 'uright', 'dright',
-#                                                  'dleft'),
-#                                    'rd square': ('uleft', 'uright', 'dright',
-#                                                  'dleft'),
-#                                    'chin': ('left', 'right', 'bottom')}
-#    return data
-#_polycat_startup_data = __polycat_startup_data()
-#
-#
-#class _Polycat_L_Ear(IndexedShapeBase):
-#    __d = _polycat_startup_data  # avoid crowding the namespace
-#    __component_name = 'l ear'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE =\
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _Polycat_R_Ear(IndexedShapeBase):
-#    __d = _polycat_startup_data  # avoid crowding the namespace
-#    __component_name = 'r ear'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _Polycat_Forehead(IndexedShapeBase):
-#    __d = _polycat_startup_data  # avoid crowding the namespace
-#    __component_name = 'forehead'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _Polycat_L_Eye(IndexedShapeBase):
-#    __d = _polycat_startup_data  # avoid crowding the namespace
-#    __component_name = 'l eye'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _Polycat_R_Eye(IndexedShapeBase):
-#    __d = _polycat_startup_data  # avoid crowding the namespace
-#    __component_name = 'r eye'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _Polycat_LU_Whiskers(IndexedShapeBase):
-#    __d = _polycat_startup_data  # avoid crowding the namespace
-#    __component_name = 'lu whiskers'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _Polycat_LD_Whiskers(IndexedShapeBase):
-#    __d = _polycat_startup_data  # avoid crowding the namespace
-#    __component_name = 'ld whiskers'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _Polycat_L_Nose(IndexedShapeBase):
-#    __d = _polycat_startup_data  # avoid crowding the namespace
-#    __component_name = 'l nose'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _Polycat_R_Nose(IndexedShapeBase):
-#    __d = _polycat_startup_data  # avoid crowding the namespace
-#    __component_name = 'r nose'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _Polycat_LD_Square(IndexedShapeBase):
-#    __d = _polycat_startup_data  # avoid crowding the namespace
-#    __component_name = 'ld square'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _Polycat_RD_Square(IndexedShapeBase):
-#    __d = _polycat_startup_data  # avoid crowding the namespace
-#    __component_name = 'rd square'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
-#
-#
-#class _Polycat_Chin(IndexedShapeBase):
-#    __d = _polycat_startup_data  # avoid crowding the namespace
-#    __component_name = 'chin'
-#    SIDE = __d['side']
-#    SS_VERTEX_OFFSET_PER_ROW = __d['ss vertex offset per row']
-#    SS_VERTEX_OFFSET_PER_COL = __d['ss vertex offset per col']
-#    INDEX_OFFSET_TO_SS_ANCHOR_SHAPE = \
-#        __d['index offset to ss anchor shape'][__component_name]
-#    _BASE_EDGE_DATA = __d['base edge data'][__component_name]
-#    _CLOCKWISE_EDGE_NAMES = __d['clockwise edge names'][__component_name]
+    @classmethod
+    def origin_index(cls, index):
+        """Return the equivalent index when the supershape is at the origin."""
+        row, col = index
+        # triangles have a 4-shape square arrangement so both row and col
+        # must be considered
+        origin_row = row % 2
+        origin_col = col % 2
+        return origin_row, origin_col
+
+
+class Polycat(_SuperShape):
+    """Multi-shape tessellation with tiling chosen to look like a cat face."""
+    @classmethod
+    def _make_specification(cls):
+        """Return a dict that describes this supershape."""
+        side = 1.0
+        h = side * math.sin(math.pi / 3.0)
+        d_s_partial2 = side * (1.0 - math.tan(math.pi / 6.0))
+        d_corner_h = d_s_partial2 * math.cos(math.pi / 6.0)
+        d_corner_v = d_s_partial2 * math.sin(math.pi / 6.0)
+        d_i_partialv = side / math.sin(math.pi / 3.0)
+        # component shape data
+        # vertex calculations
+        # shared vertical rails
+        l_dmd_left_rail = 0.0
+        l_dmd_mid_rail = 0.5 * side
+        m_dmd_left_rail = side
+        m_dmd_mleft_rail = side + d_corner_h
+        m_dmd_mid_rail = side + h
+        m_dmd_mright_rail = side + 2.0 * h - d_corner_h
+        m_dmd_right_rail = side + 2.0 * h
+        r_dmd_mid_rail = 1.5 * side + 2.0 * h
+        # shared horizontal rails
+        v_mid_rail = 0.0
+        l_dmd_top_rail = -1.0 * h
+        l_dmd_bottom_rail = -1.0 * l_dmd_top_rail
+        m_dmd_top_rail = -0.5 * side
+        m_dmd_bottom_rail = -1.0 * m_dmd_top_rail
+        ear_v_mid_rail = -1.0 * (d_i_partialv + d_corner_v)
+        top_rail = -1.0 * (h + side)
+        bottom_rail = -1.0 * ear_v_mid_rail
+        # points
+        l_dmd_left_pt = (v_mid_rail, l_dmd_left_rail)
+        l_dmd_top_pt = (l_dmd_top_rail, l_dmd_mid_rail)
+        l_dmd_bottom_pt = (l_dmd_bottom_rail, l_dmd_mid_rail)
+        l_ear_right_pt = (ear_v_mid_rail, m_dmd_mleft_rail)
+        l_ear_top_pt = (top_rail, l_dmd_mid_rail)
+        r_ear_left_pt = (ear_v_mid_rail, m_dmd_mright_rail)
+        r_ear_top_pt = (top_rail, r_dmd_mid_rail)
+        m_dmd_left_pt = (v_mid_rail, m_dmd_left_rail)
+        m_dmd_top_pt = (m_dmd_top_rail, m_dmd_mid_rail)
+        m_dmd_right_pt = (v_mid_rail, m_dmd_right_rail)
+        m_dmd_bottom_pt = (m_dmd_bottom_rail, m_dmd_mid_rail)
+        chin_left_pt = (bottom_rail, m_dmd_mleft_rail)
+        chin_right_pt = (bottom_rail, m_dmd_mright_rail)
+        r_dmd_top_pt = (l_dmd_top_rail, r_dmd_mid_rail)
+        r_dmd_bottom_pt = (l_dmd_bottom_rail, r_dmd_mid_rail)
+        # build components separately to avoid long lines
+        c = {(0, 2): {'name': 'left ear',
+                      'clockwise_edge_names': ('left', 'right', 'bottom'),
+                      'edges': {(0, -2): {'name': 'left',
+                                          'counter_vertex': l_dmd_top_pt},
+                                (-1, 1): {'name': 'right',
+                                          'counter_vertex': l_ear_top_pt},
+                                (0, 1): {'name': 'bottom',
+                                         'counter_vertex': l_ear_right_pt}}},
+             (0, 4): {'name': 'right ear',
+                      'clockwise_edge_names': ('left', 'right', 'bottom'),
+                      'edges': {(-1, 5): {'name': 'left',
+                                          'counter_vertex': r_ear_left_pt},
+                                (0, 8): {'name': 'right',
+                                         'counter_vertex': r_ear_top_pt},
+                                (0, 5): {'name': 'bottom',
+                                         'counter_vertex': r_dmd_top_pt}}},
+             (0, 3): {'name': 'forehead',
+                      'clockwise_edge_names': ('left', 'top', 'right'),
+                      'edges': {(0, 1): {'name': 'left',
+                                         'counter_vertex': m_dmd_top_pt},
+                                (-1, 3): {'name': 'top',
+                                          'counter_vertex': l_ear_right_pt},
+                                (0, 5): {'name': 'right',
+                                         'counter_vertex': r_ear_left_pt}}},
+             (0, 1): {'name': 'left eye',
+                      'clockwise_edge_names': ('top left', 'top right',
+                                               'bottom right', 'bottom left'),
+                      'edges': {(0, 2): {'name': 'top left',
+                                         'counter_vertex': l_dmd_top_pt},
+                                (0, 3): {'name': 'top right',
+                                         'counter_vertex': l_ear_right_pt},
+                                (1, 2): {'name': 'bottom right',
+                                         'counter_vertex': m_dmd_top_pt},
+                                (0, 0): {'name': 'bottom left',
+                                         'counter_vertex': m_dmd_left_pt}}},
+             (0, 5): {'name': 'right eye',
+                      'clockwise_edge_names': ('top left', 'top right',
+                                               'bottom right', 'bottom left'),
+                      'edges': {(0, 3): {'name': 'top left',
+                                         'counter_vertex': m_dmd_top_pt},
+                                (0, 4): {'name': 'top right',
+                                         'counter_vertex': r_ear_left_pt},
+                                (0, 6): {'name': 'bottom right',
+                                         'counter_vertex': r_dmd_top_pt},
+                                (1, 4): {'name': 'bottom left',
+                                         'counter_vertex': m_dmd_right_pt}}},
+             (0, 0): {'name': 'leftup whiskers',
+                      'clockwise_edge_names': ('left', 'right', 'bottom'),
+                      'edges': {(0, -1): {'name': 'left',
+                                          'counter_vertex': l_dmd_left_pt},
+                                (0, 1): {'name': 'right',
+                                         'counter_vertex': l_dmd_top_pt},
+                                (1, 0): {'name': 'bottom',
+                                         'counter_vertex': m_dmd_left_pt}}},
+             (1, 0): {'name': 'leftdown whiskers',
+                      'clockwise_edge_names': ('left', 'top', 'right'),
+                      'edges': {(1, -1): {'name': 'left',
+                                          'counter_vertex': l_dmd_bottom_pt},
+                                (0, 0): {'name': 'top',
+                                         'counter_vertex': l_dmd_left_pt},
+                                (1, 1): {'name': 'right',
+                                         'counter_vertex': m_dmd_left_pt}}},
+             (1, 2): {'name': 'left nose',
+                      'clockwise_edge_names': ('bottom', 'top', 'right'),
+                      'edges': {(1, 1): {'name': 'bottom',
+                                         'counter_vertex': m_dmd_bottom_pt},
+                                (0, 1): {'name': 'top',
+                                         'counter_vertex': m_dmd_left_pt},
+                                (1, 4): {'name': 'right',
+                                         'counter_vertex': m_dmd_top_pt}}},
+             (1, 4): {'name': 'right nose',
+                      'clockwise_edge_names': ('left', 'top', 'bottom'),
+                      'edges': {(1, 2): {'name': 'left',
+                                         'counter_vertex': m_dmd_bottom_pt},
+                                (0, 5): {'name': 'top',
+                                         'counter_vertex': m_dmd_top_pt},
+                                (1, 5): {'name': 'bottom',
+                                         'counter_vertex': m_dmd_right_pt}}},
+             (1, 1): {'name': 'left cheek',
+                      'clockwise_edge_names': ('top left', 'top right',
+                                               'bottom right', 'bottom left'),
+                      'edges': {(1, 0): {'name': 'top left',
+                                         'counter_vertex': l_dmd_bottom_pt},
+                                (1, 2): {'name': 'top right',
+                                         'counter_vertex': m_dmd_left_pt},
+                                (1, 3): {'name': 'bottom right',
+                                         'counter_vertex': m_dmd_bottom_pt},
+                                (2, 2): {'name': 'bottom left',
+                                         'counter_vertex': chin_left_pt}}},
+             (1, 5): {'name': 'right cheek',
+                      'clockwise_edge_names': ('top left', 'top right',
+                                               'bottom right', 'bottom left'),
+                      'edges': {(1, 4): {'name': 'top left',
+                                         'counter_vertex': m_dmd_bottom_pt},
+                                (1, 6): {'name': 'top right',
+                                         'counter_vertex': m_dmd_right_pt},
+                                (2, 4): {'name': 'bottom right',
+                                         'counter_vertex': r_dmd_bottom_pt},
+                                (1, 3): {'name': 'bottom left',
+                                         'counter_vertex': chin_right_pt}}},
+             (1, 3): {'name': 'chin',
+                      'clockwise_edge_names': ('left', 'right', 'bottom'),
+                      'edges': {(1, 1): {'name': 'left',
+                                         'counter_vertex': chin_left_pt},
+                                (1, 5): {'name': 'right',
+                                         'counter_vertex': m_dmd_bottom_pt},
+                                (2, 3): {'name': 'bottom',
+                                         'counter_vertex': chin_right_pt}}}}
+        # make the data dict
+        d = {'reference_length': side,
+             'graph_offset_per_row': (bottom_rail, 0.0),
+             'graph_offset_per_col': (0.0, (side + 2.0 * h) / 6.0),
+             'components': c}
+        return d
+
+    @classmethod
+    def origin_index(cls, index):
+        """Return the equivalent index when the supershape is at the origin."""
+        row, col = index
+        # Polycat is a 2-row, 6-column shape so both row and column are needed
+        origin_row = row % 2
+        origin_col = col % 6
+        return origin_row, origin_col
 
 
 class Edge(object):
