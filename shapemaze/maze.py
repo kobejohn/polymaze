@@ -11,26 +11,42 @@ class Maze(object):
     PATH = 'path'
     PX_PER_GRAPH_UNIT = 40.0  # tweakable. higher makes higher resolution images
 
-
     def __init__(self, grid):
         """Create a maze from a grid of shapes."""
         self._grid = grid
-        self._entrance_space, self._exit_space = self._mazify_grid()
+        self._entrance_exit_pairs = tuple(self._mazify_grid())
 
-    def entrance_space(self):
-        return self._entrance_space
-
-    def exit_space(self):
-        return self._exit_space
+    def entrance_exit_pairs(self):
+        return self._entrance_exit_pairs
 
     def _mazify_grid(self):
-        """Return entrance and exit spaces after mazifying the internal grid."""
+        """Mazify and generate in/out pairs for each connected set of shapes."""
         # Set the edges of all spaces to wall status
         for edge in self._grid.edges():
             setattr(edge, 'status', self.WALL)
-        # make an entrance on a border (exit also looks for a border space)
-        border_spaces = tuple(self._grid.border_shapes())
-        entrance_space = random.choice(border_spaces)
+        # get a list of all border shapes which is useful in several places
+        border_spaces = deque(self._grid.border_shapes())
+        random.shuffle(border_spaces)  # randomize to remove patterns
+        # Loop to ensure that a maze is created for each area of
+        # connected shapes (except single shapes which occur on borders often).
+        while border_spaces:
+            border_space = border_spaces.pop()
+            if all(neighbor is None for n_index, neighbor
+                   in border_space.neighbors()):
+                # eliminate isolated single shapes
+                self._grid.remove(border_space.index())
+                continue
+            elif any(edge.status == self.PATH for n_index, edge
+                     in border_space.edges()):
+                # this space has already been pathed as part of a maze so ignore
+                continue
+            else:
+                pass  # couldn't eliminate this border so need to make a maze
+            entrance_exit = self._mazify_connected_shapes(border_space,
+                                                          border_spaces)
+            yield entrance_exit
+
+    def _mazify_connected_shapes(self, entrance_space, border_spaces):
         # break down one border wall to make the entrance
         for n_index, neighbor in entrance_space.neighbors():
             if neighbor is None:
@@ -148,21 +164,22 @@ class Maze(object):
                            int(round(row_a * scale)) + vert_offset_px)
                 space_polygon_points.append(point_a)
             drawer.polygon(space_polygon_points, fill=white)
-        # mark the entrance and exit before drawing walls
-        entrance_polygon_points = list()
-        for _, edge in self.entrance_space().edges():
-            (row_a, col_a), _ = edge.endpoints(self.entrance_space().index())
-            point_a = (int(round(col_a * scale)) + horz_offset_px,
-                       int(round(row_a * scale)) + vert_offset_px)
-            entrance_polygon_points.append(point_a)
-        drawer.polygon(entrance_polygon_points, fill=light_red)
-        exit_polygon_points = list()
-        for _, edge in self.exit_space().edges():
-            (row_a, col_a), _ = edge.endpoints(self.exit_space().index())
-            point_a = (int(round(col_a * scale)) + horz_offset_px,
-                       int(round(row_a * scale)) + vert_offset_px)
-            exit_polygon_points.append(point_a)
-        drawer.polygon(exit_polygon_points, fill=light_green)
+        # mark entrances and exits before drawing walls
+        for entrance, exit in self.entrance_exit_pairs():
+            entrance_polygon_points = list()
+            for _, edge in entrance.edges():
+                (row_a, col_a), _ = edge.endpoints(entrance.index())
+                point_a = (int(round(col_a * scale)) + horz_offset_px,
+                           int(round(row_a * scale)) + vert_offset_px)
+                entrance_polygon_points.append(point_a)
+            drawer.polygon(entrance_polygon_points, fill=light_red)
+            exit_polygon_points = list()
+            for _, edge in exit.edges():
+                (row_a, col_a), _ = edge.endpoints(exit.index())
+                point_a = (int(round(col_a * scale)) + horz_offset_px,
+                           int(round(row_a * scale)) + vert_offset_px)
+                exit_polygon_points.append(point_a)
+            drawer.polygon(exit_polygon_points, fill=light_green)
         # draw each wall edge and don't draw each path edge
         for edge in self._grid.edges():
             if edge.status == self.WALL:

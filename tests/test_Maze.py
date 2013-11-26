@@ -40,17 +40,17 @@ class Testmazemakers(unittest.TestCase):
 
 #noinspection PyProtectedMember
 class TestMaze(unittest.TestCase):
-    #todo: to really test this, need to create a tree and verify no cycles
+    #todo: to really test this, need to create a forest and verify no cycles
 
-    def test_entrance_and_exit_are_available_after_creation(self):
+    def test_entrance_exit_pairs_are_available_after_creation(self):
         maze = generic_maze()
-        self.assertIsNotNone(maze.entrance_space())
-        self.assertIsNotNone(maze.exit_space())
+        self.assertIsNotNone(maze.entrance_exit_pairs())
 
-    def test_mazify_map_returns_two_spaces(self):
+    def test_mazify_map_generates_sequence_of_entrance_and_exit_spaces(self):
         maze = generic_maze()
-        returned_spaces = maze._mazify_grid()
-        self.assertEqual(len(returned_spaces), 2)
+        entrance_exit_pairs = tuple(maze._mazify_grid())
+        for entrance_exit_pair in entrance_exit_pairs:
+            self.assertEqual(len(entrance_exit_pair), 2)
 
     def test_is_pathable_returns_true_if_edges_are_all_walls(self):
         maze = generic_maze()
