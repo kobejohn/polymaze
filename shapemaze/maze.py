@@ -57,13 +57,13 @@ class Maze(object):
                 if self._is_pathable(new_space):
                     # pathable new_space ==> keep extending the path
                     edge.status = self.PATH  # break down that wall
-                    current_path.append(new_space)  # extend the path stack
                     # track the best potential exit
                     new_len = len(current_path)
                     old_len = potential_exit_and_length[1]
                     if (new_len > old_len) and (new_space in border_spaces):
                         potential_exit_and_length = new_space, new_len
                     # setup for the next iteration
+                    current_path.append(new_space)  # extend the path stack
                     space = new_space
                     break  # don't need to check more neighbors
             else:  # after testing and failing all walls for pathability

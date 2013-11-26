@@ -33,7 +33,7 @@ class _SuperShape(object):
              {c_index1: {'name': _,
                          'clockwise_edge_names': _,
                          'edges': {n_index1: {'name': _,
-                                              'counterclockwise_vertex': _},
+                                              'counter_vertex': _},
                                    n_index2: {...}}},
               c_index2: {...}}}
         """
@@ -49,9 +49,6 @@ class _SuperShape(object):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     def __new__(cls, grid, index):
         """Return a new shape for the given index."""
-        superobj = super(_SuperShape, cls)
-        # below is to avoid repeated calls to new / init
-        #return superobj.__new__(_ComponentShape(cls, grid, index))
         return _ComponentShape(cls, grid, index)
 
     @classmethod
@@ -94,7 +91,7 @@ class _ComponentShape(object):
         #     {c_index1: {'name': _,
         #                 'clockwise_edge_names': _,
         #                 'edges': {n_index1: {'name': _,
-        #                                      'anticlockwise_vertex': _},
+        #                                      'counter_vertex': _},
         #                           n_index2: {...}}},
         #      c_index2: {...}}}
         origin_index = ss.origin_index(index)
@@ -114,14 +111,14 @@ class _ComponentShape(object):
             # name is just name
             edge_data['name'] = edge_spec['name']
             # convert base vertex within the ss to full vertex at this index
-            base_vertex = edge_spec['anticlockwise_vertex']
+            base_vertex = edge_spec['counter_vertex']
             anchor_row, anchor_col = diff_tuples(index, origin_index)
             row_offset = scale_tuple(ss_spec['graph_offset_per_row'],
                                      anchor_row)
             col_offset = scale_tuple(ss_spec['graph_offset_per_col'],
                                      anchor_col)
             vertex = sum_tuples((base_vertex, row_offset, col_offset))
-            edge_data['anticlockwise_vertex'] = vertex
+            edge_data['counter_vertex'] = vertex
             # put n_index into the order indicated by the specification
             i = component_spec['clockwise_edge_names'].index(edge_data['name'])
             ordered_n_indexes[i] = n_index
@@ -130,8 +127,8 @@ class _ComponentShape(object):
             # get each pair of edges
             next_i = (primary_i + 1) % edges_count
             next_n_index = ordered_n_indexes[next_i]
-            next_vertex = edges_data[next_n_index]['anticlockwise_vertex']
-            edges_data[primary_n_index]['clockwise_vertex'] = next_vertex
+            next_vertex = edges_data[next_n_index]['counter_vertex']
+            edges_data[primary_n_index]['clock_vertex'] = next_vertex
         return component_spec['name'], edges_data, ordered_n_indexes
 
     def index(self):
@@ -205,23 +202,21 @@ class Square(_SuperShape):
     def _make_specification(cls):
         """Return a dict that describes this supershape."""
         side = 1.0
+        c = {(0, 0): {'name': 'square',
+                      'clockwise_edge_names': ('top', 'right',
+                                               'bottom', 'left'),
+                      'edges': {(-1, 0): {'name': 'top',
+                                          'counter_vertex': (0.0, 0.0)},
+                                (0, 1): {'name': 'right',
+                                         'counter_vertex': (0.0, side)},
+                                (1, 0): {'name': 'bottom',
+                                         'counter_vertex': (side, side)},
+                                (0, -1): {'name': 'left',
+                                          'counter_vertex': (side, 0.0)}}}}
         d = {'reference_length': side,
              'graph_offset_per_row': (side, 0.0),
              'graph_offset_per_col': (0.0, side),
-             'components':
-                 {(0, 0):
-                     {'name': 'square',
-                      'clockwise_edge_names': ('top', 'right',
-                                               'bottom', 'left'),
-                      'edges':
-                          {(-1, 0): {'name': 'top',
-                                     'anticlockwise_vertex': (0.0, 0.0)},
-                           (0, 1): {'name': 'right',
-                                    'anticlockwise_vertex': (0.0, side)},
-                           (1, 0): {'name': 'bottom',
-                                    'anticlockwise_vertex': (side, side)},
-                           (0, -1): {'name': 'left',
-                                     'anticlockwise_vertex': (side, 0.0)}}}}}
+             'components': c}
         return d
 
     @classmethod
@@ -262,46 +257,43 @@ class Hexagon(_SuperShape):
         tr_right_pt = (midtop_rail, right_rail)
         tr_bottomright_pt = (midbottom_rail, midright_right_rail)
         tr_bottomleft_pt = bl_right_pt
-        d = {'reference_length': side,
-             'graph_offset_per_row': (2.0 * h, 0.0),
-             'graph_offset_per_col': (0.0, 1.5 * side),
-             'components':
-                 {(0, 0):
-                     {'name': 'bottom left',
+        # build components separately to avoid long lines
+        c = {(0, 0): {'name': 'bottom left',
                       'clockwise_edge_names': ('top', 'top right',
                                                'bottom right', 'bottom',
                                                'bottom left', 'top left'),
-                      'edges':
-                          {(-1, 0): {'name': 'top',
-                                     'anticlockwise_vertex': bl_topleft_pt},
-                           (0, 1): {'name': 'top right',
-                                    'anticlockwise_vertex': bl_topright_pt},
-                           (1, 1): {'name': 'bottom right',
-                                    'anticlockwise_vertex': bl_right_pt},
-                           (1, 0): {'name': 'bottom',
-                                    'anticlockwise_vertex': bl_bottomright_pt},
-                           (1, -1): {'name': 'bottom left',
-                                     'anticlockwise_vertex': bl_bottomleft_pt},
-                           (0, -1): {'name': 'top left',
-                                     'anticlockwise_vertex': bl_left_pt}}},
-                  (0, 1):
-                      {'name': 'top right',
-                       'clockwise_edge_names': ('top', 'top right',
-                                                'bottom right', 'bottom',
-                                                'bottom left', 'top left'),
-                       'edges':
-                          {(-1, 1): {'name': 'top',
-                                     'anticlockwise_vertex': tr_topleft_pt},
-                           (-1, 2): {'name': 'top right',
-                                     'anticlockwise_vertex': tr_topright_pt},
-                           (0, 2): {'name': 'bottom right',
-                                    'anticlockwise_vertex': tr_right_pt},
-                           (1, 1): {'name': 'bottom',
-                                    'anticlockwise_vertex': tr_bottomright_pt},
-                           (0, 0): {'name': 'bottom left',
-                                    'anticlockwise_vertex': tr_bottomleft_pt},
-                           (-1, 0): {'name': 'top left',
-                                     'anticlockwise_vertex': tr_left_pt}}}}}
+                      'edges': {(-1, 0): {'name': 'top',
+                                          'counter_vertex': bl_topleft_pt},
+                                (0, 1): {'name': 'top right',
+                                         'counter_vertex': bl_topright_pt},
+                                (1, 1): {'name': 'bottom right',
+                                         'counter_vertex': bl_right_pt},
+                                (1, 0): {'name': 'bottom',
+                                         'counter_vertex': bl_bottomright_pt},
+                                (1, -1): {'name': 'bottom left',
+                                          'counter_vertex': bl_bottomleft_pt},
+                                (0, -1): {'name': 'top left',
+                                          'counter_vertex': bl_left_pt}}},
+             (0, 1): {'name': 'top right',
+                      'clockwise_edge_names': ('top', 'top right',
+                                               'bottom right', 'bottom',
+                                               'bottom left', 'top left'),
+                      'edges': {(-1, 1): {'name': 'top',
+                                          'counter_vertex': tr_topleft_pt},
+                                (-1, 2): {'name': 'top right',
+                                          'counter_vertex': tr_topright_pt},
+                                (0, 2): {'name': 'bottom right',
+                                         'counter_vertex': tr_right_pt},
+                                (1, 1): {'name': 'bottom',
+                                         'counter_vertex': tr_bottomright_pt},
+                                (0, 0): {'name': 'bottom left',
+                                         'counter_vertex': tr_bottomleft_pt},
+                                (-1, 0): {'name': 'top left',
+                                          'counter_vertex': tr_left_pt}}}}
+        d = {'reference_length': side,
+             'graph_offset_per_row': (2.0 * h, 0.0),
+             'graph_offset_per_col': (0.0, 1.5 * side),
+             'components': c}
         return d
 
     @classmethod
@@ -888,8 +880,8 @@ class Edge(object):
             if not requesting_shape:
                 requesting_shape = self._grid.get(self._neighbor_2_index)
         n_index = other_side_lookup[requesting_shape.index()]
-        v1, v2 = (requesting_shape._edge_data[n_index]['anticlockwise_vertex'],
-                  requesting_shape._edge_data[n_index]['clockwise_vertex'])
+        v1, v2 = (requesting_shape._edge_data[n_index]['counter_vertex'],
+                  requesting_shape._edge_data[n_index]['clock_vertex'])
         return v1, v2
 
 

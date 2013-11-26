@@ -21,12 +21,14 @@ class TestIndexedShapeImplementations(unittest.TestCase):
                         continue  # skip empty borders
                     # confirm neighbor has self in its indexes
                     self.assertIn(self_index, neighbor._edge_data,
-                                  'Shape {} @ {}'
+                                  'For SuperShape {},'
+                                  '\nshape {} @ {}'
                                   '\nidentified {} @ {}'
                                   '\nas a neighbor but neighbor did not'
                                   ' identify shape as one.'
-                                  ''.format(shape, shape.index(),
-                                            neighbor, neighbor.index()))
+                                  ''.format(neighborhood.supershape(),
+                                            shape.name(), shape.index(),
+                                            neighbor.name(), neighbor.index()))
 
     def test_opposing_edge_vertexes_match(self):
         for neighborhood in self.shape_neighborhoods:
@@ -38,10 +40,10 @@ class TestIndexedShapeImplementations(unittest.TestCase):
                     # confirm self vertexes match neighbor vertexes
                     # don't use .edge(index) which may use the data from the
                     # same object for both .edge() calls
-                    self_vertexes = [shape._edge_data[n_index]['anticlockwise_vertex'],
-                                     shape._edge_data[n_index]['clockwise_vertex']]
-                    n_vertexes = [neighbor._edge_data[s_index]['anticlockwise_vertex'],
-                                  neighbor._edge_data[s_index]['clockwise_vertex']]
+                    self_vertexes = [shape._edge_data[n_index]['counter_vertex'],
+                                     shape._edge_data[n_index]['clock_vertex']]
+                    n_vertexes = [neighbor._edge_data[s_index]['counter_vertex'],
+                                  neighbor._edge_data[s_index]['clock_vertex']]
                     # sort so we can use AlmostEqual
                     self_vertexes.sort()
                     n_vertexes.sort()
@@ -50,15 +52,18 @@ class TestIndexedShapeImplementations(unittest.TestCase):
                         self_vertex = complex(*self_vertex)
                         n_vertex = complex(*n_vertex)
                         self.assertAlmostEqual(self_vertex, n_vertex, msg=
-                                               'Shape {} @ index {}'
+                                               'For SuperShape {},'
+                                               '\nshape {} @ index {}'
                                                '\nvertex: {}'
                                                '\ndoes not seem to match'
                                                '\nneighbor {} @ index {}'
                                                '\nvertex: {},'
-                                               ''.format(shape, shape.index(),
+                                               ''.format(neighborhood.supershape(),
+                                                         shape.name(),
+                                                         shape.index(),
                                                          self_vertex,
-                                                         neighbor, n_index,
-                                                         n_vertex))
+                                                         neighbor.name(),
+                                                         n_index, n_vertex))
 
     def test_internally_stored_vertexes_are_in_order_around_perimeter(self):
         for neighborhood in self.shape_neighborhoods:
@@ -70,8 +75,8 @@ class TestIndexedShapeImplementations(unittest.TestCase):
                     edge_data = shape._edge_data[n_index]
                     next_data = shape._edge_data[next_n_index]
                     # confirm points are like this: a -- b/c -- d
-                    a, b = edge_data['anticlockwise_vertex'], edge_data['clockwise_vertex']
-                    c, d = next_data['anticlockwise_vertex'], next_data['clockwise_vertex']
+                    a, b = edge_data['counter_vertex'], edge_data['clock_vertex']
+                    c, d = next_data['counter_vertex'], next_data['clock_vertex']
                     # convert to imaginary numbers so assertion possible
                     a, b = complex(*a), complex(*b)
                     c, d = complex(*c), complex(*d)
@@ -168,10 +173,10 @@ class TestEdge(unittest.TestCase):
             shape_end_1, shape_end_2 = edge.endpoints(shape.index())
             n_end_1, n_end_2 = edge.endpoints(other.index())
             # confirm the end points came from the indicated shape
-            shape_end_1_spec = shape._edge_data[other.index()]['anticlockwise_vertex']
-            shape_end_2_spec = shape._edge_data[other.index()]['clockwise_vertex']
-            n_end_1_spec = other._edge_data[shape.index()]['anticlockwise_vertex']
-            n_end_2_spec = other._edge_data[shape.index()]['clockwise_vertex']
+            shape_end_1_spec = shape._edge_data[other.index()]['counter_vertex']
+            shape_end_2_spec = shape._edge_data[other.index()]['clock_vertex']
+            n_end_1_spec = other._edge_data[shape.index()]['counter_vertex']
+            n_end_2_spec = other._edge_data[shape.index()]['clock_vertex']
             self.assertIs(shape_end_1, shape_end_1_spec)
             self.assertIs(shape_end_2, shape_end_2_spec)
             self.assertIs(n_end_1, n_end_1_spec)
