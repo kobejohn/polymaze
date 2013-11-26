@@ -1,7 +1,7 @@
 import argparse
 from datetime import datetime
 
-import shapemaze as _smz
+import polymaze as _pmz
 
 
 def commandline():
@@ -9,7 +9,7 @@ def commandline():
     args = parser.parse_args()
     # parse all the args
     maker, content = _parse_maker(args)
-    shape = _smz.supershapes_dict.get(args.shape)  # None if no shape
+    shape = _pmz.supershapes_dict.get(args.shape)  # None if no shape
     aspect_w, aspect_h = args.aspect_width, args.aspect_height
     complexity = args.complexity
     mazes = _make_mazes(maker, content, shape, complexity, aspect_w, aspect_h)
@@ -44,14 +44,14 @@ def _save_mazes(mazes):
 def _parse_maker(args):
     """Return the requested mazemaker function and content."""
     if args.string:
-        maker = _smz.mazemakers.string
+        maker = _pmz.mazemakers.string
         content = args.string
     elif args.rectangle:
-        maker = _smz.mazemakers.rectangle
+        maker = _pmz.mazemakers.rectangle
         content = None
     else:
         # no maker was specified
-        maker = _smz.mazemakers.rectangle
+        maker = _pmz.mazemakers.rectangle
         content = None
     return maker, content
 
@@ -64,7 +64,7 @@ def _parser():
                        help='Make a maze for each character in STRING.')
     group.add_argument('--rectangle', action='store_true')
     # optional shape to use
-    ss_names = _smz.supershapes_dict.keys()
+    ss_names = _pmz.supershapes_dict.keys()
     parser.add_argument('--shape', choices=ss_names,
                         help='Make the maze with this shape. Random otherwise.')
     # optional image bounds

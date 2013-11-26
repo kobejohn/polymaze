@@ -5,7 +5,7 @@ import shapes as _shapes
 _supershapes_dict = _shapes.supershapes_dict()
 
 
-class ShapeGrid(object):
+class PolyGrid(object):
     """Sparse grid of shapes."""
     def __init__(self, supershape=None):
         # provide defaults

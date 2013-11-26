@@ -1,12 +1,12 @@
 import unittest
 
-from shapemaze import shapes, shapegrid
+from polymaze import shapes, polygrid
 
 supershapes_dict = shapes.supershapes_dict()
 
 
 #noinspection PyProtectedMember
-class TestIndexedShapeImplementations(unittest.TestCase):
+class TestComponentShapeImplementations(unittest.TestCase):
     """Run all implemented shapes through standard verification tests."""
     def setUp(self):
         self.shape_neighborhoods = [generic_supershape_neighborhood(ss)
@@ -198,7 +198,7 @@ class TestEdge(unittest.TestCase):
 def generic_shape(shape_maker=None, index=None, grid=None):
     # provide test defaults
     shape_maker = shape_maker or shapes.Square
-    grid = grid or shapegrid.ShapeGrid(shape_maker)
+    grid = grid or polygrid.PolyGrid(shape_maker)
     index = index or (1, 2)
     # get a shape
     shape = grid.create(index)
@@ -207,7 +207,7 @@ def generic_shape(shape_maker=None, index=None, grid=None):
 
 def generic_supershape_neighborhood(ss):
     """Make a neighborhood of all component shapes + all border shapes."""
-    grid = shapegrid.ShapeGrid(ss)
+    grid = polygrid.PolyGrid(ss)
     for comp_index, comp_data in ss.specification()['components'].items():
         for n_index in comp_data['edges']:
             if grid.get(n_index) is None:

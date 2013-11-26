@@ -3,9 +3,9 @@ import unittest
 
 import PIL.Image
 
-from shapemaze import gridmakers as _gridmakers
-from shapemaze import shapes as _shapes
-from shapemaze import shapegrid as _shapegrid
+from polymaze import gridmakers as _gridmakers
+from polymaze import shapes as _shapes
+from polymaze import polygrid as _polygrid
 
 
 class Testgridmakers(unittest.TestCase):
@@ -27,7 +27,7 @@ class Testgridmakers(unittest.TestCase):
 
     def test_character_gets_a_char_image_for_provided_char(self):
         character_spec = 'C'
-        with mock.patch('shapemaze.gridmakers._character_image') as m_c_image:
+        with mock.patch('polymaze.gridmakers._character_image') as m_c_image:
             try:
                 _gridmakers.character(character_spec)
             except Exception:
@@ -38,7 +38,7 @@ class Testgridmakers(unittest.TestCase):
         any_char = 'c'
         aspect_h_spec = 3
         aspect_w_spec = 5
-        with mock.patch('shapemaze.gridmakers._calc_index_bounds') as m_bounds:
+        with mock.patch('polymaze.gridmakers._calc_index_bounds') as m_bounds:
             try:
                 _gridmakers.character(any_char, aspect_h=aspect_h_spec,
                                       aspect_w=aspect_w_spec)
@@ -51,8 +51,8 @@ class Testgridmakers(unittest.TestCase):
     def test_character_calcs_grid_bounds_with_image_if_aspct_not_provided(self):
         any_char = 'c'
         image_w_spec, image_h_spec = 113, 237
-        with mock.patch('shapemaze.gridmakers._calc_index_bounds') as m_bounds:
-            with mock.patch('shapemaze.gridmakers._character_image') as m_c_im:
+        with mock.patch('polymaze.gridmakers._calc_index_bounds') as m_bounds:
+            with mock.patch('polymaze.gridmakers._character_image') as m_c_im:
                 m_c_im.return_value.size = (image_w_spec, image_h_spec)
                 try:
                     _gridmakers.character(any_char)
@@ -64,7 +64,7 @@ class Testgridmakers(unittest.TestCase):
 
     def test_character_converts_image_to_shapes(self):
         character_spec = 'C'
-        with mock.patch('shapemaze.gridmakers._image_white_to_shapes') as m_i2s:
+        with mock.patch('polymaze.gridmakers._image_white_to_shapes') as m_i2s:
             try:
                 _gridmakers.character(character_spec)
             except Exception:
@@ -75,7 +75,7 @@ class Testgridmakers(unittest.TestCase):
         rows_spec, cols_spec = 20, 30
         _image_size = 200, 300  # not part of spec
         _white_im = PIL.Image.new('L', _image_size, color=255)
-        grid = _shapegrid.ShapeGrid()
+        grid = _polygrid.PolyGrid()
         grid = _gridmakers._image_white_to_shapes(_white_im, grid,
                                                   rows_spec, cols_spec)
         # confirm that the shape count is exactly the index area of rectangle
@@ -92,7 +92,7 @@ class Testgridmakers(unittest.TestCase):
         _some_dim = 20  # not part of spec
         not_mono = 'RGB'
         mono = 'L'
-        grid = _shapegrid.ShapeGrid()
+        grid = _polygrid.PolyGrid()
         m_image = mock.MagicMock()
         m_image.getbands.return_value = not_mono
         try:
@@ -229,7 +229,7 @@ class TestShapeGrid(unittest.TestCase):
 def generic_grid(supershape=None, neighborhood_center_index=None):
     # provide defaults
     creator = supershape or _shapes.Square
-    grid = _shapegrid.ShapeGrid(creator)
+    grid = _polygrid.PolyGrid(creator)
     if neighborhood_center_index:
         # create a neighborhood based on whatever creator is being used
         # the neighborhood is defined as a central shape with a neighbor

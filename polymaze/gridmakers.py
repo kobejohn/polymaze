@@ -5,7 +5,7 @@ import PIL.Image
 import PIL.ImageDraw
 import PIL.ImageFont
 
-import shapegrid as _shapegrid
+import polygrid as _polygrid
 
 
 _BASE_DIR = os.path.dirname(__file__)
@@ -14,7 +14,7 @@ _EDGES_PER_COMPLEXITY = 7000.0  # yields easy mazes at complexity 1
 
 
 def rectangle(supershape=None, complexity=None, aspect_h=None, aspect_w=None):
-    grid = _shapegrid.ShapeGrid(supershape=supershape)
+    grid = _polygrid.PolyGrid(supershape=supershape)
     # convert complexity and aspect to index bounds
     rows, cols = _calc_index_bounds(supershape=grid.supershape(),
                                     complexity=complexity,
@@ -27,7 +27,7 @@ def rectangle(supershape=None, complexity=None, aspect_h=None, aspect_w=None):
 
 def character(c,
               supershape=None, complexity=None, aspect_h=None, aspect_w=None):
-    grid = _shapegrid.ShapeGrid(supershape=supershape)
+    grid = _polygrid.PolyGrid(supershape=supershape)
     # get an image of the character
     c_image = _character_image(c)
     # convert complexity and aspect to index bounds

@@ -1,13 +1,13 @@
 import mock
 import unittest
 
-from shapemaze import gridmakers as _gridmakers
-from shapemaze import mazemakers as _mazemakers
-from shapemaze import maze as _maze
+from polymaze import gridmakers as _gridmakers
+from polymaze import mazemakers as _mazemakers
+from polymaze import maze as _maze
 
 
-@mock.patch('shapemaze.mazemakers._gridmakers')
-@mock.patch('shapemaze.mazemakers._maze')
+@mock.patch('polymaze.mazemakers._gridmakers')
+@mock.patch('polymaze.mazemakers._maze')
 class Testmazemakers(unittest.TestCase):
     def test_rectangle_returns_maze_from_gridmaker_rectangle(self, m_maze,
                                                              m_gridmakers):
