@@ -62,10 +62,13 @@ class Maze(object):
                     old_len = potential_exit_and_length[1]
                     if (new_len > old_len) and (new_space in border_spaces):
                         potential_exit_and_length = new_space, new_len
+                    # put self back on the stack to be considered on the
+                    # return trip (may have remaining edges
+                    current_path.append(space)
                     # setup for the next iteration
                     current_path.append(new_space)  # extend the path stack
                     space = new_space
-                    break  # don't need to check more neighbors
+                    break  # don't need to check more neighbors for now
             else:  # after testing and failing all walls for pathability
                 # no usable neighbors ==> back up one step
                 space = current_path.pop()  # normal case - back up one step
