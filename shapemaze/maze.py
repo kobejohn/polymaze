@@ -9,6 +9,8 @@ class Maze(object):
     """A maze based on a shape pattern."""
     WALL = 'wall'
     PATH = 'path'
+    PX_PER_GRAPH_UNIT = 40.0  # tweakable. higher makes higher resolution images
+
 
     def __init__(self, grid):
         """Create a maze from a grid of shapes."""
@@ -105,8 +107,7 @@ class Maze(object):
         graph_height = max(y_values) - min(y_values) + 2*image_padding_in_edges
         graph_width = max(x_values) - min(x_values) + 2*image_padding_in_edges
         # handle graph --> image scaling reasonably
-        px_per_graph_unit = 20.0
-        scale = float(px_per_graph_unit)  # default scale for no limits
+        scale = float(self.PX_PER_GRAPH_UNIT)  # default scale for no limits
         if h_limit and w_limit:
             # scaling: both limits provided --> scale to the more limiting one
             graph_relative_height = float(graph_height) / graph_width
@@ -170,7 +171,7 @@ class Maze(object):
                               int(round(scale * row_a)) + vert_offset_px),
                              (int(round(scale * col_b)) + horz_offset_px,
                               int(round(scale * row_b)) + vert_offset_px)),
-                            fill=black, width=2)
+                            fill=black, width=4)
         return image
 
 
