@@ -205,14 +205,24 @@ def generic_shape(shape_maker=None, index=None, grid=None):
     return shape
 
 
-def generic_supershape_neighborhood(creator):
-    """Make a neighborhood big enough to include any super shape. Lazy."""
-    grid = shapegrid.ShapeGrid(creator)
-    enough_rows = 10
-    enough_cols = 10
-    for row in range(enough_rows):
-        for col in range(enough_cols):
-            grid.create((row, col))
+#def generic_supershape_neighborhood(creator):
+#    """Make a neighborhood big enough to include any super shape. Lazy."""
+#    grid = shapegrid.ShapeGrid(creator)
+#    enough_rows = 10
+#    enough_cols = 10
+#    for row in range(enough_rows):
+#        for col in range(enough_cols):
+#            grid.create((row, col))
+#    return grid
+
+
+def generic_supershape_neighborhood(ss):
+    """Make a neighborhood of all component shapes + all border shapes."""
+    grid = shapegrid.ShapeGrid(ss)
+    for comp_index, comp_data in ss.specification()['components'].items():
+        for n_index in comp_data['edges']:
+            if grid.get(n_index) is None:
+                grid.create(n_index)
     return grid
 
 
