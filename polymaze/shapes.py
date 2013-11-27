@@ -26,10 +26,11 @@ class _SuperShape(object):
         """Return a dict that describes this supershape.
 
         dict format:
-        {'reference_length': _,
-        'graph_offset_per_row': _,
-        'graph_offset_per_col': _,
-        'components':
+        {'name': _,
+         'reference_length': _,
+         'graph_offset_per_row': _,
+         'graph_offset_per_col': _,
+         'components':
              {c_index1: {'name': _,
                          'clockwise_edge_names': _,
                          'edges': {n_index1: {'name': _,
@@ -213,7 +214,8 @@ class Square(_SuperShape):
                                          'counter_vertex': (side, side)},
                                 (0, -1): {'name': 'left',
                                           'counter_vertex': (side, 0.0)}}}}
-        d = {'reference_length': side,
+        d = {'name': 'Square',
+             'reference_length': side,
              'graph_offset_per_row': (side, 0.0),
              'graph_offset_per_col': (0.0, side),
              'components': c}
@@ -290,7 +292,8 @@ class Hexagon(_SuperShape):
                                          'counter_vertex': tr_bottomleft_pt},
                                 (-1, 0): {'name': 'top left',
                                           'counter_vertex': tr_left_pt}}}}
-        d = {'reference_length': side,
+        d = {'name': 'Hexagon',
+            'reference_length': side,
              'graph_offset_per_row': (2.0 * h, 0.0),
              'graph_offset_per_col': (0.0, 1.5 * side),
              'components': c}
@@ -361,7 +364,8 @@ class Triangle(_SuperShape):
                                 (1, 1): {'name': 'right',
                                          'counter_vertex': mid_pt}}}}
         # make the data dict
-        d = {'reference_length': side,
+        d = {'name': 'Triangle',
+             'reference_length': side,
              'graph_offset_per_row': (h, 0.0),
              'graph_offset_per_col': (0.0, 0.5 * side),
              'components': c}
@@ -451,7 +455,8 @@ class OctaDiamond(_SuperShape):
                                          'counter_vertex': dmd_right_pt},
                                 (0, 0): {'name': 'bottom left',
                                          'counter_vertex': dmd_bottom_pt}}}}
-        d = {'reference_length': side,
+        d = {'name': 'OctaDiamond',
+             'reference_length': side,
              'graph_offset_per_row': (side + 2.0 * h, 0.0),
              'graph_offset_per_col': (0.0, 0.5 * (side + 2.0 * h)),
              'components': c}
@@ -624,7 +629,8 @@ class Polycat(_SuperShape):
                                 (2, 3): {'name': 'bottom',
                                          'counter_vertex': chin_right_pt}}}}
         # make the data dict
-        d = {'reference_length': side,
+        d = {'name': 'Polycat',
+             'reference_length': side,
              'graph_offset_per_row': (bottom_rail, 0.0),
              'graph_offset_per_col': (0.0, (side + 2.0 * h) / 6.0),
              'components': c}
