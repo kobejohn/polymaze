@@ -235,7 +235,7 @@ def generic_grid(supershape=None, neighborhood_center_index=None):
         # the neighborhood is defined as a central shape with a neighbor
         # on each edge
         center_shape = grid.create(neighborhood_center_index)
-        for n_index in center_shape._ordered_n_indexes:
+        for n_index in center_shape.n_indexes():
             grid.create(n_index)
     return grid
 

@@ -68,10 +68,10 @@ class TestComponentShapeImplementations(unittest.TestCase):
     def test_internally_stored_vertexes_are_in_order_around_perimeter(self):
         for neighborhood in self.shape_neighborhoods:
             for shape in neighborhood.shapes():
-                edge_count = len(shape._ordered_n_indexes)
-                for i, n_index in enumerate(shape._ordered_n_indexes):
+                edge_count = len(tuple(shape.n_indexes()))
+                for i, n_index in enumerate(shape.n_indexes()):
                     next_i = (i + 1) % edge_count
-                    next_n_index = shape._ordered_n_indexes[next_i]
+                    next_n_index = tuple(shape.n_indexes())[next_i]
                     edge_data = shape._edge_data[n_index]
                     next_data = shape._edge_data[next_n_index]
                     # confirm points are like this: a -- b/c -- d
@@ -98,13 +98,13 @@ class TestComponentShape(unittest.TestCase):
         shape = generic_shape()
         # confirm ownership of every edge for an independent shape
         owned_indexes = (n_index for n_index, edge in shape.edges())
-        owned_indexes_spec = shape._ordered_n_indexes
+        owned_indexes_spec = shape.n_indexes()
         self.assertItemsEqual(owned_indexes, owned_indexes_spec)
 
     def test_creation_does_not_take_ownership_of_claimed_edges(self):
         shape = generic_shape()
         # create a new neighbor which should only claim the new edges
-        a_neighbor_index = shape._ordered_n_indexes[0]  # any edge
+        a_neighbor_index = tuple(shape.n_indexes())[0]  # any edge
         neighbor = shape._grid.create(a_neighbor_index)
         # confirm that the original shape still owns the shared edge
         self.assertIn(a_neighbor_index, shape._owned_edges)
@@ -114,7 +114,7 @@ class TestComponentShape(unittest.TestCase):
     def test_grab_edges_does_not_include_edges_owned_by_self_or_neighbor(self):
         main_shape = generic_shape()
         # create a neighbor
-        n_index = main_shape._ordered_n_indexes[0]
+        n_index = tuple(main_shape.n_indexes())[0]
         neighbor = main_shape._grid.create(n_index)
         # confirm that grab on either shape is empty
         for shape in (main_shape, neighbor):
@@ -134,14 +134,14 @@ class TestComponentShape(unittest.TestCase):
 
     def test_edge_returns_an_edge_for_each_neighbor_index(self):
         shape = generic_shape()
-        for n_index in shape._ordered_n_indexes:
+        for n_index in shape.n_indexes():
             self.assertIsNotNone(shape.edge(n_index))
 
     def test_neighbors_generates_the_index_and_neighbor_for_each_n_index(self):
         shape = generic_shape()
         # create neighbors on all edges
         indexed_neighbors_spec = list()
-        for n_index in shape._ordered_n_indexes:
+        for n_index in shape.n_indexes():
             neighbor = shape._grid.create(n_index)
             indexed_neighbors_spec.append((n_index, neighbor))
         # confirm that the correct index-neighbor combos are generated
@@ -153,7 +153,7 @@ class TestComponentShape(unittest.TestCase):
         shape = generic_shape()
         # confirm that each neighbor is generated as None
         for n_index, neighbor in shape.neighbors():
-            self.assertIn(n_index, shape._ordered_n_indexes)
+            self.assertIn(n_index, shape.n_indexes())
             self.assertIsNone(neighbor)
 
 
@@ -164,7 +164,7 @@ class TestEdge(unittest.TestCase):
         # make a shape and any neighbor
         main_index = (1, 2)
         main_shape = generic_shape(index=main_index)
-        n_index = main_shape._ordered_n_indexes[0]
+        n_index = tuple(main_shape.n_indexes())[0]
         neighbor = main_shape._grid.create(n_index)
         # get the shared edge
         edge = main_shape.edge(n_index)
@@ -188,7 +188,7 @@ class TestEdge(unittest.TestCase):
         shape = generic_shape(index=some_index)
         # get a non neighboring index
         non_neighbor_index = (1000, 2000)
-        self.assertNotIn(non_neighbor_index, shape._ordered_n_indexes)
+        self.assertNotIn(non_neighbor_index, shape.n_indexes())
         # confirm ValueError when non neighbor used to specify endpoint order
         _, any_edge = tuple(shape.edges())[0]
         self.assertRaises(ValueError,

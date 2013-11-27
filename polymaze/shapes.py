@@ -1,5 +1,6 @@
 import inspect
 import math
+import random
 import sys
 
 
@@ -138,17 +139,36 @@ class _ComponentShape(object):
     def name(self):
         return self._name
 
-    def neighbors(self):
+    def n_indexes(self, randomize=False):
+        """Generate all neighbor indexes.
+
+        randomize: True: random order; False: sorted
+        """
+        if randomize:
+            # get a random ordering of all n_indexes
+            n_indexes = random.sample(self._ordered_n_indexes,
+                                      len(self._ordered_n_indexes))
+        else:
+            # use the indexes in sorted order
+            n_indexes = self._ordered_n_indexes
+        for n_index in n_indexes:
+            yield n_index
+
+    def neighbors(self, randomize=False):
         """Generate each index-neighbor pair for this shape.
 
-        Neighbor is None for nonexistent neighbors.
+        randomize: True: random order; False: sorted
+        generates: n_index, None for nonexistent neighbors.
         """
-        for n_index in self._ordered_n_indexes:
+        for n_index in self.n_indexes(randomize=randomize):
             yield n_index, self._grid.get(n_index)
 
-    def edges(self):
-        """Generate each index-edge pair for this shape."""
-        for n_index in self._ordered_n_indexes:
+    def edges(self, randomize=False):
+        """Generate each index-edge pair for this shape.
+
+        randomize: True: random order; False: sorted
+        """
+        for n_index in self.n_indexes(randomize=randomize):
             yield n_index, self.edge(n_index)
 
     def edge(self, neighbor_index):
