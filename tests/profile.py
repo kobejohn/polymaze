@@ -1,18 +1,21 @@
 import cProfile
 
-from polymaze import polymaze_old
+import polymaze as pmz
+
+
+preloaded_shape = pmz.supershapes_dict['Hexagon']
 
 
 def main():
-    cProfile.run('generate_maze_only()')
+    complex_ = 'make_maze(100)'
+    simple = 'make_maze(0.5)'
+    cProfile.run(complex_)
 
 
-def generate_maze_and_image():
-    maze = polymaze_old.PolyMaze(indexed_polygon_class=polymaze_old.IndexedTriangle)
-    image = polymaze_old.image(1200, 1200)
-
-def generate_maze_only():
-    maze = polymaze_old.PolyMaze(indexed_polygon_class=polymaze_old.IndexedTriangle)
+def make_maze(complexity):
+    # low complexity --> find fixed costs
+    # high complexity --> find high-n costs
+    pmz.mazemakers.rectangle(complexity=complexity, supershape=preloaded_shape)
 
 
 if __name__ == '__main__':
