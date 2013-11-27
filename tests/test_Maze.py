@@ -52,7 +52,7 @@ class TestMaze(unittest.TestCase):
         for entrance_exit_pair in entrance_exit_pairs:
             self.assertEqual(len(entrance_exit_pair), 2)
 
-    def test_is_pathable_returns_true_if_edges_are_all_walls(self):
+    def test_has_paths_returns_true_if_edges_are_all_walls(self):
         maze = generic_maze()
         # choose any space from the maze's grid and set all edges to wall
         some_index = tuple(maze._grid.shapes())[0].index()
@@ -60,9 +60,9 @@ class TestMaze(unittest.TestCase):
         for _, edge in space.edges():
             edge.status = maze.WALL
         # confirm that the space is pathable
-        self.assertTrue(maze._is_pathable(space))
+        self.assertFalse(maze._has_paths(space))
 
-    def test_is_pathable_returns_false_if_any_edge_is_a_path(self):
+    def test_has_paths_returns_true_if_any_edge_is_a_path(self):
         maze = generic_maze()
         # choose any space from the maze's grid and set all edges to wall
         some_index = tuple(maze._grid.shapes())[0].index()
@@ -72,7 +72,7 @@ class TestMaze(unittest.TestCase):
         # set any edge to path
         tuple(space.edges())[0][1].status = maze.PATH
         # confirm that the space is not pathable
-        self.assertFalse(maze._is_pathable(space))
+        self.assertTrue(maze._has_paths(space))
 
     def test_image_scales_to_limiting_dimension_when_both_provided(self):
         small_spec, large_spec = 200, 2000

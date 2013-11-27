@@ -36,8 +36,7 @@ class Maze(object):
                 # eliminate isolated single shapes
                 self._grid.remove(border_space.index())
                 continue
-            elif any(edge.status == self.PATH for n_index, edge
-                     in border_space.edges()):
+            elif self._has_paths(border_space):
                 # this space has already been pathed as part of a maze so ignore
                 continue
             else:
@@ -72,8 +71,8 @@ class Maze(object):
                 if new_space is None:
                     # no neighbor there
                     continue
-                if self._is_pathable(new_space):
-                    # pathable new_space ==> keep extending the path
+                if not self._has_paths(new_space):
+                    # space that hasn't been pathed yet ==> continue the path
                     edge.status = self.PATH  # break down that wall
                     # track the best potential exit
                     new_len = len(current_path)
@@ -99,14 +98,6 @@ class Maze(object):
                 edge.status = self.PATH
                 break  # done after making the exit path
         return entrance_space, exit_space
-
-    def _is_pathable(self, new_space):
-        """Return True if new_space can be used as a path. False otherwise."""
-        for n_index, edge in new_space.edges():
-            if edge.status == self.PATH:
-                return False  # not a wall - disqualified
-        # if it couldn't be disqualified, allow it
-        return True
 
     def image(self, w_limit=None, h_limit=None):
         """Return a PIL(LOW) image representation of self.
@@ -190,6 +181,14 @@ class Maze(object):
                               int(round(scale * row_b)) + vert_offset_px)),
                             fill=black, width=4)
         return image
+
+    def _has_paths(self, new_space):
+        """Return True if new_space has any edges as paths. False otherwise."""
+        for n_index, edge in new_space.edges():
+            if edge.status == self.PATH:
+                return True  # found at least one wall
+        # if it couldn't be disqualified, allow it
+        return False
 
 
 if __name__ == '__main__':
