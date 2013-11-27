@@ -63,10 +63,9 @@ class Maze(object):
         space = entrance_space
         while current_path:
             # consider all walls leading to new neighbors in random order
-            indexed_walls = [(n_index, edge) for n_index, edge in space.edges()
-                             if edge.status == self.WALL]
-            random.shuffle(indexed_walls)
-            for n_index, edge in indexed_walls:
+            for n_index, edge in space.edges(randomize=True):
+                if edge.status != self.WALL:
+                    continue  # ignore pathed edges. just looking for walls
                 new_space = self._grid.get(n_index)
                 if new_space is None:
                     # no neighbor there
