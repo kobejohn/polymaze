@@ -1,16 +1,14 @@
 import unittest
 
-from polymaze import shapes, polygrid
-
-supershapes_dict = shapes.supershapes_dict()
+import polymaze as pmz
 
 
 #noinspection PyProtectedMember
 class TestComponentShapeImplementations(unittest.TestCase):
     """Run all implemented shapes through standard verification tests."""
     def setUp(self):
-        self.shape_neighborhoods = [generic_supershape_neighborhood(ss)
-                                    for ss_name, ss in supershapes_dict.items()]
+        self.shape_neighborhoods = [full_neighborhood(ss)
+                                    for _, ss in pmz.SUPERSHAPES_DICT.items()]
 
     def test_neighbors_have_each_others_indexes(self):
         for neighborhood in self.shape_neighborhoods:
@@ -26,7 +24,7 @@ class TestComponentShapeImplementations(unittest.TestCase):
                                   '\nidentified {} @ {}'
                                   '\nas a neighbor but neighbor did not'
                                   ' identify shape as one.'
-                                  ''.format(neighborhood.supershape(),
+                                  ''.format(neighborhood.supershape_name(),
                                             shape.name(), shape.index(),
                                             neighbor.name(), neighbor.index()))
 
@@ -58,7 +56,7 @@ class TestComponentShapeImplementations(unittest.TestCase):
                                                '\ndoes not seem to match'
                                                '\nneighbor {} @ index {}'
                                                '\nvertex: {},'
-                                               ''.format(neighborhood.supershape(),
+                                               ''.format(neighborhood.supershape_name(),
                                                          shape.name(),
                                                          shape.index(),
                                                          self_vertex,
@@ -195,20 +193,19 @@ class TestEdge(unittest.TestCase):
                           any_edge.endpoints, *(non_neighbor_index,))
 
 
-def generic_shape(shape_maker=None, index=None, grid=None):
+def generic_shape(supershape=None, index=None, grid=None):
     # provide test defaults
-    shape_maker = shape_maker or shapes.Square
-    grid = grid or polygrid.PolyGrid(shape_maker)
+    grid = grid or pmz.PolyGrid(supershape=supershape)
     index = index or (1, 2)
     # get a shape
     shape = grid.create(index)
     return shape
 
 
-def generic_supershape_neighborhood(ss):
+def full_neighborhood(ss):
     """Make a neighborhood of all component shapes + all border shapes."""
-    grid = polygrid.PolyGrid(ss)
-    for comp_index, comp_data in ss.specification()['components'].items():
+    grid = pmz.PolyGrid(supershape=ss)
+    for comp_index, comp_data in ss.components().items():
         for n_index in comp_data['edges']:
             if grid.get(n_index) is None:
                 grid.create(n_index)
