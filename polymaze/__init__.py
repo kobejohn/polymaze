@@ -2,4 +2,4 @@ import shapes as _shapes
 from polygrid import PolyGrid
 from maze import Maze
 
-supershapes_dict = _shapes.supershapes_dict()  # all of the built-in shapes
+SUPERSHAPES_DICT = _shapes.supershapes_dict()  # all of the built-in shapes

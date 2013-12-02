@@ -1,4 +1,3 @@
-import math
 import os
 
 import PIL.Image
@@ -10,19 +9,6 @@ import polygrid as _polygrid
 
 _BASE_DIR = os.path.dirname(__file__)
 _RESOURCE_DIR = os.path.join(_BASE_DIR, 'resources')
-_EDGES_PER_COMPLEXITY = 7000.0  # yields easy mazes at complexity 1
-
-
-def rectangle(supershape=None, complexity=None, aspect_h=None, aspect_w=None):
-    grid = _polygrid.PolyGrid(supershape=supershape)
-    # convert complexity and aspect to index bounds
-    rows, cols = _calc_index_bounds(supershape=grid.supershape(),
-                                    complexity=complexity,
-                                    aspect_h=aspect_h, aspect_w=aspect_w)
-    for row in range(rows):
-        for col in range(cols):
-            grid.create((row, col))
-    return grid
 
 
 def character(c,
@@ -86,75 +72,6 @@ def _image_white_to_shapes(image, grid, rows, cols):
             if pixels[x, y]:
                 grid.create((y, x))
     return grid
-
-
-def _calc_index_bounds(supershape=None, complexity=None,
-                       aspect_h=None, aspect_w=None):
-    """Normalize the difficulty of mazes based on number of edges per shape.
-
-    This approach allows the complexity/difficulty of a maze using any shape
-    to be similar by having more simple shapes and fewer complex shapes. If
-    the number of shapes is standardized instead, the complexity varies greatly
-    between shapes with few and many edges.
-    """
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    # outline:
-    #   a) edges
-    #       --> adjust base edges for general complexity
-    #       --> adjust edges for shape complexity (down for more edges)
-    #       --> convert edges to shape count
-    #           (tesselation internal shape --> 1 shape per (shape edges)/2
-    #   b) y/x ratio --> row/col ratio
-    #       --> convert the desired h/w ratio to a row/col ratio
-    #           such that the row/col ratio for this supershape will yield
-    #           the desired h/w ratio when graphed
-    #           start: Ah/Aw = rows*row_offset[0] + cols*col_offset[0]
-    #                          -----------------------------------------
-    #                          rows*row_offset[1] + cols*col_offset[1]
-    #           assume A = Ah/Aw
-    #           end: rows/cols = A*col_offset[1] - col_offset[0]
-    #                            -------------------------------
-    #                            row_offset[0] - A*row_offset[1]
-    #   c) combine
-    #       --> calculate out how many rows/cols it takes to fill the given
-    #           supershape ratio with shape count
-    #           start: r * c = shape_count
-    #           end: r = sqrt(shape_count * rows_per_col)
-    #                c = shapes / r
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    # provide defaults
-    complexity = complexity or 1.0
-    # a) edges
-    edge_count = complexity * _EDGES_PER_COMPLEXITY
-    edge_count = float(edge_count) / supershape.avg_edge_count()
-    shape_count = float(edge_count) * 2.0 / supershape.avg_edge_count()
-    # b) aspect ratio --> grid ratio
-    if not (aspect_h or aspect_w):
-        # default to golden rectangle if no aspect provided
-        aspect_w = (1 + math.sqrt(5))/2
-        aspect_h = 1.0
-    elif not (aspect_h and aspect_w):
-        # square if only one aspect component provided
-        aspect_h = aspect_h or aspect_w  # h if available. otherwise same as w
-        aspect_w = aspect_w or aspect_h  # w if available. otherwise 1
-    else:
-        pass  # just use provided aspects if both provided
-    aspect_h = float(aspect_h)
-    aspect_w = float(aspect_w)
-    ss_spec = supershape.specification()
-    y_offset_per_col = ss_spec['graph_offset_per_col'][0]
-    x_offset_per_col = ss_spec['graph_offset_per_col'][1]
-    y_offset_per_row = ss_spec['graph_offset_per_row'][0]
-    x_offset_per_row = ss_spec['graph_offset_per_row'][1]
-    a = float(aspect_h) / aspect_w
-    rows_per_col = ((a * x_offset_per_col - y_offset_per_col)
-                    / (y_offset_per_row - a * x_offset_per_row))
-    # c) combine everything
-    rows = (shape_count * rows_per_col) ** 0.5
-    cols = float(shape_count) / rows
-    rows = int(round(rows))
-    cols = int(round(cols))
-    return rows, cols
 
 
 if __name__ == '__main__':

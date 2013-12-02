@@ -2,10 +2,9 @@
 """Demonstrate some ways to use polymaze."""
 import polymaze as pmz
 
-EASY = 1.0
-
 
 def demo():
+    print 'Saving demos:'
     rectangle_maze()
     #string_maze()
 
@@ -21,9 +20,13 @@ def demo():
 
 
 def rectangle_maze():
-    grid = pmz.PolyGrid(complexity=EASY)
+    easy = 1.0
+    close_to_golden_rectangle = 0.625
+    grid = pmz.PolyGrid(complexity=easy, aspect=close_to_golden_rectangle)
     maze = pmz.Maze(grid)
-    maze.image().save('Demo Easy Rectangle.png', format='PNG')
+    filename = 'Demo Easy Rectangle.png'
+    maze.image().save(filename, format='PNG')
+    print filename
 
 
 if __name__ == '__main__':

@@ -16,6 +16,9 @@ class Maze(object):
         self._grid = grid
         self._entrance_exit_pairs = tuple(self._mazify_grid())
 
+    def shape_name(self):
+        return self._grid.supershape_name()
+
     def entrance_exit_pairs(self):
         return self._entrance_exit_pairs
 
@@ -159,7 +162,7 @@ class Maze(object):
                 space_polygon_points.append(point_a)
             drawer.polygon(space_polygon_points, fill=white)
         # mark entrances and exits before drawing walls
-        for entrance, exit in self.entrance_exit_pairs():
+        for entrance, exit_ in self.entrance_exit_pairs():
             entrance_polygon_points = list()
             for _, edge in entrance.edges():
                 (row_a, col_a), _ = edge.endpoints(entrance.index())
@@ -168,8 +171,8 @@ class Maze(object):
                 entrance_polygon_points.append(point_a)
             drawer.polygon(entrance_polygon_points, fill=light_red)
             exit_polygon_points = list()
-            for _, edge in exit.edges():
-                (row_a, col_a), _ = edge.endpoints(exit.index())
+            for _, edge in exit_.edges():
+                (row_a, col_a), _ = edge.endpoints(exit_.index())
                 point_a = (int(round(col_a * scale)) + horz_offset_px,
                            int(round(row_a * scale)) + vert_offset_px)
                 exit_polygon_points.append(point_a)

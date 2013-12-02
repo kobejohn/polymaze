@@ -11,7 +11,7 @@ def supershapes_dict():
     for name, obj in inspect.getmembers(current_module):
         try:
             if issubclass(obj, _SuperShape) and (name[0] != '_'):
-                supershapes[name] = obj
+                supershapes[name] = obj()
         except TypeError:
             pass  # issubclass complains for non class obj
     return supershapes
@@ -22,8 +22,7 @@ class _SuperShape(object):
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     # Implementation Requirements
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    @classmethod
-    def _make_specification(cls):
+    def _make_specification(self):
         """Return a dict that describes this supershape.
 
         dict format:
@@ -41,30 +40,41 @@ class _SuperShape(object):
         """
         raise NotImplementedError
 
-    @classmethod
-    def origin_index(cls, index):
+    def origin_index(self, index):
         """Return the equivalent index when the supershape is at the origin."""
         raise NotImplementedError
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     # below here shouldn't need to be touched
     # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    def __new__(cls, grid, index):
+    def __init__(self):
+        # store the top level of specification as properties for easy access
+        d = self._make_specification()
+        # apply specs to the obj for obvious access.
+        # additionally remove each spec from the dict to avoid duplication
+        self._name = d.pop('name')
+        self._components = d.pop('components')
+        self._graph_offset_per_row = d.pop('graph_offset_per_row')
+        self._graph_offset_per_col = d.pop('graph_offset_per_col')
+
+    def name(self):
+        return self._name
+
+    def components(self):
+        return self._components
+
+    def graph_offset_per_row(self):
+        return self._graph_offset_per_row
+
+    def graph_offset_per_col(self):
+        return self._graph_offset_per_col
+
+    def create_component(self, grid, index):
         """Return a new shape for the given index."""
-        return _ComponentShape(cls, grid, index)
+        return _ComponentShape(self, grid, index)
 
-    @classmethod
-    def specification(cls):
-        # cache the specification data
-        try:
-            ss_spec = cls._specification
-        except AttributeError:
-            ss_spec = cls._specification = cls._make_specification()
-        return ss_spec
-
-    @classmethod
-    def avg_edge_count(cls):
-        component_specs = cls.specification()['components'].values()
+    def avg_edge_count(self):
+        component_specs = self.components().values()
         component_count = len(component_specs)
         edge_count = 0
         for component_spec in component_specs:
@@ -86,20 +96,9 @@ class _ComponentShape(object):
     @staticmethod
     def _calc_final_data(ss, index):
         """Return name, final edge data and sorted neighbors."""
-        #{'reference_length': _,
-        # 'graph_offset_per_row': _,
-        # 'graph_offset_per_col': _,
-        # 'components':
-        #     {c_index1: {'name': _,
-        #                 'clockwise_edge_names': _,
-        #                 'edges': {n_index1: {'name': _,
-        #                                      'counter_vertex': _},
-        #                           n_index2: {...}}},
-        #      c_index2: {...}}}
         origin_index = ss.origin_index(index)
         # get all the specs that will be used
-        ss_spec = ss.specification()
-        component_spec = ss_spec['components'][origin_index]
+        component_spec = ss.components()[origin_index]
         edges_spec = component_spec['edges']
         edges_count = len(edges_spec)
         # make the shell of the final edge data and get the ordered indexes
@@ -115,10 +114,8 @@ class _ComponentShape(object):
             # convert base vertex within the ss to full vertex at this index
             base_vertex = edge_spec['counter_vertex']
             anchor_row, anchor_col = diff_tuples(index, origin_index)
-            row_offset = scale_tuple(ss_spec['graph_offset_per_row'],
-                                     anchor_row)
-            col_offset = scale_tuple(ss_spec['graph_offset_per_col'],
-                                     anchor_col)
+            row_offset = scale_tuple(ss.graph_offset_per_row(), anchor_row)
+            col_offset = scale_tuple(ss.graph_offset_per_col(), anchor_col)
             vertex = sum_tuples((base_vertex, row_offset, col_offset))
             edge_data['counter_vertex'] = vertex
             # put n_index into the order indicated by the specification

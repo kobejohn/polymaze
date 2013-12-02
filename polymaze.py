@@ -7,11 +7,16 @@ import polymaze as pmz
 def commandline():
     parser = _parser()
     kwargs = vars(parser.parse_args())
+    # if provided, replace the supershape name with the object
+    ss_name = kwargs.pop('supershape', None)
+    if ss_name:
+        kwargs['supershape'] = pmz.SUPERSHAPES_DICT[ss_name]
     # if a string was provided, make that the primary definition of the mazes
     string = kwargs.pop('string', None)
     if string is not None:
         mazes = list(_make_string_mazes(string, **kwargs))
     else:
+        # rectangle if other grid type not specified
         mazes = [_make_rectangle_maze(**kwargs)]
     # whatever was produced, save it
     _save_mazes(mazes)
@@ -29,9 +34,9 @@ def _make_string_mazes(string, **kwargs):
 
 def _make_rectangle_maze(**kwargs):
     """Return a rectangular maze."""
-    if all(v is None for v in kwargs.values()):
-        # if no args provided, set at least one. otherwise just get empty grid
-        kwargs['complexity'] = 1
+    # set complexity or aspect to make sure a grid is produced (not empty)
+    default_complexity = 1.0
+    kwargs.setdefault('complexity', default_complexity)
     return pmz.Maze(pmz.PolyGrid(**kwargs))
 
 
@@ -64,18 +69,16 @@ def _parser():
     group.add_argument('--string',
                        help='Make a maze for each character in STRING.')
     # optional complexity
-    parser.add_argument('-c', '--complexity', type=_positive,
+    parser.add_argument('--complexity', type=_positive,
                         help='Numeric scale for complexity.'
                              ' 0.5 is easy. 100 is WTFImpossible.')
      # optional shape to use
-    ss_names = pmz.supershapes_dict.keys()
+    ss_names = pmz.SUPERSHAPES_DICT.keys()
     parser.add_argument('--shape', dest='supershape', choices=ss_names,
                         help='Make the maze with this shape. Random otherwise.')
-    # optional image bounds
-    parser.add_argument('-aw', '--aspect_w', type=_positive,
-                        help='Relative width of the maze.')
-    parser.add_argument('-ah', '--aspect_h', type=_positive,
-                        help='Relative height of the maze.')
+    # optional aspect (relative height)
+    parser.add_argument('--aspect', type=_positive,
+                        help='Set the height/width aspect of the maze.')
     return parser
 
 
