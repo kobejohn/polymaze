@@ -1,7 +1,5 @@
 import shapes as _shapes
-import mazemakers  # high level maze makers
-import gridmakers  # high level grid makers
-from polygrid import PolyGrid  # generic grid
-from maze import Maze  # make custom Mazes from grids
+from polygrid import PolyGrid
+from maze import Maze
 
 supershapes_dict = _shapes.supershapes_dict()  # all of the built-in shapes

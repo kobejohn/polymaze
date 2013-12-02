@@ -57,18 +57,6 @@ def _save_mazes(mazes):
             print '    This maze appears to be empty. Not saving.'
 
 
-def _parse_maker(args):
-    """Return the requested mazemaker function and content."""
-    if args.string:
-        maker = pmz.mazemakers.string
-        content = args.string
-    else:
-        # no maker was specified
-        maker = pmz.mazemakers.rectangle
-        content = None
-    return maker, content
-
-
 def _parser():
     parser = argparse.ArgumentParser(description='Make and save mazes.')
     # optional top level type of maze to make (default rectangle)
