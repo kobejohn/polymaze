@@ -76,9 +76,9 @@ def _parser():
     group.add_argument('--string',
                        help='Make a maze for each character in STRING.')
     # optional complexity
-    parser.add_argument('-c', '--complexity', type=float,
+    parser.add_argument('-c', '--complexity', type=_positive,
                         help='Numeric scale for complexity.'
-                             ' 0.5 is easy. 10 is hard.')
+                             ' 0.5 is easy. 100 is WTFImpossible.')
      # optional shape to use
     ss_names = pmz.supershapes_dict.keys()
     parser.add_argument('--shape', dest='supershape', choices=ss_names,
