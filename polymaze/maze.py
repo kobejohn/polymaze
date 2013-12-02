@@ -102,6 +102,7 @@ class Maze(object):
         """Return a PIL(LOW) image representation of self.
 
         arguments: max_width/height_px bound the size of the returned image.
+        returns: None if the maze grid is empty
         """
         # first calculate the graph size of the final image
         x_values, y_values = list(), list()
@@ -109,6 +110,9 @@ class Maze(object):
             (y1, x1), (y2, x2) = edge.endpoints()
             x_values.extend((x1, x2))
             y_values.extend((y1, y2))
+        if not x_values:
+            # empty grid
+            return None
         image_padding_in_edges = 1.0
         graph_height = max(y_values) - min(y_values) + 2*image_padding_in_edges
         graph_width = max(x_values) - min(x_values) + 2*image_padding_in_edges

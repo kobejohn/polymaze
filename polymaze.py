@@ -49,7 +49,12 @@ def _save_mazes(mazes):
         full_name = '{} ({:03} of {:03}) with {}.png' \
                     ''.format(base_name, i+1, len(mazes), ss_name)
         image = maze.image()
-        image.save(full_name, 'PNG', **image.info)
+        if image:
+            # if there is actually an image, produce it
+            image.save(full_name, 'PNG', **image.info)
+            print '    Saved {}'.format(full_name)
+        else:
+            print '    This maze appears to be empty. Not saving.'
 
 
 def _parse_maker(args):
