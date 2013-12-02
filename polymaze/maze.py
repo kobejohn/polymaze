@@ -101,10 +101,9 @@ class Maze(object):
                 break  # done after making the exit path
         return entrance_space, exit_space
 
-    def image(self, w_limit=None, h_limit=None):
+    def image(self):
         """Return a PIL(LOW) image representation of self.
 
-        arguments: max_width/height_px bound the size of the returned image.
         returns: None if the maze grid is empty
         """
         # first calculate the graph size of the final image
@@ -121,20 +120,6 @@ class Maze(object):
         graph_width = max(x_values) - min(x_values) + 2*image_padding_in_edges
         # handle graph --> image scaling reasonably
         scale = float(self.PX_PER_GRAPH_UNIT)  # default scale for no limits
-        if h_limit and w_limit:
-            # scaling: both limits provided --> scale to the more limiting one
-            graph_relative_height = float(graph_height) / graph_width
-            relative_height_limit = float(h_limit) / w_limit
-            if graph_relative_height > relative_height_limit:
-                scale = float(h_limit) / graph_height  # height bound
-            else:
-                scale = float(w_limit) / graph_width  # width bound
-        elif h_limit or w_limit:
-            # scaling: one limit provided --> scale to the provided limit
-            if h_limit:
-                scale = float(h_limit) / graph_height  # height bound
-            else:
-                scale = float(w_limit) / graph_width  # width bound
         # pad the image
         size = (int(round(scale * graph_width)),
                 int(round(scale * graph_height)))
