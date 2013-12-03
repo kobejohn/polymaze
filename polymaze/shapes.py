@@ -133,6 +133,9 @@ class _ComponentShape(object):
     def index(self):
         return self._index
 
+    def grid(self):
+        return self._grid
+
     def name(self):
         return self._name
 

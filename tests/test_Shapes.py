@@ -5,12 +5,17 @@ import polymaze as pmz
 
 #noinspection PyProtectedMember
 class TestComponentShapeImplementations(unittest.TestCase):
-    """Run all implemented shapes through standard verification tests."""
+    """Confirm that all implemented supershapes meet basic specifications."""
     def setUp(self):
-        self.shape_neighborhoods = [full_neighborhood(ss)
+        # make a neighborhood (grid) for each supershape
+        # the neighborhood consists of a complete supershape plus a shape
+        # on each outer border of the supershape (which ensures there are two
+        # shapes sharing each possible edge of a supershape)
+        self.shape_neighborhoods = [supershape_with_neighbors(ss)
                                     for _, ss in pmz.SUPERSHAPES_DICT.items()]
 
     def test_neighbors_have_each_others_indexes(self):
+        """Confirm that all neighbor identifications are mutual."""
         for neighborhood in self.shape_neighborhoods:
             for shape in neighborhood.shapes():
                 self_index = shape.index()
@@ -29,6 +34,8 @@ class TestComponentShapeImplementations(unittest.TestCase):
                                             neighbor.name(), neighbor.index()))
 
     def test_opposing_edge_vertexes_match(self):
+        """Confirm that the vertices of an edge are the same from both shapes
+        that share the edge."""
         for neighborhood in self.shape_neighborhoods:
             for shape in neighborhood.shapes():
                 s_index = shape.index()
@@ -38,6 +45,7 @@ class TestComponentShapeImplementations(unittest.TestCase):
                     # confirm self vertexes match neighbor vertexes
                     # don't use .edge(index) which may use the data from the
                     # same object for both .edge() calls
+                    # use the internal specification data
                     self_vertexes = [shape._edge_data[n_index]['counter_vertex'],
                                      shape._edge_data[n_index]['clock_vertex']]
                     n_vertexes = [neighbor._edge_data[s_index]['counter_vertex'],
@@ -64,6 +72,7 @@ class TestComponentShapeImplementations(unittest.TestCase):
                                                          n_index, n_vertex))
 
     def test_internally_stored_vertexes_are_in_order_around_perimeter(self):
+        """Confirm that the vertices for a shape are reported clockwise."""
         for neighborhood in self.shape_neighborhoods:
             for shape in neighborhood.shapes():
                 edge_count = len(tuple(shape.n_indexes()))
@@ -86,7 +95,7 @@ class TestComponentShapeImplementations(unittest.TestCase):
 
 #noinspection PyProtectedMember
 class TestComponentShape(unittest.TestCase):
-    def test_index_returns_same_index_set_on_creation(self):
+    def test_index_returns_same_index_provided_on_creation(self):
         index_spec = (10, 20)
         #noinspection PyTypeChecker
         shape = generic_shape(index=index_spec)
@@ -119,16 +128,18 @@ class TestComponentShape(unittest.TestCase):
             self.assertFalse(shape._grab_edges(shape._owned_edges))
 
     def test_give_away_edges_moves_ownership_of_edges_to_neighbors(self):
-        index_1 = (1, 2)
-        index_2 = (1, 3)
-        original_owner = generic_shape(index=index_1)
-        neighbor = generic_shape(index=index_2, grid=original_owner._grid)
-        # confirm original owner actually owns the edge
-        self.assertIn(index_2, original_owner._owned_edges)
+        index = (1, 1)
+        original_owner = generic_shape(index=index)
+        grid = original_owner.grid()
+        n_index = tuple(original_owner.n_indexes())[0]
+        neighbor = grid.create(n_index)
+        # confirm ownership of the edge before giving it away
+        self.assertIn(n_index, original_owner._owned_edges)
+        self.assertNotIn(index, neighbor._owned_edges)
         # confirm ownership changes after giving away the edge
         original_owner._give_away_edges()
-        self.assertNotIn(index_2, original_owner._owned_edges)
-        self.assertIn(index_1, neighbor._owned_edges)
+        self.assertNotIn(n_index, original_owner._owned_edges)
+        self.assertIn(index, neighbor._owned_edges)
 
     def test_edge_returns_an_edge_for_each_neighbor_index(self):
         shape = generic_shape()
@@ -193,16 +204,16 @@ class TestEdge(unittest.TestCase):
                           any_edge.endpoints, *(non_neighbor_index,))
 
 
-def generic_shape(supershape=None, index=None, grid=None):
+def generic_shape(supershape=None, index=None):
     # provide test defaults
-    grid = grid or pmz.PolyGrid(supershape=supershape)
+    grid = pmz.PolyGrid(supershape=supershape)
     index = index or (1, 2)
     # get a shape
     shape = grid.create(index)
     return shape
 
 
-def full_neighborhood(ss):
+def supershape_with_neighbors(ss):
     """Make a neighborhood of all component shapes + all border shapes."""
     grid = pmz.PolyGrid(supershape=ss)
     for comp_index, comp_data in ss.components().items():

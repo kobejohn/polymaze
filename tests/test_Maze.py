@@ -32,7 +32,7 @@ import polymaze as pmz
 
 #noinspection PyProtectedMember
 class TestMaze(unittest.TestCase):
-    #todo: to really test this, need to create a forest and verify no cycles
+    #todo: to really test this, need to confirm all graph nodes lead to in/out
 
     def test_entrance_exit_pairs_are_available_after_creation(self):
         maze = generic_maze()
@@ -44,7 +44,7 @@ class TestMaze(unittest.TestCase):
         for entrance_exit_pair in entrance_exit_pairs:
             self.assertEqual(len(entrance_exit_pair), 2)
 
-    def test_has_paths_returns_true_if_edges_are_all_walls(self):
+    def test_has_paths_returns_false_if_edges_are_all_walls(self):
         maze = generic_maze()
         # choose any space from the maze's grid and set all edges to wall
         some_index = tuple(maze._grid.shapes())[0].index()
@@ -69,7 +69,7 @@ class TestMaze(unittest.TestCase):
 
 def generic_maze(**kwargs):
     if 'complexity' not in kwargs:
-        kwargs['complexity'] = .3  # speed things up when possible
+        kwargs['complexity'] = .5  # speed things up when possible
     grid = pmz.PolyGrid(**kwargs)
     return pmz.Maze(grid)
 

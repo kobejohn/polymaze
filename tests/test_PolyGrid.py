@@ -8,22 +8,7 @@ import polymaze as pmz
 
 #todo move these into main PolyGrid specification
 class Testgridmakers(unittest.TestCase):
-    def test_by_default_produces_a_rectangular_grid(self):
-        grid = pmz.PolyGrid(complexity=0.5)
-        # get the bounds to be checked
-        all_indexes = [s.index() for s in grid.shapes()]
-        all_rows, all_cols = zip(*all_indexes)
-        row_min, row_max = min(all_rows), max(all_rows)
-        col_min, col_max = min(all_cols), max(all_cols)
-        # confirm that the shape count is exactly the index area of rectangle
-        shape_count_spec = (row_max - row_min + 1) * (col_max - col_min + 1)
-        shape_count = len(all_indexes)
-        self.assertEqual(shape_count, shape_count_spec)
-        # confirm that every index exists
-        for row in range(row_min, row_max + 1):
-            for col in range(col_min, col_max + 1):
-                self.assertIsNotNone(grid.get((row, col)))
-
+    pass
     #todo: reopen this when character implemented
     #def test_character_gets_a_char_image_for_provided_char(self):
     #    character_spec = 'C'
@@ -110,6 +95,31 @@ class Testgridmakers(unittest.TestCase):
 
 #noinspection PyProtectedMember
 class TestShapeGrid(unittest.TestCase):
+    def test_produces_an_empty_grid_when_no_args_supplied(self):
+        grid_made_with_no_args = pmz.PolyGrid()
+        self.assertEqual(len(tuple(grid_made_with_no_args.shapes())), 0)
+
+    def test_produces_an_empty_grid_when_only_supershape_supplied(self):
+        ss = pmz.SUPERSHAPES_DICT.values()[0]  # any supershape
+        grid_made_with_supershape = pmz.PolyGrid(supershape=ss)
+        self.assertEqual(len(tuple(grid_made_with_supershape.shapes())), 0)
+
+    def test_can_produce_a_rectangular_grid(self):
+        grid = pmz.PolyGrid(complexity=0.5)
+        # get the bounds to be checked
+        all_indexes = [s.index() for s in grid.shapes()]
+        all_rows, all_cols = zip(*all_indexes)
+        row_min, row_max = min(all_rows), max(all_rows)
+        col_min, col_max = min(all_cols), max(all_cols)
+        # confirm that the shape count is exactly the index area of rectangle
+        shape_count_spec = (row_max - row_min + 1) * (col_max - col_min + 1)
+        shape_count = len(all_indexes)
+        self.assertEqual(shape_count, shape_count_spec)
+        # confirm that every index exists
+        for row in range(row_min, row_max + 1):
+            for col in range(col_min, col_max + 1):
+                self.assertIsNotNone(grid.get((row, col)))
+
     def test_get_returns_shape_created_with_same_index(self):
         grid = generic_grid()
         some_index = (1, 2)
