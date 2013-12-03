@@ -95,17 +95,13 @@ class Testgridmakers(unittest.TestCase):
 
 #noinspection PyProtectedMember
 class TestShapeGrid(unittest.TestCase):
-    def test_produces_an_empty_grid_when_no_args_supplied(self):
-        grid_made_with_no_args = pmz.PolyGrid()
-        self.assertEqual(len(tuple(grid_made_with_no_args.shapes())), 0)
+    def test_produces_an_empty_grid(self):
+        grid = pmz.PolyGrid()
+        self.assertEqual(len(tuple(grid.shapes())), 0)
 
-    def test_produces_an_empty_grid_when_only_supershape_supplied(self):
-        ss = pmz.SUPERSHAPES_DICT.values()[0]  # any supershape
-        grid_made_with_supershape = pmz.PolyGrid(supershape=ss)
-        self.assertEqual(len(tuple(grid_made_with_supershape.shapes())), 0)
-
-    def test_can_produce_a_rectangular_grid(self):
-        grid = pmz.PolyGrid(complexity=0.5)
+    def test_create_rectangle_produces_a_rectangular_grid(self):
+        grid = generic_grid()
+        grid.create_rectangle()
         # get the bounds to be checked
         all_indexes = [s.index() for s in grid.shapes()]
         all_rows, all_cols = zip(*all_indexes)

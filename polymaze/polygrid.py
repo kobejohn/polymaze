@@ -10,37 +10,45 @@ _DEFAULT_COMPLEXITY = 1.0
 
 class PolyGrid(object):
     """Sparse grid of shapes."""
-    def __init__(self, **kwargs):
-        """Create a grid.
+    def __init__(self, supershape=None):
+        """Create an empty grid.
 
         kwargs:
         supershape - a supershape class that defines how the maze will look
                      (random if not provided)
-        complexity - scale the difficulty of the maze to any positive number
-                     e.g. 0.5 is very simple, 10 is very difficult
-        aspect - relative height of the grid's graph (not indexes)
-
-        note: if nothing or only supershape is specified, the grid will be empty
         """
         self._shapes = dict()
-        # the supershape is fundamental to a lot of decisions, so settle it
-        self._supershape = (kwargs.pop('supershape', None) or
-                            random.choice(_SS_DICT.values()))
-        if not kwargs:
-            return  # empty grid if no additional specifications made
-        rows, cols = _normalize_bounds_to_complexity(self._supershape, **kwargs)
-        for row in range(rows):
-            for col in range(cols):
-                self.create((row, col))
-
-    def supershape_name(self):
-        return self._supershape.name()
+        self._supershape = supershape or random.choice(_SS_DICT.values())
 
     def create(self, index):
         """Create (or replace) a shape at index."""
         ss = self._supershape
         self._shapes[index] = new_shape = ss.create_component(self, index)
         return new_shape
+
+    def create_rectangle(self, **kwargs):
+        """Create a rectangle of shapes.
+
+        kwargs:
+        complexity - scale the difficulty of the maze to any positive number
+        aspect - aspect of the grid's graph (not indexes) (height / width)
+        """
+        rows, cols = _normalize_bounds_to_complexity(self._supershape, **kwargs)
+        for row in range(rows):
+            for col in range(cols):
+                self.create((row, col))
+
+    def create_string(self, string, **kwargs):
+        """Create shapes in the form of the provided string.
+
+        kwargs:
+        complexity - scale the difficulty of the maze to any positive number
+        aspect - aspect of the grid's graph (not indexes) (height / width)
+        """
+        pass
+
+    def supershape_name(self):
+        return self._supershape.name()
 
     def remove(self, index):
         """Remove the shape at index and remove its link to the grid."""

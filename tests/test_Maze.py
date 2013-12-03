@@ -105,9 +105,11 @@ class TestMaze(unittest.TestCase):
 
 
 def generic_maze(**kwargs):
+    supershape = kwargs.pop('supershape', None)
+    grid = pmz.PolyGrid(supershape=supershape)
     if 'complexity' not in kwargs:
         kwargs['complexity'] = .5  # speed things up when possible
-    grid = pmz.PolyGrid(**kwargs)
+    grid.create_rectangle(**kwargs)
     return pmz.Maze(grid)
 
 
