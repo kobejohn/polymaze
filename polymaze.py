@@ -16,9 +16,10 @@ def commandline():
     grid = pmz.PolyGrid(supershape=supershape)
     # pull off non-common parameters
     string = kwargs.pop('string')
+    font_path = kwargs.pop('font')
     # fill the grid based on the remaining arguments provided
     if string:
-        grid.create_string(string, **kwargs)
+        grid.create_string(string, font_path=font_path, **kwargs)
         maze = pmz.Maze(grid)
         save_maze(maze, 'String')
     else:
@@ -58,6 +59,8 @@ def _parser():
     # optional aspect (relative height)
     parser.add_argument('--aspect', type=_positive,
                         help='Set the height/width aspect of the maze.')
+    parser.add_argument('--font', type=str,
+                        help='Provide a font name/path for string mazes.')
     return parser
 
 

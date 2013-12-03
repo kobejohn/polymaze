@@ -13,7 +13,8 @@ def main():
 
 
 def make_maze(complexity):
-    grid = pmz.PolyGrid(complexity=complexity, supershape=preloaded_shape)
+    grid = pmz.PolyGrid(supershape=preloaded_shape)
+    grid.create_rectangle(complexity=complexity)
     pmz.Maze(grid)
 
 if __name__ == '__main__':

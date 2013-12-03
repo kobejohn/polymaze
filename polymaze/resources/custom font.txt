@@ -1,1 +1,1 @@
-put a font here named 'font' to override the default
+Put custom fonts here and refer to them simply by their filename in PolyGrid.create_string arguments.

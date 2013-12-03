@@ -1,11 +1,20 @@
+# coding=utf-8
 import math
+import os
 import random
+
+import PIL.Image
+import PIL.ImageDraw
+import PIL.ImageFont
+import PIL.ImageOps
 
 import shapes as _shapes
 
 _SS_DICT = _shapes.supershapes_dict()
 _BASE_EDGES = 7000.0
 _DEFAULT_COMPLEXITY = 1.0
+_BASE_DIR = os.path.dirname(__file__)
+_RESOURCE_DIR = os.path.join(_BASE_DIR, 'resources')
 
 
 class PolyGrid(object):
@@ -38,14 +47,50 @@ class PolyGrid(object):
             for col in range(cols):
                 self.create((row, col))
 
-    def create_string(self, string, **kwargs):
+    def create_string(self, string, font_path=None, **kwargs):
         """Create shapes in the form of the provided string.
 
         kwargs:
+        font_path - just file name of any font in resources or full path
         complexity - scale the difficulty of the maze to any positive number
         aspect - aspect of the grid's graph (not indexes) (height / width)
         """
-        pass
+        string_image = _string_image(string, font_path=font_path)
+        # cheat. multiply complexity by length of string
+        base_complexity = kwargs.get('complexity') or _DEFAULT_COMPLEXITY
+        kwargs['complexity'] = len(string) * base_complexity
+        # create with the standard image method
+        self.create_from_image(string_image, **kwargs)
+
+    def create_from_image(self, image, **kwargs):
+        """Create a grid based basically on the dark pixels of image."""
+        # convert complexity and aspect to index bounds
+        if not kwargs.get('aspect'):
+            # if no aspect provided, use the string image size
+            im_width, im_height = image.size
+            kwargs['aspect'] = float(im_height) / im_width
+        rows, cols = _normalize_bounds_to_complexity(self._supershape, **kwargs)
+        # convert the image to a grid that will look like the image when drawn
+        # shrink the image with the required grid aspect (NOT image aspect)
+        bilevel_image_type = '1'
+        gray_image_type = 'L'
+        white_threshold = 128
+        image = image.resize((cols, rows), resample=PIL.Image.ANTIALIAS)
+        # convert if necessary to gray
+        if len(image.getbands()) != 1:
+            image = image.convert(gray_image_type)
+        # further convert to black white
+        if image.mode != bilevel_image_type:
+            image = image.convert(bilevel_image_type)
+        # convert to black/white
+        image = image.point(lambda i: 255 * (i > white_threshold))
+        # get the pixels and build the grid
+        pixels = image.load()
+        width, height = image.size
+        for y in range(height):
+            for x in range(width):
+                if not pixels[x, y]:
+                    self.create((y, x))
 
     def supershape_name(self):
         return self._supershape.name()
@@ -146,6 +191,54 @@ def _normalize_bounds_to_complexity(supershape, complexity=None, aspect=None):
     rows = int(round(rows))
     cols = int(round(cols))
     return rows, cols
+
+
+def _string_image(string, font_path=None):
+    """Draw a black character on a white background."""
+    # setup common parts
+    black = 0
+    white = 255
+    bilevel_image_type = '1'
+    gray_image_type = 'L'
+    large = 200
+    height = 300  # presumably large enough for any font @ large size
+    width = height * len(string)
+    # make the background
+    image = PIL.Image.new(gray_image_type, (width, height), color=white)
+    # draw the text
+    draw = PIL.ImageDraw.Draw(image)
+    # choose a font
+    font_priority = list()
+    if font_path:
+        # if font path was provided, try a few ways of interpreting it
+        # first direct path to custom font
+        # this will work for systems that have fonts in the path
+        # or when the font is directly in the working directory
+        font_priority.append(font_path)
+        # second, try the given path as just a font name in resource directory
+        font_priority.append(os.path.join(_RESOURCE_DIR, font_path))
+    #todo: how to list this font for linux? windows automatically looks in fonts
+    # always try the default font last
+    font_priority.append('impact.ttf')  # common font with a high surface area
+    for font_path in font_priority:
+        try:
+            font = PIL.ImageFont.truetype(font_path, size=large)
+            break  # break when a font works
+        except IOError:
+            pass
+    else:
+        # nothing worked. give up and use whatever PIL decides
+        font = None
+        print 'Unable to find custom or standard font. Using default.'
+    draw.text((10, 10), string, fill=black, font=font)
+    # isolate the text
+    c_box = PIL.ImageOps.invert(image).getbbox()
+    image = image.crop(c_box)
+    # convert to black/white
+    threshold = 128
+    image = image.point(lambda i: 255 * (i > threshold))
+    image = image.convert(mode=bilevel_image_type)
+    return image
 
 
 if __name__ == '__main__':
