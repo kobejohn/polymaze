@@ -46,10 +46,12 @@ class TestComponentShapeImplementations(unittest.TestCase):
                     # don't use .edge(index) which may use the data from the
                     # same object for both .edge() calls
                     # use the internal specification data
-                    self_vertexes = [shape._edge_data[n_index]['counter_vertex'],
-                                     shape._edge_data[n_index]['clock_vertex']]
-                    n_vertexes = [neighbor._edge_data[s_index]['counter_vertex'],
-                                  neighbor._edge_data[s_index]['clock_vertex']]
+                    s_edge_data = shape._edge_data[n_index]
+                    n_edge_data = neighbor._edge_data[s_index]
+                    self_vertexes = [s_edge_data['counter_vertex'],
+                                     s_edge_data['clock_vertex']]
+                    n_vertexes = [n_edge_data['counter_vertex'],
+                                  n_edge_data['clock_vertex']]
                     # sort so we can use AlmostEqual
                     self_vertexes.sort()
                     n_vertexes.sort()
@@ -57,6 +59,7 @@ class TestComponentShapeImplementations(unittest.TestCase):
                         #convert to complex so AlmostEqual assertion possible
                         self_vertex = complex(*self_vertex)
                         n_vertex = complex(*n_vertex)
+                        ss_name = neighborhood.supershape_name()
                         self.assertAlmostEqual(self_vertex, n_vertex, msg=
                                                'For SuperShape {},'
                                                '\nshape {} @ index {}'
@@ -64,7 +67,7 @@ class TestComponentShapeImplementations(unittest.TestCase):
                                                '\ndoes not seem to match'
                                                '\nneighbor {} @ index {}'
                                                '\nvertex: {},'
-                                               ''.format(neighborhood.supershape_name(),
+                                               ''.format(ss_name,
                                                          shape.name(),
                                                          shape.index(),
                                                          self_vertex,
@@ -82,8 +85,10 @@ class TestComponentShapeImplementations(unittest.TestCase):
                     edge_data = shape._edge_data[n_index]
                     next_data = shape._edge_data[next_n_index]
                     # confirm points are like this: a -- b/c -- d
-                    a, b = edge_data['counter_vertex'], edge_data['clock_vertex']
-                    c, d = next_data['counter_vertex'], next_data['clock_vertex']
+                    a, b = (edge_data['counter_vertex'],
+                            edge_data['clock_vertex'])
+                    c, d = (next_data['counter_vertex'],
+                            next_data['clock_vertex'])
                     # convert to imaginary numbers so assertion possible
                     a, b = complex(*a), complex(*b)
                     c, d = complex(*c), complex(*d)
@@ -168,6 +173,20 @@ class TestComponentShape(unittest.TestCase):
 
 #noinspection PyProtectedMember
 class TestEdge(unittest.TestCase):
+    def test_endpoints_returns_endpoints(self):
+        """Don't worry about the order if owner not indicated."""
+        # make a shape and any neighbor
+        index = (1, 2)
+        shape = generic_shape(index=index)
+        n_index = tuple(shape.n_indexes())[0]
+        # get the shared edge and confirm the endpoints are correct
+        edge = shape.edge(n_index)
+        end_1_spec = shape._edge_data[n_index]['counter_vertex']
+        end_2_spec = shape._edge_data[n_index]['clock_vertex']
+        ends_spec = (end_1_spec, end_2_spec)
+        ends = tuple(edge.endpoints())
+        self.assertItemsEqual(ends, ends_spec)
+
     def test_endpoints_returns_endpoints_from_indicated_shape(self):
         """Each shape may/will have a different order for the same endpoints."""
         # make a shape and any neighbor
