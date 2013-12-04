@@ -1,1 +1,0 @@
-Put custom fonts here and refer to them simply by their filename in PolyGrid.create_string arguments.

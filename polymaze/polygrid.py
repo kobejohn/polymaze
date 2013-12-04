@@ -14,7 +14,6 @@ _SS_DICT = _shapes.supershapes_dict()
 _BASE_EDGES = 7000.0
 _DEFAULT_COMPLEXITY = 1.0
 _BASE_DIR = os.path.dirname(__file__)
-_RESOURCE_DIR = os.path.join(_BASE_DIR, 'resources')
 
 
 class PolyGrid(object):
@@ -210,13 +209,11 @@ def _string_image(string, font_path=None):
     # choose a font
     font_priority = list()
     if font_path:
-        # if font path was provided, try a few ways of interpreting it
-        # first direct path to custom font
-        # this will work for systems that have fonts in the path
-        # or when the font is directly in the working directory
+        # if font path was provided, it might work in three ways
+        # 1) path completely defines location of a font
+        # 2) just a file name works for a font in the current working directory
+        # 3) just a file name works for a font somewhere in the system path
         font_priority.append(font_path)
-        # second, try the given path as just a font name in resource directory
-        font_priority.append(os.path.join(_RESOURCE_DIR, font_path))
     #todo: how to list this font for linux? windows automatically looks in fonts
     # always try the default font last
     font_priority.append('impact.ttf')  # common font with a high surface area
