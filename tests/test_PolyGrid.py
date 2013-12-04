@@ -1,99 +1,70 @@
 import mock
 import unittest
 
-import PIL.Image
-
 import polymaze as pmz
+import polymaze.polygrid as _polygrid_module
 
 
-#todo move these into main PolyGrid specification
-class Testgridmakers(unittest.TestCase):
-    pass
-    #todo: reopen this when character implemented
-    #def test_character_gets_a_char_image_for_provided_char(self):
-    #    character_spec = 'C'
-    #    with mock.patch('polymaze.gridmakers._character_image') as m_c_image:
-    #        try:
-    #            _gridmakers.character(character_spec)
-    #        except Exception:
-    #            pass  # ignore fallout....
-    #        self.assertIsNone(m_c_image.assert_called_with(character_spec))
+# noinspection PyProtectedMember
+# noinspection PyBroadException
+class TestPolyGrid_Creation(unittest.TestCase):
+    @mock.patch('polymaze.polygrid.PolyGrid.create_from_image')
+    @mock.patch('polymaze.polygrid._string_image')
+    def test_create_string_converts_to_image_then_uses_create_image(self,
+                                                                    m_s_img,
+                                                                    m_crt_im):
+        grid = generic_grid()
+        source_string_spec = 'asdf'
+        grid.create_string(source_string_spec)
+        # confirm image conversion was done with the source string
+        m_s_img_args = m_s_img.call_args[0]
+        self.assertIn(source_string_spec, m_s_img_args)
+        # confirm the result image was then used to create shapes
+        m_crt_im_args = m_crt_im.call_args[0]
+        self.assertIn(m_s_img.return_value, m_crt_im_args)
 
-    #todo: reopen this when character implemented
-    #def test_character_calcs_grid_bounds_with_aspect_if_provided(self):
-    #    any_char = 'c'
-    #    aspect_h_spec = 3
-    #    aspect_w_spec = 5
-    #    with mock.patch('polymaze.gridmakers._calc_index_bounds') as m_bounds:
-    #        try:
-    #            _gridmakers.character(any_char, aspect_h=aspect_h_spec,
-    #                                  aspect_w=aspect_w_spec)
-    #        except Exception:
-    #            pass  # ignore fallout.... haven't considered the risks
-    #        call_kwargs = m_bounds.call_args[1]
-    #        self.assertIn(('aspect_h', aspect_h_spec), call_kwargs.items())
-    #        self.assertIn(('aspect_w', aspect_w_spec), call_kwargs.items())
+    def test_string_image_returns_a_PIL_image(self):
+        some_string = 'asdf'
+        image = _polygrid_module._string_image(some_string)
+        self.assertTrue(hasattr(image, 'resize'))
 
-    #todo: reopen this when character implemented
-    #def test_character_calcs_grid_bounds_with_image_if_aspct_not_provided(self):
-    #    any_char = 'c'
-    #    image_w_spec, image_h_spec = 113, 237
-    #    with mock.patch('polymaze.gridmakers._calc_index_bounds') as m_bounds:
-    #        with mock.patch('polymaze.gridmakers._character_image') as m_c_im:
-    #            m_c_im.return_value.size = (image_w_spec, image_h_spec)
-    #            try:
-    #                _gridmakers.character(any_char)
-    #            except Exception:
-    #                pass  # ignore fallout.... haven't considered the risks
-    #            call_kwargs = m_bounds.call_args[1]
-    #            self.assertIn(('aspect_h', image_h_spec), call_kwargs.items())
-    #            self.assertIn(('aspect_w', image_w_spec), call_kwargs.items())
+    @mock.patch('PIL.ImageFont.truetype')
+    def test_string_image_tries_impact_font_when_none_provided(self,
+                                                               m_truetype):
+        some_string = 'asdf'
+        impact_font = 'impact.ttf'
+        try:
+            _polygrid_module._string_image(some_string)
+        except Exception:
+            pass  # ignore fallout
+        m_truetype_args = m_truetype.call_args[0]
+        self.assertIn(impact_font, m_truetype_args)
 
-    #todo: reopen this when character implemented
-    #def test_character_converts_image_to_shapes(self):
-    #    character_spec = 'C'
-    #    with mock.patch('polymaze.gridmakers._image_white_to_shapes') as m_i2s:
-    #        try:
-    #            _gridmakers.character(character_spec)
-    #        except Exception:
-    #            pass  # ignore fallout....
-    #        self.assertEqual(m_i2s.call_count, 1)
+    @mock.patch('PIL.ImageFont.truetype')
+    def test_string_image_tries_provided_font_path(self, m_truetype):
+        some_string = 'asdf'
+        some_font = 'somefont'
+        try:
+            _polygrid_module._string_image(some_string, font_path=some_font)
+        except Exception:
+            pass  # ignore fallout
+        m_truetype_args = m_truetype.call_args[0]
+        self.assertIn(some_font, m_truetype_args)
 
-    #todo: reopen this when character implemented
-    #def test_image_white_to_shapes_returns_grid_with_max_provided_size(self):
-    #    rows_spec, cols_spec = 20, 30
-    #    _image_size = 200, 300  # not part of spec
-    #    _white_im = PIL.Image.new('L', _image_size, color=255)
-    #    grid = _polygrid.PolyGrid()
-    #    grid = _gridmakers._image_white_to_shapes(_white_im, grid,
-    #                                              rows_spec, cols_spec)
-    #    # confirm that the shape count is exactly the index area of rectangle
-    #    shape_count_spec = rows_spec * cols_spec
-    #    all_indexes = [s.index() for s in grid.shapes()]
-    #    shape_count = len(all_indexes)
-    #    self.assertEqual(shape_count, shape_count_spec)
-    #    # confirm that every index exists
-    #    for row in range(rows_spec):
-    #        for col in range(cols_spec):
-    #            self.assertIsNotNone(grid.get((row, col)))
+    @mock.patch('PIL.ImageFont.truetype')
+    def test_string_image_survives_even_if_all_fonts_fail(self, m_truetype):
+        m_truetype.side_effect = IOError
+        some_string = 'asdf'
+        try:
+            _polygrid_module._string_image(some_string)
+        except Exception:
+            self.fail('_string_image unexpectedly failed when fonts all failed')
 
-    #todo: reopen this when character implemented
-    #def test_image_white_to_shapes_converts_multi_channels_to_mono(self):
-    #    _some_dim = 20  # not part of spec
-    #    not_mono = 'RGB'
-    #    mono = 'L'
-    #    grid = _polygrid.PolyGrid()
-    #    m_image = mock.MagicMock()
-    #    m_image.getbands.return_value = not_mono
-    #    try:
-    #        _gridmakers._image_white_to_shapes(m_image, grid,
-    #                                           _some_dim, _some_dim)
-    #    except Exception:
-    #        pass
-    #    m_image.assert_has_calls(mock.call.convert(mono))
+    def test_create_from_image_looks_like_provided_image(self):
+        pass  # todo: too lazy to mock / test :(
 
 
-#noinspection PyProtectedMember
+# noinspection PyProtectedMember
 class TestShapeGrid(unittest.TestCase):
     def test_produces_an_empty_grid(self):
         grid = pmz.PolyGrid()
@@ -235,7 +206,6 @@ class TestShapeGrid(unittest.TestCase):
             self.assertIn(previously_unowned_edge, owned_edges)
 
 
-#noinspection PyProtectedMember
 def generic_grid(supershape=None, neighborhood_center_index=None):
     grid = pmz.PolyGrid(supershape=supershape)
     if neighborhood_center_index:

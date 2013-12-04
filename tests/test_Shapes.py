@@ -102,7 +102,6 @@ class TestComponentShapeImplementations(unittest.TestCase):
 class TestComponentShape(unittest.TestCase):
     def test_index_returns_same_index_provided_on_creation(self):
         index_spec = (10, 20)
-        #noinspection PyTypeChecker
         shape = generic_shape(index=index_spec)
         self.assertEqual(shape.index(), index_spec)
 

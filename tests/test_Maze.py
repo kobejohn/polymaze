@@ -1,34 +1,6 @@
-import mock
 import unittest
 
 import polymaze as pmz
-
-
-#todo: reopen when characters etc. working in polygrid
-#todo: also move to main Maze test
-#@mock.patch('polymaze.mazemakers._gridmakers')
-#@mock.patch('polymaze.mazemakers._maze')
-#class Testmazemakers(unittest.TestCase):
-#    def test_string_gens_non_whitespace_characters(self, m_maze, m_gridmakers):
-#        string_with_whitespace = ' a b\tc\nd'
-#        non_whitespace_spec = 'abcd'
-#        list(_mazemakers.string(string_with_whitespace))
-#        # confirm a) ALL non whitespace characters created
-#        for c in non_whitespace_spec:
-#            self.assertIsNone(m_gridmakers.character.assert_any_call(c))
-#        # confirm b) ONLY the non whitespace characters were created
-#        self.assertEqual(m_gridmakers.character.call_count,
-#                         len(non_whitespace_spec))
-#
-#    def test_string_gens_chars_and_mazes_from_gridmaker_rectangle(self,
-#                                                                  m_maze,
-#                                                                  m_gridmakers):
-#        chars_spec = 'abcd'
-#        for c, maze in _mazemakers.string(chars_spec):
-#            # confirm that the data proceeded as expected
-#            self.assertIsNone(m_gridmakers.character.assert_called_with(c))
-#            self.assertIsNone(m_maze.Maze.assert_called_with(m_gridmakers.character.return_value))
-#            self.assertIs(maze, m_maze.Maze.return_value)
 
 
 #noinspection PyProtectedMember
