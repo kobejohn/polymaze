@@ -130,35 +130,47 @@ def _source_image_to_grid_image(source, supershape,
                                 complexity=None, aspect=None):
     """Convert the image to 0/1 and produce shapes to fill zero regions."""
     # get some fundamental data
-    source_w, source_h = source.size
+    source_cols, source_rows = source.size
     ref_length = supershape.reference_length()  # not needed? feels like it is
     ss = supershape  # for brevity
     complexity = complexity if complexity is not None else _DEFAULT_COMPLEXITY
     # setup base translation factors
     # a) b) c) etc. below - calculate scale, skew before changing anything
 
-    # a) calculate skew due to shapes that are not tiled perfectly vert/horiz
-    x_skew = ss.graph_offset_per_row()[1]
-    y_skew = ss.graph_offset_per_col()[0]
+    # c) calculate skew due to shapes that are not tiled perfectly vert/horiz
+    # convert indexes to total graph skew
+    source_graph_skew_h = source_cols * ss.graph_offset_per_col()[0]
+    source_graph_skew_w = source_rows * ss.graph_offset_per_row()[1]
+    # convert the graph skew to the number of indexes needed to make up the skew
+    source_skew_rows = float(source_graph_skew_h) / ss.graph_offset_per_row()[0]
+    source_skew_cols = float(source_graph_skew_w) / ss.graph_offset_per_col()[1]
+    # normalize the indexes by the total indexes
+    source_skew_rows_norm = float(source_skew_rows) / source_rows
+    source_skew_cols_norm = float(source_skew_cols) / source_cols
 
-    # b) calculate all adjustments due to aspect changes
+    # a) calculate all adjustments due to aspect changes
     #    1) shape: e.g. Hexagon is wider than it is tall so the grid must be
     #       compressed horizontally / expanded vertically
     #    2) either match source image (no change) or use aspect argument
-    source_aspect = float(source_h) / source_w
+    source_aspect = float(source_rows) / source_cols
     shape_aspect = (float(ss.graph_offset_per_row()[0])
                     / ss.graph_offset_per_col()[1])
     target_aspect = float(aspect or source_aspect)  # default is source aspect
     grid_aspect = target_aspect / shape_aspect
 
-    # c) calculate how to scale the target aspect to fit the desired number of
+    print 'grid aspect', grid_aspect
+
+    # b) calculate how to scale the target aspect to fit the desired number of
     #    shapes. This is an important step to having normalized complexity
     #    for any shape, aspect, etc.
     #    note: the 2.0 factor accounts for grid internal edges being shared
     edge_count = _BASE_EDGES * complexity  # total edges
     shape_count = float(edge_count) * 2.0 / ss.avg_edge_count()
-    grid_h = int(round((shape_count * grid_aspect)**0.5 + y_skew))
-    grid_w = int(round((float(shape_count) / grid_aspect)**0.5 + x_skew))
+    grid_h = int(round((float(shape_count) * grid_aspect)**0.5))# + abs(source_skew_rows_norm))) #todo: this is source index skew, not target index skew
+    grid_w = int(round((float(shape_count) / grid_aspect)**0.5))# + abs(source_skew_cols_norm)))
+
+    print 'grid h', grid_h
+    print 'grid w', grid_w
 
     # 1st operation - affine skew before resizing (usually shrinking)
     # PIL affine transformation parameter notes (a, b, c, d, e, f):
@@ -168,16 +180,27 @@ def _source_image_to_grid_image(source, supershape,
     # d-yskew (negative 1.0 swings the rigth down full height)
     # e-yscale (.5 is double)
     # f-ytranslate
-    skew_only_coeffs = (1.0, x_skew, 0.0, y_skew, 1.0, 0.0)
-    skewed_h = int(round(source_h + abs(y_skew)))
-    skewed_w = int(round(source_w + abs(x_skew)))
+    skew_only_coeffs = (1.0, source_skew_cols_norm, 0.0,
+                        source_skew_rows_norm, 1.0, 0.0)
+    skewed_h = int(round(source_rows + abs(source_skew_rows)))
+    skewed_w = int(round(source_cols + abs(source_skew_cols)))
     # have to invert before/after transform since it fills with black
+    print 'skewed h', skewed_h
+    print 'skewed w', skewed_w
+
+
     skewed = PIL.ImageOps.invert(source)
     skewed = skewed.transform((skewed_w, skewed_h), PIL.Image.AFFINE,
                               skew_only_coeffs, PIL.Image.BICUBIC)
     skewed = PIL.ImageOps.invert(skewed)  # undo the inversion
+
+    skewed.show('skewed')
+
+    print 'skewed size', skewed.size
+
     # 2nd Operation: perform combined scaling
     final = skewed.resize((grid_w, grid_h), PIL.Image.ANTIALIAS)
+    final.show('final')
 
     # convert to black/white with tweakable threshold
     white_threshold = 128  # tweakable

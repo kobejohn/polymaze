@@ -252,7 +252,7 @@ class Square(_SuperShape):
 
 
 class Hexagon(_SuperShape):
-    """A simple square supershape."""
+    """A gridded hexagon."""
     @classmethod
     def _make_specification(cls):
         """Return a dict that describes this supershape."""
@@ -260,75 +260,131 @@ class Hexagon(_SuperShape):
         h = side * math.sin(math.pi / 3.0)
         # vertex calculations
         # shared horizontal and vertical rails
-        top_rail = -1.0 * h
-        midtop_rail = 0.0
-        midbottom_rail = h
+        top_rail = 0.0
+        vmid_rail = h
         bottom_rail = 2.0 * h
         left_rail = -1.5 * side
-        midleft_left_rail = -1.0 * side
-        midleft_rail = 0.0
-        midright_rail = 0.5 * side
-        midright_right_rail = 1.5 * side
-        right_rail = 2.0 * side
+        midleft_rail = -1.0 * side
+        midright_rail = 0.0
+        right_rail = 0.5 * side
         # point coordinates
-        bl_left_pt = (midbottom_rail, left_rail)
-        bl_topleft_pt = (midtop_rail, midleft_left_rail)
-        bl_topright_pt = (midtop_rail, midleft_rail)
-        bl_right_pt = (midbottom_rail, midright_rail)
-        bl_bottomright_pt = (bottom_rail, midleft_rail)
-        bl_bottomleft_pt = (bottom_rail, midleft_left_rail)
-        tr_left_pt = bl_topright_pt
-        tr_topleft_pt = (top_rail, midright_rail)
-        tr_topright_pt = (top_rail, midright_right_rail)
-        tr_right_pt = (midtop_rail, right_rail)
-        tr_bottomright_pt = (midbottom_rail, midright_right_rail)
-        tr_bottomleft_pt = bl_right_pt
+        left_pt = (vmid_rail, left_rail)
+        topleft_pt = (top_rail, midleft_rail)
+        topright_pt = (top_rail, midright_rail)
+        right_pt = (vmid_rail, right_rail)
+        bottomright_pt = (bottom_rail, midright_rail)
+        bottomleft_pt = (bottom_rail, midleft_rail)
         # build components separately to avoid long lines
-        c = {(0, 0): {'name': 'bottom left',
+        c = {(0, 0): {'name': 'hexagon',
                       'clockwise_edge_names': ('top', 'top right',
                                                'bottom right', 'bottom',
                                                'bottom left', 'top left'),
                       'edges': {(-1, 0): {'name': 'top',
-                                          'counter_vertex': bl_topleft_pt},
+                                          'counter_vertex': topleft_pt},
                                 (0, 1): {'name': 'top right',
-                                         'counter_vertex': bl_topright_pt},
+                                         'counter_vertex': topright_pt},
                                 (1, 1): {'name': 'bottom right',
-                                         'counter_vertex': bl_right_pt},
+                                         'counter_vertex': right_pt},
                                 (1, 0): {'name': 'bottom',
-                                         'counter_vertex': bl_bottomright_pt},
-                                (1, -1): {'name': 'bottom left',
-                                          'counter_vertex': bl_bottomleft_pt},
-                                (0, -1): {'name': 'top left',
-                                          'counter_vertex': bl_left_pt}}},
-             (0, 1): {'name': 'top right',
-                      'clockwise_edge_names': ('top', 'top right',
-                                               'bottom right', 'bottom',
-                                               'bottom left', 'top left'),
-                      'edges': {(-1, 1): {'name': 'top',
-                                          'counter_vertex': tr_topleft_pt},
-                                (-1, 2): {'name': 'top right',
-                                          'counter_vertex': tr_topright_pt},
-                                (0, 2): {'name': 'bottom right',
-                                         'counter_vertex': tr_right_pt},
-                                (1, 1): {'name': 'bottom',
-                                         'counter_vertex': tr_bottomright_pt},
-                                (0, 0): {'name': 'bottom left',
-                                         'counter_vertex': tr_bottomleft_pt},
-                                (-1, 0): {'name': 'top left',
-                                          'counter_vertex': tr_left_pt}}}}
+                                         'counter_vertex': bottomright_pt},
+                                (0, -1): {'name': 'bottom left',
+                                          'counter_vertex': bottomleft_pt},
+                                (-1, -1): {'name': 'top left',
+                                           'counter_vertex': left_pt}}}}
         d = {'name': 'Hexagon',
-            'reference_length': side,
+             'reference_length': side,
              'graph_offset_per_row': (2.0 * h, 0.0),
-             'graph_offset_per_col': (0.0, 1.5 * side),
+             'graph_offset_per_col': (-1.0 * h, 1.5 * side),
              'components': c}
         return d
 
     @classmethod
     def origin_index(cls, index):
         """Return the equivalent index when the supershape is at the origin."""
-        row, col = index
-        origin_row, origin_col = 0, col % 2
+        origin_row, origin_col = 0, 0  # there's only one shape so always origin
         return origin_row, origin_col
+
+
+
+#todo: remove old hexagon when new one working
+# class Hexagon(_SuperShape):
+#     """A simple square supershape."""
+#     @classmethod
+#     def _make_specification(cls):
+#         """Return a dict that describes this supershape."""
+#         side = 1.0
+#         h = side * math.sin(math.pi / 3.0)
+#         # vertex calculations
+#         # shared horizontal and vertical rails
+#         top_rail = -1.0 * h
+#         midtop_rail = 0.0
+#         midbottom_rail = h
+#         bottom_rail = 2.0 * h
+#         left_rail = -1.5 * side
+#         midleft_left_rail = -1.0 * side
+#         midleft_rail = 0.0
+#         midright_rail = 0.5 * side
+#         midright_right_rail = 1.5 * side
+#         right_rail = 2.0 * side
+#         # point coordinates
+#         bl_left_pt = (midbottom_rail, left_rail)
+#         bl_topleft_pt = (midtop_rail, midleft_left_rail)
+#         bl_topright_pt = (midtop_rail, midleft_rail)
+#         bl_right_pt = (midbottom_rail, midright_rail)
+#         bl_bottomright_pt = (bottom_rail, midleft_rail)
+#         bl_bottomleft_pt = (bottom_rail, midleft_left_rail)
+#         tr_left_pt = bl_topright_pt
+#         tr_topleft_pt = (top_rail, midright_rail)
+#         tr_topright_pt = (top_rail, midright_right_rail)
+#         tr_right_pt = (midtop_rail, right_rail)
+#         tr_bottomright_pt = (midbottom_rail, midright_right_rail)
+#         tr_bottomleft_pt = bl_right_pt
+#         # build components separately to avoid long lines
+#         c = {(0, 0): {'name': 'bottom left',
+#                       'clockwise_edge_names': ('top', 'top right',
+#                                                'bottom right', 'bottom',
+#                                                'bottom left', 'top left'),
+#                       'edges': {(-1, 0): {'name': 'top',
+#                                           'counter_vertex': bl_topleft_pt},
+#                                 (0, 1): {'name': 'top right',
+#                                          'counter_vertex': bl_topright_pt},
+#                                 (1, 1): {'name': 'bottom right',
+#                                          'counter_vertex': bl_right_pt},
+#                                 (1, 0): {'name': 'bottom',
+#                                          'counter_vertex': bl_bottomright_pt},
+#                                 (1, -1): {'name': 'bottom left',
+#                                           'counter_vertex': bl_bottomleft_pt},
+#                                 (0, -1): {'name': 'top left',
+#                                           'counter_vertex': bl_left_pt}}},
+#              (0, 1): {'name': 'top right',
+#                       'clockwise_edge_names': ('top', 'top right',
+#                                                'bottom right', 'bottom',
+#                                                'bottom left', 'top left'),
+#                       'edges': {(-1, 1): {'name': 'top',
+#                                           'counter_vertex': tr_topleft_pt},
+#                                 (-1, 2): {'name': 'top right',
+#                                           'counter_vertex': tr_topright_pt},
+#                                 (0, 2): {'name': 'bottom right',
+#                                          'counter_vertex': tr_right_pt},
+#                                 (1, 1): {'name': 'bottom',
+#                                          'counter_vertex': tr_bottomright_pt},
+#                                 (0, 0): {'name': 'bottom left',
+#                                          'counter_vertex': tr_bottomleft_pt},
+#                                 (-1, 0): {'name': 'top left',
+#                                           'counter_vertex': tr_left_pt}}}}
+#         d = {'name': 'Hexagon',
+#             'reference_length': side,
+#              'graph_offset_per_row': (2.0 * h, 0.0),
+#              'graph_offset_per_col': (0.0, 1.5 * side),
+#              'components': c}
+#         return d
+#
+#     @classmethod
+#     def origin_index(cls, index):
+#         """Return the equivalent index when the supershape is at the origin."""
+#         row, col = index
+#         origin_row, origin_col = 0, col % 2
+#         return origin_row, origin_col
 
 
 class Triangle(_SuperShape):
