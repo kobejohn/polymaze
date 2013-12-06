@@ -12,7 +12,7 @@ import PIL.ImageOps
 import shapes as _shapes
 
 _SS_DICT = _shapes.supershapes_dict()
-_BASE_EDGES = 7000.0
+_BASE_EDGES = 1000.0
 _DEFAULT_COMPLEXITY = 1.0
 _DEFAULT_FONT = 'impact.ttf'  # common font with a high surface area
 _BASE_DIR = os.path.dirname(__file__)
