@@ -1,6 +1,5 @@
 # coding=utf-8
 import math
-import os
 import random
 
 import PIL.Image
@@ -15,7 +14,8 @@ _SS_DICT = _shapes.supershapes_dict()
 _BASE_EDGES = 1000.0
 _DEFAULT_COMPLEXITY = 1.0
 _DEFAULT_FONT = 'impact.ttf'  # common font with a high surface area
-_BASE_DIR = os.path.dirname(__file__)
+_PIXEL_ON = 0  # PIL color value to indicate a shape should be used (black)
+_PIXEL_OFF = 255  # PIL color value to indicate a shape is off (white)
 
 
 class PolyGrid(object):
@@ -238,16 +238,12 @@ def _source_image_to_grid_image(source, supershape,
 
 def _string_image(string, font_path=None):
     """Return a grayscale image with black characters on a white background."""
-    # setup common parts
-    black = 0
-    white = 255
-#    bilevel_image_type = '1'
     grayscale = 'L'
     large = 1000
     height = 1400  # presumably large enough for any font @ large size
     width = int(round(height * 0.8 * len(string)))
     # make the background
-    image = PIL.Image.new(grayscale, (width, height), color=white)
+    image = PIL.Image.new(grayscale, (width, height), color=_PIXEL_OFF)
     # draw the text
     draw = PIL.ImageDraw.Draw(image)
     # choose a font
@@ -271,7 +267,7 @@ def _string_image(string, font_path=None):
         # nothing worked. give up and use whatever PIL decides
         font = None
         print 'Unable to find custom or standard font. Using default.'
-    draw.text((10, 10), string, fill=black, font=font)
+    draw.text((10, 10), string, fill=_PIXEL_ON, font=font)
     # isolate the text
     c_box = PIL.ImageOps.invert(image).getbbox()
     image = image.crop(c_box)
