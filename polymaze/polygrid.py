@@ -43,10 +43,19 @@ class PolyGrid(object):
         complexity - scale the difficulty of the maze to any positive number
         aspect - aspect of the grid's graph (not indexes) (height / width)
         """
-        rows, cols = _normalize_bounds_to_complexity(self._supershape, **kwargs)
-        for row in range(rows):
-            for col in range(cols):
-                self.create((row, col))
+        # make sure default has a value
+        aspect = float(kwargs.pop('aspect', None)
+                       or 2.0 / (1 + math.sqrt(5)))  # default golden rect
+        # get an exact-aspect ratio and roughly-accurate size rectangle
+        rough_ss_edgecount = float(self._supershape.avg_edge_count()) / 2.0
+        rough_complexity = kwargs.get('complexity') or _DEFAULT_COMPLEXITY
+        rough_edge_count = _BASE_EDGES * rough_complexity  # total edges
+        rough_shape_count = float(rough_edge_count) * 2.0 / rough_ss_edgecount
+        rough_h = int(round((rough_shape_count * aspect)**0.5))
+        rough_w = int(round((float(rough_shape_count) / aspect)**0.5))
+        rectangle_image = PIL.Image.new('L', (rough_w, rough_h),
+                                        color=_PIXEL_ON)
+        self.create_from_image(rectangle_image, **kwargs)
 
     def create_string(self, string, font_path=None, **kwargs):
         """Create shapes in the form of the provided string.
@@ -117,63 +126,6 @@ class PolyGrid(object):
                     break  # only yield a shape once
 
 
-def _normalize_bounds_to_complexity(supershape, complexity=None, aspect=None):
-    """Normalize the difficulty of mazes based on number of edges per shape.
-
-    This approach allows the complexity/difficulty of a maze using any shape
-    to be similar by having more simple shapes and fewer complex shapes. If
-    the number of shapes is standardized instead, the complexity varies greatly
-    between shapes with few and many edges.
-    """
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    # outline:
-    #   a) edges
-    #       --> adjust base edges for general complexity
-    #       --> adjust edges for shape complexity (down for more edges)
-    #       --> convert edges to shape count
-    #           (tesselation internal shape --> 1 shape per (shape edges)/2
-    #   b) y/x ratio --> row/col ratio
-    #       --> convert the desired h/w ratio to a row/col ratio
-    #           such that the row/col ratio for this supershape will yield
-    #           the desired h/w ratio when graphed
-    #           start: Ah/Aw = rows*row_offset[0] + cols*col_offset[0]
-    #                          -----------------------------------------
-    #                          rows*row_offset[1] + cols*col_offset[1]
-    #           assume A = Ah/Aw
-    #           end: rows/cols = A*col_offset[1] - col_offset[0]
-    #                            -------------------------------
-    #                            row_offset[0] - A*row_offset[1]
-    #   c) combine
-    #       --> calculate out how many rows/cols it takes to fill the given
-    #           supershape ratio with shape count
-    #           start: r * c = shape_count
-    #           end: r = sqrt(shape_count * rows_per_col)
-    #                c = shapes / r
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    # provide defaults
-    ss = supershape  # for brevity
-    complexity = complexity if complexity is not None else _DEFAULT_COMPLEXITY
-    # a) edges
-    edge_count = _BASE_EDGES * complexity
-    edge_count = float(edge_count) / ss.avg_edge_count()
-    shape_count = float(edge_count) * 2.0 / ss.avg_edge_count()
-    # b) aspect ratio --> grid ratio
-    aspect = aspect or 2.0 / (1 + math.sqrt(5))  # default golden rect
-    aspect = float(aspect)
-    y_offset_per_col = ss.graph_offset_per_col()[0]
-    x_offset_per_col = ss.graph_offset_per_col()[1]
-    y_offset_per_row = ss.graph_offset_per_row()[0]
-    x_offset_per_row = ss.graph_offset_per_row()[1]
-    rows_per_col = ((aspect * x_offset_per_col - y_offset_per_col)
-                    / (y_offset_per_row - aspect * x_offset_per_row))
-    # c) combine everything
-    rows = (shape_count * rows_per_col) ** 0.5
-    cols = float(shape_count) / rows
-    rows = int(round(rows))
-    cols = int(round(cols))
-    return rows, cols
-
-
 def _source_image_to_grid_image(source, supershape,
                                 complexity=None, aspect=None):
     """Convert the image to 0/1 and produce shapes to fill zero regions."""
@@ -228,7 +180,6 @@ def _source_image_to_grid_image(source, supershape,
     final = skewed.resize((grid_w, grid_h), PIL.Image.ANTIALIAS)
 
     # convert to black/white with tweakable threshold
-
     white_threshold = 128  # tweakable
     final = final.point(lambda i: 255 * (i > white_threshold))
     bilevel = '1'
