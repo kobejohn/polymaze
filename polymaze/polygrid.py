@@ -5,6 +5,7 @@ import random
 
 import PIL.Image
 import PIL.ImageDraw
+import PIL.ImageFilter
 import PIL.ImageFont
 import PIL.ImageOps
 
@@ -13,6 +14,7 @@ import shapes as _shapes
 _SS_DICT = _shapes.supershapes_dict()
 _BASE_EDGES = 7000.0
 _DEFAULT_COMPLEXITY = 1.0
+_DEFAULT_FONT = 'impact.ttf'  # common font with a high surface area
 _BASE_DIR = os.path.dirname(__file__)
 
 
@@ -62,33 +64,13 @@ class PolyGrid(object):
         self.create_from_image(string_image, **kwargs)
 
     def create_from_image(self, image, **kwargs):
-        """Create a grid based basically on the dark pixels of image."""
-        # convert complexity and aspect to index bounds
-        if not kwargs.get('aspect'):
-            # if no aspect provided, use the string image size
-            im_width, im_height = image.size
-            kwargs['aspect'] = float(im_height) / im_width
-        rows, cols = _normalize_bounds_to_complexity(self._supershape, **kwargs)
-        # convert the image to a grid that will look like the image when drawn
-        # shrink the image with the required grid aspect (NOT image aspect)
-        bilevel_image_type = '1'
-        gray_image_type = 'L'
-        white_threshold = 128
-        image = image.resize((cols, rows), resample=PIL.Image.ANTIALIAS)
-        # convert if necessary to gray
-        if len(image.getbands()) != 1:
-            image = image.convert(gray_image_type)
-        # further convert to black white
-        if image.mode != bilevel_image_type:
-            image = image.convert(bilevel_image_type)
-        # convert to black/white
-        image = image.point(lambda i: 255 * (i > white_threshold))
-        # get the pixels and build the grid
-        pixels = image.load()
-        width, height = image.size
+        """Create shapes that reproduce the shape of black pixels in image."""
+        grid_im = _source_image_to_grid_image(image, self._supershape, **kwargs)
+        grid_pixels = grid_im.load()
+        width, height = grid_im.size
         for y in range(height):
             for x in range(width):
-                if not pixels[x, y]:
+                if not grid_pixels[x, y]:
                     self.create((y, x))
 
     def supershape_name(self):
@@ -192,18 +174,80 @@ def _normalize_bounds_to_complexity(supershape, complexity=None, aspect=None):
     return rows, cols
 
 
+def _source_image_to_grid_image(source, supershape,
+                                complexity=None, aspect=None):
+    """Convert the image to 0/1 and produce shapes to fill zero regions."""
+    # get some fundamental data
+    source_w, source_h = source.size
+    ref_length = supershape.reference_length()  # not needed? feels like it is
+    ss = supershape  # for brevity
+    complexity = complexity if complexity is not None else _DEFAULT_COMPLEXITY
+    # setup base translation factors
+    # a) b) c) etc. below - calculate scale, skew before changing anything
+
+    # a) calculate skew due to shapes that are not tiled perfectly vert/horiz
+    x_skew = ss.graph_offset_per_row()[1]
+    y_skew = ss.graph_offset_per_col()[0]
+
+    # b) calculate all adjustments due to aspect changes
+    #    1) shape: e.g. Hexagon is wider than it is tall so the grid must be
+    #       compressed horizontally / expanded vertically
+    #    2) either match source image (no change) or use aspect argument
+    source_aspect = float(source_h) / source_w
+    shape_aspect = (float(ss.graph_offset_per_row()[0])
+                    / ss.graph_offset_per_col()[1])
+    target_aspect = float(aspect or source_aspect)  # default is source aspect
+    grid_aspect = target_aspect / shape_aspect
+
+    # c) calculate how to scale the target aspect to fit the desired number of
+    #    shapes. This is an important step to having normalized complexity
+    #    for any shape, aspect, etc.
+    #    note: the 2.0 factor accounts for grid internal edges being shared
+    edge_count = _BASE_EDGES * complexity  # total edges
+    shape_count = float(edge_count) * 2.0 / ss.avg_edge_count()
+    grid_h = int(round((shape_count * grid_aspect)**0.5 + y_skew))
+    grid_w = int(round((float(shape_count) / grid_aspect)**0.5 + x_skew))
+
+    # 1st operation - affine skew before resizing (usually shrinking)
+    # PIL affine transformation parameter notes (a, b, c, d, e, f):
+    # a-xscale (.5 is double, 2 is half)
+    # b-xskew (negative 1.0 swings the bottom right full width)
+    # c-xtranslate
+    # d-yskew (negative 1.0 swings the rigth down full height)
+    # e-yscale (.5 is double)
+    # f-ytranslate
+    skew_only_coeffs = (1.0, x_skew, 0.0, y_skew, 1.0, 0.0)
+    skewed_h = int(round(source_h + abs(y_skew)))
+    skewed_w = int(round(source_w + abs(x_skew)))
+    # have to invert before/after transform since it fills with black
+    skewed = PIL.ImageOps.invert(source)
+    skewed = skewed.transform((skewed_w, skewed_h), PIL.Image.AFFINE,
+                              skew_only_coeffs, PIL.Image.BICUBIC)
+    skewed = PIL.ImageOps.invert(skewed)  # undo the inversion
+    # 2nd Operation: perform combined scaling
+    final = skewed.resize((grid_w, grid_h), PIL.Image.ANTIALIAS)
+
+    # convert to black/white with tweakable threshold
+
+    white_threshold = 128  # tweakable
+    final = final.point(lambda i: 255 * (i > white_threshold))
+    bilevel = '1'
+    final = final.convert(bilevel)
+    return final
+
+
 def _string_image(string, font_path=None):
-    """Draw a black character on a white background."""
+    """Return a grayscale image with black characters on a white background."""
     # setup common parts
     black = 0
     white = 255
-    bilevel_image_type = '1'
-    gray_image_type = 'L'
-    large = 200
-    height = 300  # presumably large enough for any font @ large size
-    width = height * len(string)
+#    bilevel_image_type = '1'
+    grayscale = 'L'
+    large = 1000
+    height = 1400  # presumably large enough for any font @ large size
+    width = int(round(height * 0.8 * len(string)))
     # make the background
-    image = PIL.Image.new(gray_image_type, (width, height), color=white)
+    image = PIL.Image.new(grayscale, (width, height), color=white)
     # draw the text
     draw = PIL.ImageDraw.Draw(image)
     # choose a font
@@ -216,7 +260,7 @@ def _string_image(string, font_path=None):
         font_priority.append(font_path)
     #todo: how to list this font for linux? windows automatically looks in fonts
     # always try the default font last
-    font_priority.append('impact.ttf')  # common font with a high surface area
+    font_priority.append(_DEFAULT_FONT)
     for font_path in font_priority:
         try:
             font = PIL.ImageFont.truetype(font_path, size=large)
@@ -231,10 +275,6 @@ def _string_image(string, font_path=None):
     # isolate the text
     c_box = PIL.ImageOps.invert(image).getbbox()
     image = image.crop(c_box)
-    # convert to black/white
-    threshold = 128
-    image = image.point(lambda i: 255 * (i > threshold))
-    image = image.convert(mode=bilevel_image_type)
     return image
 
 
