@@ -53,12 +53,16 @@ class _SuperShape(object):
         # apply specs to the obj for obvious access.
         # additionally remove each spec from the dict to avoid duplication
         self._name = d.pop('name')
+        self._reference_length = d.pop('reference_length')
         self._components = d.pop('components')
         self._graph_offset_per_row = d.pop('graph_offset_per_row')
         self._graph_offset_per_col = d.pop('graph_offset_per_col')
 
     def name(self):
         return self._name
+
+    def reference_length(self):
+        return self._reference_length
 
     def components(self):
         return self._components
