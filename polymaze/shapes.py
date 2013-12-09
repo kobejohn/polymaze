@@ -128,7 +128,7 @@ class _ComponentShape(object):
         edges_data = dict()
         ordered_n_indexes = [None] * edges_count
         for origin_n_index, edge_spec in edges_spec.items():
-            n_index_offset = diff_tuples(origin_n_index, origin_index)
+            n_index_offset = _diff_tuples(origin_n_index, origin_index)
             n_index = sum_tuples((index, n_index_offset))
             # create the data dict for the edge shared with n_index neighbor
             edge_data = edges_data[n_index] = dict()
@@ -136,9 +136,9 @@ class _ComponentShape(object):
             edge_data['name'] = edge_spec['name']
             # convert base vertex within the ss to full vertex at this index
             base_vertex = edge_spec['counter_vertex']
-            anchor_row, anchor_col = diff_tuples(index, origin_index)
-            row_offset = scale_tuple(ss.graph_offset_per_row(), anchor_row)
-            col_offset = scale_tuple(ss.graph_offset_per_col(), anchor_col)
+            anchor_row, anchor_col = _diff_tuples(index, origin_index)
+            row_offset = _scale_tuple(ss.graph_offset_per_row(), anchor_row)
+            col_offset = _scale_tuple(ss.graph_offset_per_col(), anchor_col)
             vertex = sum_tuples((base_vertex, row_offset, col_offset))
             edge_data['counter_vertex'] = vertex
             # put n_index into the order indicated by the specification
@@ -706,12 +706,12 @@ def sum_tuples(sequence_of_tuples):
     return a_sum, b_sum
 
 
-def diff_tuples(positive, negative):
+def _diff_tuples(positive, negative):
     (pa, pb), (na, nb) = positive, negative
     return pa-na, pb-nb
 
 
-def scale_tuple(t, scale):
+def _scale_tuple(t, scale):
     return scale * t[0], scale * t[1]
 
 
