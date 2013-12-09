@@ -11,7 +11,7 @@ import PIL.ImageOps
 import shapes as _shapes
 
 _SS_DICT = _shapes.supershapes_dict()
-_BASE_EDGES = 1000.0
+_BASE_EDGES = 400
 _DEFAULT_COMPLEXITY = 1.0
 _DEFAULT_FONT = 'impact.ttf'  # common font with a high surface area
 _PIXEL_ON = 0  # PIL color value to indicate a shape should be used (black)
@@ -117,7 +117,6 @@ class PolyGrid(object):
 
     def create_from_image(self, image, max_level=None, **kwargs):
         """Create shapes that reproduce the shape of black pixels in image."""
-        # provide default
         max_level = max_level or 127  # middle of 8-bit range
         grid_im = self._source_image_to_grid_image(image, **kwargs)
         grid_pixels = grid_im.load()
@@ -138,12 +137,13 @@ class PolyGrid(object):
         # determine the size of the target graph
         edge_count = _BASE_EDGES * complexity  # total edges
         shape_count = float(edge_count) * 2.0 / ss.avg_edge_count()
-        target_h = (ss.avg_area() * shape_count * target_aspect)**0.5
-        target_w = (float(ss.avg_area() * shape_count) / target_aspect)**0.5
+        ss_avg_area = ss.avg_area()
+        target_h = (float(ss_avg_area) * shape_count * target_aspect)**0.5
+        target_w = (float(ss_avg_area) * shape_count / target_aspect)**0.5
         # determine the approximate size of the grid needed to make the target
         # note: does not include skew - just average w/h
         grid_base_rows = int(round(float(target_h) / ss_h_per_row))
-        grid_base_cols = int(round(float(target_w) * ss_w_per_col))
+        grid_base_cols = int(round(float(target_w) / ss_w_per_col))
         # resize the source image to the target grid
         # note: done separately from transform to get better quality resize
         grid_base = source.resize((grid_base_cols, grid_base_rows),
@@ -151,8 +151,10 @@ class PolyGrid(object):
         # account for skew in the supershape arrangement
         grid_skew_rows_per_col = float(ss_h_per_col) / ss_h_per_row
         grid_skew_cols_per_row = float(ss_w_per_row) / ss_w_per_col
-        grid_rows = int(round(grid_base_rows + abs(grid_skew_rows_per_col) * grid_base_cols))
-        grid_cols = int(round(grid_base_cols + abs(grid_skew_cols_per_row) * grid_base_rows))
+        grid_rows = int(round(grid_base_rows
+                              + abs(grid_skew_rows_per_col) * grid_base_cols))
+        grid_cols = int(round(grid_base_cols
+                              + abs(grid_skew_cols_per_row) * grid_base_rows))
         skew_only_coeffs = (1.0, grid_skew_cols_per_row, 0.0,
                             grid_skew_rows_per_col, 1.0, 0.0)
         # must invert before/after skewing since it fills with black
