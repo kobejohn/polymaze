@@ -92,8 +92,18 @@ class _SuperShape(object):
 
     def avg_area(self):
         """Return the combined average graph area per shape."""
-        #todo: put area by triangles formula here
-        return 1.5 * 3**0.5  # stub: area of a regular unit-sided hexagon
+        components_data = self.components().values()
+        shape_count = len(components_data)
+        total_area = 0.0
+        for component in components_data:
+            vertex_by_name = {data['name']: data['counter_vertex']
+                              for data in component['edges'].values()}
+            cntr_edge_names = component['clockwise_edge_names']
+            cntr_vertexes = [vertex_by_name[name] for name in cntr_edge_names]
+            for i in range(-1, len(cntr_vertexes)-1):  # take v's in pairs
+                (y0, x0), (y1, x1) = cntr_vertexes[i], cntr_vertexes[i+1]
+                total_area += 0.5 * (x1*y0 - y1*x0)
+        return abs(float(total_area) / shape_count)
 
 
 class _ComponentShape(object):
