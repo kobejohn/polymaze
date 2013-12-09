@@ -151,12 +151,16 @@ class PolyGrid(object):
         # account for skew in the supershape arrangement
         grid_skew_rows_per_col = float(ss_h_per_col) / ss_h_per_row
         grid_skew_cols_per_row = float(ss_w_per_row) / ss_w_per_col
-        grid_rows = int(round(grid_base_rows
-                              + abs(grid_skew_rows_per_col) * grid_base_cols))
-        grid_cols = int(round(grid_base_cols
-                              + abs(grid_skew_cols_per_row) * grid_base_rows))
-        skew_only_coeffs = (1.0, grid_skew_cols_per_row, 0.0,
-                            grid_skew_rows_per_col, 1.0, 0.0)
+        grid_skewed_rows = grid_skew_rows_per_col * grid_base_cols
+        grid_skewed_cols = grid_skew_cols_per_row * grid_base_rows
+        grid_rows = int(round(grid_base_rows + abs(grid_skewed_rows)))
+        grid_cols = int(round(grid_base_cols + abs(grid_skewed_cols)))
+        # only want to do skew, but positive skew goes "off screen"
+        # so also have to do a counter-translation
+        row_offset = -grid_skewed_rows if grid_skewed_rows > 0 else 0.0
+        col_offset = -grid_skewed_cols if grid_skewed_cols > 0 else 0.0
+        skew_only_coeffs = (1.0, grid_skew_cols_per_row, col_offset,
+                            grid_skew_rows_per_col, 1.0, row_offset)
         # must invert before/after skewing since it fills with black
         grid = PIL.ImageOps.invert(grid_base)
         grid = grid.transform((grid_cols, grid_rows), PIL.Image.AFFINE,
