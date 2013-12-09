@@ -334,56 +334,37 @@ class Triangle(_SuperShape):
         # vertex calculations
         # shared horizontal and vertical rails
         top_rail = 0.0
-        v_mid_rail = h
-        bottom_rail = 2.0 * h
+        bottom_rail = h
         left_rail = -0.5 * side
         midleft_rail = 0.0
         midright_rail = 0.5 * side
         right_rail = side
         # points
-        left_pt = (v_mid_rail, left_rail)
+        left_pt = (bottom_rail, left_rail)
         topleft_pt = (top_rail, midleft_rail)
-        mid_pt = (v_mid_rail, midright_rail)
+        bottomright_pt = (bottom_rail, midright_rail)
         topright_pt = (top_rail, right_rail)
-        bottomleft_pt = (bottom_rail, midleft_rail)
-        bottomright_pt = (bottom_rail, right_rail)
         # build components separately to avoid long lines
-        c = {(0, 0): {'name': 'tl_up',
+        c = {(0, 0): {'name': 'up',
                       'clockwise_edge_names': ('left', 'right', 'bottom'),
                       'edges': {(0, -1): {'name': 'left',
                                           'counter_vertex': left_pt},
                                 (0, 1): {'name': 'right',
                                          'counter_vertex': topleft_pt},
-                                (1, 0): {'name': 'bottom',
-                                         'counter_vertex': mid_pt}}},
-             (1, 1): {'name': 'br_up',
-                      'clockwise_edge_names': ('left', 'right', 'bottom'),
-                      'edges': {(1, 0): {'name': 'left',
-                                         'counter_vertex': bottomleft_pt},
-                                (1, 2): {'name': 'right',
-                                         'counter_vertex': mid_pt},
-                                (2, 1): {'name': 'bottom',
-                                         'counter_vertex': bottomright_pt}}},
-             (0, 1): {'name': 'tr_down',
+                                (1, -1): {'name': 'bottom',
+                                          'counter_vertex': bottomright_pt}}},
+             (0, 1): {'name': 'down',
                       'clockwise_edge_names': ('left', 'top', 'right'),
                       'edges': {(0, 0): {'name': 'left',
-                                         'counter_vertex': mid_pt},
-                                (-1, 1): {'name': 'top',
+                                         'counter_vertex': bottomright_pt},
+                                (-1, 2): {'name': 'top',
                                           'counter_vertex': topleft_pt},
                                 (0, 2): {'name': 'right',
-                                         'counter_vertex': topright_pt}}},
-             (1, 0): {'name': 'bl_down',
-                      'clockwise_edge_names': ('left', 'top', 'right'),
-                      'edges': {(1, -1): {'name': 'left',
-                                          'counter_vertex': bottomleft_pt},
-                                (0, 0): {'name': 'top',
-                                         'counter_vertex': left_pt},
-                                (1, 1): {'name': 'right',
-                                         'counter_vertex': mid_pt}}}}
+                                         'counter_vertex': topright_pt}}}}
         # make the data dict
         d = {'name': 'Triangle',
              'reference_length': side,
-             'graph_offset_per_row': (h, 0.0),
+             'graph_offset_per_row': (h, 0.5 * side),
              'graph_offset_per_col': (0.0, 0.5 * side),
              'components': c}
         return d
@@ -392,9 +373,8 @@ class Triangle(_SuperShape):
     def origin_index(cls, index):
         """Return the equivalent index when the supershape is at the origin."""
         row, col = index
-        # triangles have a 4-shape square arrangement so both row and col
-        # must be considered
-        origin_row = row % 2
+        # there is up on the left of the supershape and down on the right
+        origin_row = 0  # supershape is horizontally arranged only
         origin_col = col % 2
         return origin_row, origin_col
 
