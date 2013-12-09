@@ -138,6 +138,7 @@ class PolyGrid(object):
         edge_count = _BASE_EDGES * complexity  # total edges
         shape_count = float(edge_count) * 2.0 / ss.avg_edge_count()
         ss_avg_area = ss.avg_area()
+        ss_avg_area = (1.0 + ss_avg_area) / 2  # helps normalize complexity
         target_h = (float(ss_avg_area) * shape_count * target_aspect)**0.5
         target_w = (float(ss_avg_area) * shape_count / target_aspect)**0.5
         # determine the approximate size of the grid needed to make the target
