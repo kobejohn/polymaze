@@ -36,52 +36,6 @@ class PolyGrid(object):
         self._shapes[index] = new_shape = ss.create_component(self, index)
         return new_shape
 
-    def create_rectangle(self, **kwargs):
-        """Create a rectangle of shapes.
-
-        kwargs:
-        complexity - scale the difficulty of the maze to any positive number
-        aspect - aspect of the grid's graph (not indexes) (height / width)
-        """
-        # make sure default has a value
-        aspect = float(kwargs.pop('aspect', None)
-                       or 2.0 / (1 + math.sqrt(5)))  # default golden rect
-        # get an exact-aspect ratio and roughly-accurate size rectangle
-        rough_ss_edgecount = float(self._supershape.avg_edge_count()) / 2.0
-        rough_complexity = kwargs.get('complexity') or _DEFAULT_COMPLEXITY
-        rough_edge_count = _BASE_EDGES * rough_complexity  # total edges
-        rough_shape_count = float(rough_edge_count) * 2.0 / rough_ss_edgecount
-        rough_h = int(round((rough_shape_count * aspect)**0.5))
-        rough_w = int(round((float(rough_shape_count) / aspect)**0.5))
-        rectangle_image = PIL.Image.new('L', (rough_w, rough_h),
-                                        color=_PIXEL_ON)
-        self.create_from_image(rectangle_image, **kwargs)
-
-    def create_string(self, string, font_path=None, **kwargs):
-        """Create shapes in the form of the provided string.
-
-        kwargs:
-        font_path - just file name of any font in resources or full path
-        complexity - scale the difficulty of the maze to any positive number
-        aspect - aspect of the grid's graph (not indexes) (height / width)
-        """
-        string_image = _string_image(string, font_path=font_path)
-        # cheat. multiply complexity by length of string
-        base_complexity = kwargs.get('complexity') or _DEFAULT_COMPLEXITY
-        kwargs['complexity'] = len(string) * base_complexity
-        # create with the standard image method
-        self.create_from_image(string_image, **kwargs)
-
-    def create_from_image(self, image, **kwargs):
-        """Create shapes that reproduce the shape of black pixels in image."""
-        grid_im = _source_image_to_grid_image(image, self._supershape, **kwargs)
-        grid_pixels = grid_im.load()
-        width, height = grid_im.size
-        for y in range(height):
-            for x in range(width):
-                if not grid_pixels[x, y]:
-                    self.create((y, x))
-
     def supershape_name(self):
         return self._supershape.name()
 
@@ -125,80 +79,88 @@ class PolyGrid(object):
                     yield shape
                     break  # only yield a shape once
 
+    def create_rectangle(self, **kwargs):
+        """Create a rectangle of shapes.
 
-def _source_image_to_grid_image(source, supershape,
-                                complexity=None, aspect=None):
-    """Produce shapes to recreate the appearance of dark parts of source."""
+        kwargs:
+        complexity - scale the difficulty of the maze to any positive number
+        aspect - aspect of the grid's graph (not indexes) (height / width)
+        """
+        # make sure default has a value
+        aspect = float(kwargs.pop('aspect', None)
+                       or 2.0 / (1 + math.sqrt(5)))  # default golden rect
+        # get an exact-aspect ratio and roughly-accurate size rectangle
+        rough_ss_edgecount = float(self._supershape.avg_edge_count()) / 2.0
+        rough_complexity = kwargs.get('complexity') or _DEFAULT_COMPLEXITY
+        rough_edge_count = _BASE_EDGES * rough_complexity  # total edges
+        rough_shape_count = float(rough_edge_count) * 2.0 / rough_ss_edgecount
+        rough_h = int(round((rough_shape_count * aspect)**0.5))
+        rough_w = int(round((float(rough_shape_count) / aspect)**0.5))
+        rectangle_image = PIL.Image.new('L', (rough_w, rough_h),
+                                        color=_PIXEL_ON)
+        self.create_from_image(rectangle_image, **kwargs)
 
+    def create_string(self, string, font_path=None, **kwargs):
+        """Create shapes in the form of the provided string.
 
-    # source.show() # todo: debug
+        kwargs:
+        font_path - just file name of any font in resources or full path
+        complexity - scale the difficulty of the maze to any positive number
+        aspect - aspect of the grid's graph (not indexes) (height / width)
+        """
+        string_image = _string_image(string, font_path=font_path)
+        # cheat. multiply complexity by length of string
+        base_complexity = kwargs.get('complexity') or _DEFAULT_COMPLEXITY
+        kwargs['complexity'] = len(string) * base_complexity
+        # create with the standard image method
+        self.create_from_image(string_image, **kwargs)
 
+    def create_from_image(self, image, max_level=None, **kwargs):
+        """Create shapes that reproduce the shape of black pixels in image."""
+        # provide default
+        max_level = max_level or 127  # middle of 8-bit range
+        grid_im = self._source_image_to_grid_image(image, **kwargs)
+        grid_pixels = grid_im.load()
+        width, height = grid_im.size
+        for y in range(height):
+            for x in range(width):
+                if grid_pixels[x, y] <= max_level:
+                    self.create((y, x))
 
-    # get some fundamental data
-    source_cols, source_rows = source.size
-    ref_length = supershape.reference_length()  # not needed? feels like it is
-    ss = supershape  # for brevity
-    complexity = complexity if complexity is not None else _DEFAULT_COMPLEXITY
-    # calculate all the things to be done before operating on the images
-    # a) b) c) etc. below - calculate scale, skew before changing anything
-
-    # c) calculate skew due to shapes that are not tiled perfectly vert/horiz
-    # convert graph skew to index skew
-    # e.g. skew_rows_per_col = source_skew_h_per_col * rows_per_height
-    source_skew_rows_per_col = float(ss.graph_offset_per_col()[0]) / ss.graph_offset_per_row()[0]
-    source_skew_cols_per_row = float(ss.graph_offset_per_row()[1]) / ss.graph_offset_per_col()[1]
-    source_skew_rows = source_skew_rows_per_col * source_cols
-    source_skew_cols = source_skew_cols_per_row * source_rows
-
-
-    #TODO: something not completely right about combination of all points. maybe try combined transform?
-    #todo: draw complete, real transformation for hexagon from source image to grid
-
-    # a) calculate all adjustments due to aspect changes
-    #    1) shape: e.g. Hexagon is wider than it is tall so the grid must be
-    #       compressed horizontally / expanded vertically
-    #    2) either match source image (no change) or use aspect argument
-    source_aspect = float(source_rows) / source_cols
-    shape_aspect = (float(ss.graph_offset_per_row()[0] + ss.graph_offset_per_col()[0])
-                    / (ss.graph_offset_per_col()[1] + ss.graph_offset_per_row()[1]))
-    target_aspect = float(aspect or source_aspect)  # default is source aspect
-    grid_aspect = target_aspect / shape_aspect
-
-    # b) calculate how to scale the target aspect to fit the desired number of
-    #    shapes. This is an important step to having normalized complexity
-    #    for any shape, aspect, etc.
-    #    note: the 2.0 factor accounts for grid internal edges being shared
-    edge_count = _BASE_EDGES * complexity  # total edges
-    shape_count = float(edge_count) * 2.0 / ss.avg_edge_count()
-    grid_rows = int(round((float(shape_count) * grid_aspect)**0.5))# + abs(source_skew_rows_norm))) #todo: this is source index skew, not target index skew
-    grid_cols = int(round((float(shape_count) / grid_aspect)**0.5))# + abs(source_skew_cols_norm)))
-
-    # 1st operation - affine skew before resizing (usually shrinking)
-    # PIL affine transformation parameter notes (a, b, c, d, e, f):
-    # a-xscale (.5 is double, 2 is half)
-    # b-xskew (negative 1.0 swings the bottom right full width)
-    # c-xtranslate
-    # d-yskew (negative 1.0 swings the rigth down full height)
-    # e-yscale (.5 is double)
-    # f-ytranslate
-    skew_only_coeffs = (1.0, source_skew_cols_per_row, 0.0,
-                        source_skew_rows_per_col, 1.0, 0.0)
-    skewed_h = int(round(source_rows + abs(source_skew_rows)))
-    skewed_w = int(round(source_cols + abs(source_skew_cols)))
-    # have to invert before/after transform since it fills with black
-    skewed = PIL.ImageOps.invert(source)
-    skewed = skewed.transform((skewed_w, skewed_h), PIL.Image.AFFINE,
+    def _source_image_to_grid_image(self, source, complexity=None, aspect=None):
+        """Produce shapes to recreate the appearance of dark parts of source."""
+        # determine defaults, basic values and shortcuts
+        ss = self._supershape  # for brevity
+        complexity = complexity or _DEFAULT_COMPLEXITY
+        target_aspect = aspect or (float(source.size[1]) / source.size[0])
+        ss_h_per_row, ss_w_per_row = ss.graph_offset_per_row()
+        ss_h_per_col, ss_w_per_col = ss.graph_offset_per_col()
+        # determine the size of the target graph
+        edge_count = _BASE_EDGES * complexity  # total edges
+        shape_count = float(edge_count) * 2.0 / ss.avg_edge_count()
+        target_h = (ss.avg_area() * shape_count * target_aspect)**0.5
+        target_w = (float(ss.avg_area() * shape_count) / target_aspect)**0.5
+        # determine the approximate size of the grid needed to make the target
+        # note: does not include skew - just average w/h
+        grid_base_rows = int(round(float(target_h) / ss_h_per_row))
+        grid_base_cols = int(round(float(target_w) * ss_w_per_col))
+        # resize the source image to the target grid
+        # note: done separately from transform to get better quality resize
+        grid_base = source.resize((grid_base_cols, grid_base_rows),
+                                  PIL.Image.ANTIALIAS)
+        # account for skew in the supershape arrangement
+        grid_skew_rows_per_col = float(ss_h_per_col) / ss_h_per_row
+        grid_skew_cols_per_row = float(ss_w_per_row) / ss_w_per_col
+        grid_rows = int(round(grid_base_rows + abs(grid_skew_rows_per_col) * grid_base_cols))
+        grid_cols = int(round(grid_base_cols + abs(grid_skew_cols_per_row) * grid_base_rows))
+        skew_only_coeffs = (1.0, grid_skew_cols_per_row, 0.0,
+                            grid_skew_rows_per_col, 1.0, 0.0)
+        # must invert before/after skewing since it fills with black
+        grid = PIL.ImageOps.invert(grid_base)
+        grid = grid.transform((grid_cols, grid_rows), PIL.Image.AFFINE,
                               skew_only_coeffs, PIL.Image.BICUBIC)
-    skewed = PIL.ImageOps.invert(skewed)  # undo the inversion
-
-    # 2nd Operation: perform combined scaling
-    final = skewed.resize((grid_cols, grid_rows), PIL.Image.ANTIALIAS)
-    # convert to black/white with tweakable threshold
-    white_threshold = 128  # tweakable
-    final = final.point(lambda i: 255 * (i > white_threshold))
-    bilevel = '1'
-    final = final.convert(bilevel)
-    return final
+        grid = PIL.ImageOps.invert(grid)
+        return grid
 
 
 def _string_image(string, font_path=None):

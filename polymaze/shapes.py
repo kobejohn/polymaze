@@ -78,6 +78,10 @@ class _SuperShape(object):
         return _ComponentShape(self, grid, index)
 
     def avg_edge_count(self):
+        """Return the average number of edges per shape.
+
+        Note: this is a simple average, not accounting for shared edges.
+        """
         component_specs = self.components().values()
         component_count = len(component_specs)
         edge_count = 0
@@ -85,6 +89,11 @@ class _SuperShape(object):
             edge_count += len(component_spec['edges'])
         avg_edges = float(edge_count) / component_count
         return avg_edges
+
+    def avg_area(self):
+        """Return the combined average graph area per shape."""
+        #todo: put area by triangles formula here
+        return 1.5 * 3**0.5  # stub: area of a regular unit-sided hexagon
 
 
 class _ComponentShape(object):
