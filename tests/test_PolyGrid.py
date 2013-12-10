@@ -70,26 +70,27 @@ class TestShapeGrid(unittest.TestCase):
         grid = pmz.PolyGrid()
         self.assertEqual(len(tuple(grid.shapes())), 0)
 
-    def test_create_rectangle_produces_a_rectangular_grid(self):
+    def test_create_rectangle_produces_a_rectangular_graph(self):
+        # the graph should be rectangular though the grid may be skewed
         grid = generic_grid()
-        grid.create_rectangle()
-        # get the bounds to be checked
-        all_indexes = [s.index() for s in grid.shapes()]
-        all_rows, all_cols = zip(*all_indexes)
-        row_min, row_max = min(all_rows), max(all_rows)
-        col_min, col_max = min(all_cols), max(all_cols)
-        # confirm that the shape count is close to the index area of rectangle
-        shape_count_spec = (row_max - row_min + 1) * (col_max - col_min + 1)
-        shape_count = len(all_indexes)
-        tolerance = shape_count_spec * 0.01
-        self.assertAlmostEqual(shape_count, shape_count_spec, delta=tolerance)
-        # confirm that almost every index exists
-        missed_shapes = 0
-        for row in range(row_min, row_max + 1):
-            for col in range(col_min, col_max + 1):
-                if grid.get((row, col)) is None:
-                    missed_shapes += 1
-        self.assertLessEqual(missed_shapes, tolerance)
+        grid.create_rectangle(complexity=3)
+        # test by checking the rectangular area determined by extrema
+        # is about the same as the number of shapes * average area
+        # get the extrema first
+        all_vertexes = list()
+        for edge in grid.edges():
+            all_vertexes.extend(edge.endpoints())
+        y_all, x_all = zip(*all_vertexes)
+        top, bottom = min(y_all), max(y_all)
+        left, right = min(x_all), max(x_all)
+        rectangular_area = (bottom - top) * (right - left)
+        # get the total area by shapes
+        shape_count = len(tuple(s for s in grid.shapes()))
+        rectangular_shape_area_spec = shape_count * grid._supershape.avg_area()
+        # confirm the approximate match
+        tolerance = 0.1 * rectangular_shape_area_spec
+        self.assertAlmostEqual(rectangular_area, rectangular_shape_area_spec,
+                               delta=tolerance)
 
     def test_get_returns_shape_created_with_same_index(self):
         grid = generic_grid()
