@@ -695,7 +695,80 @@ class Polycat(_SuperShape):
         return origin_row, origin_col
 
 
+class Qube(_SuperShape):
+    """Watch your step."""
+    @classmethod
+    def _make_specification(cls):
+        """Return a dict that describes this supershape."""
+        side = 1.0
+        w = 0.5 * side * 3**0.5  # width of the hex
+        # component shape data
+        # shared horizontal and vertical rails
+        left_rail = -w
+        h_mid_rail = 0.0
+        right_rail = w
+        top_rail = -side
+        midtop_rail = -0.5 * side
+        v_mid_rail = 0.0
+        midbottom_rail = 0.5 * side
+        bottom_rail = side
+        # points
+        top_pt = (top_rail, h_mid_rail)
+        top_right_pt = (midtop_rail, right_rail)
+        bottom_right_pt = (midbottom_rail, right_rail)
+        bottom_pt = (bottom_rail, h_mid_rail)
+        bottom_left_pt = (midbottom_rail, left_rail)
+        top_left_pt = (midtop_rail, left_rail)
+        center_pt = (v_mid_rail, h_mid_rail)
+        # build components separately to avoid long lines
+        c = {(0, 0): {'name': 'left',
+                      'clockwise_edge_names': ('left', 'top',
+                                               'right', 'bottom'),
+                      'edges': {(0, -1): {'name': 'left',
+                                          'counter_vertex': bottom_left_pt},
+                                (-1, 1): {'name': 'top',
+                                          'counter_vertex': top_left_pt},
+                                (0, 2): {'name': 'right',
+                                         'counter_vertex': top_pt},
+                                (0, 1): {'name': 'bottom',
+                                         'counter_vertex': center_pt}}},
+             (0, 2): {'name': 'right',
+                      'clockwise_edge_names': ('left', 'top',
+                                               'right', 'bottom'),
+                      'edges': {(0, 0): {'name': 'left',
+                                         'counter_vertex': center_pt},
+                                (-1, 4): {'name': 'top',
+                                          'counter_vertex': top_pt},
+                                (0, 3): {'name': 'right',
+                                         'counter_vertex': top_right_pt},
+                                (0, 1): {'name': 'bottom',
+                                         'counter_vertex': bottom_right_pt}}},
+             (0, 1): {'name': 'bottom',
+                      'clockwise_edge_names': ('top_left', 'top_right',
+                                               'bottom_right', 'bottom_left'),
+                      'edges': {(0, 0): {'name': 'top_left',
+                                         'counter_vertex': bottom_left_pt},
+                                (0, 2): {'name': 'top_right',
+                                         'counter_vertex': center_pt},
+                                (1, 0): {'name': 'bottom_right',
+                                         'counter_vertex': bottom_right_pt},
+                                (1, -1): {'name': 'bottom_left',
+                                          'counter_vertex': bottom_pt}}}}
+        d = {'name': 'Qube',
+             'reference_length': side,
+             'graph_offset_per_row': (bottom_rail + midbottom_rail, right_rail),
+             'graph_offset_per_col': (0, float(2 * right_rail) / 3),
+             'components': c}
+        return d
 
+    @classmethod
+    def origin_index(cls, index):
+        """Return the equivalent index when the supershape is at the origin."""
+        row, col = index
+        # Qube supershape is only in one row so only need the column
+        origin_row = 0
+        origin_col = col % 3
+        return origin_row, origin_col
 
 
 if __name__ == '__main__':
