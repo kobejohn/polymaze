@@ -240,6 +240,58 @@ class _ComponentShape(object):
                 del self._owned_edges[n_index]
 
 
+class Edge(object):
+    def __init__(self, grid, neighbor_1_index, neighbor_2_index):
+        self._grid = grid
+        self._neighbor_1_index = neighbor_1_index
+        self._neighbor_2_index = neighbor_2_index
+
+    def endpoints(self, requesting_shape_index=None):
+        """Return the xy, xy end points of this edge.
+
+        kwargs: requesting_shape_index - if the clockwise order of vertices is
+                    desired, provide this so the edge knows which way to sort
+        """
+        # default if the sorting doesn't matter
+        other_side_lookup = {self._neighbor_1_index: self._neighbor_2_index,
+                             self._neighbor_2_index: self._neighbor_1_index}
+        if requesting_shape_index:
+            # use only the provided index
+            try:
+                n_index = other_side_lookup[requesting_shape_index]
+            except KeyError:
+                raise ValueError('The requesting shape is not one of the'
+                                 ' sharing neighbors of this edge.')
+            requesting_shape = self._grid.get(requesting_shape_index)
+        else:
+            # use either index if not provided
+            requesting_shape = self._grid.get(self._neighbor_1_index)
+            if not requesting_shape:
+                requesting_shape = self._grid.get(self._neighbor_2_index)
+        n_index = other_side_lookup[requesting_shape.index()]
+        v1, v2 = (requesting_shape._edge_data[n_index]['counter_vertex'],
+                  requesting_shape._edge_data[n_index]['clock_vertex'])
+        return v1, v2
+
+
+def sum_tuples(sequence_of_tuples):
+    # not efficient but works
+    a_sum, b_sum = 0, 0  # will be converted to float if any floats added
+    for a, b in sequence_of_tuples:
+        a_sum += a
+        b_sum += b
+    return a_sum, b_sum
+
+
+def _diff_tuples(positive, negative):
+    (pa, pb), (na, nb) = positive, negative
+    return pa-na, pb-nb
+
+
+def _scale_tuple(t, scale):
+    return scale * t[0], scale * t[1]
+
+
 class Square(_SuperShape):
     """A simple square supershape."""
     @classmethod
@@ -643,56 +695,7 @@ class Polycat(_SuperShape):
         return origin_row, origin_col
 
 
-class Edge(object):
-    def __init__(self, grid, neighbor_1_index, neighbor_2_index):
-        self._grid = grid
-        self._neighbor_1_index = neighbor_1_index
-        self._neighbor_2_index = neighbor_2_index
 
-    def endpoints(self, requesting_shape_index=None):
-        """Return the xy, xy end points of this edge.
-
-        kwargs: requesting_shape_index - if the clockwise order of vertices is
-                    desired, provide this so the edge knows which way to sort
-        """
-        # default if the sorting doesn't matter
-        other_side_lookup = {self._neighbor_1_index: self._neighbor_2_index,
-                             self._neighbor_2_index: self._neighbor_1_index}
-        if requesting_shape_index:
-            # use only the provided index
-            try:
-                n_index = other_side_lookup[requesting_shape_index]
-            except KeyError:
-                raise ValueError('The requesting shape is not one of the'
-                                 ' sharing neighbors of this edge.')
-            requesting_shape = self._grid.get(requesting_shape_index)
-        else:
-            # use either index if not provided
-            requesting_shape = self._grid.get(self._neighbor_1_index)
-            if not requesting_shape:
-                requesting_shape = self._grid.get(self._neighbor_2_index)
-        n_index = other_side_lookup[requesting_shape.index()]
-        v1, v2 = (requesting_shape._edge_data[n_index]['counter_vertex'],
-                  requesting_shape._edge_data[n_index]['clock_vertex'])
-        return v1, v2
-
-
-def sum_tuples(sequence_of_tuples):
-    # not efficient but works
-    a_sum, b_sum = 0, 0  # will be converted to float if any floats added
-    for a, b in sequence_of_tuples:
-        a_sum += a
-        b_sum += b
-    return a_sum, b_sum
-
-
-def _diff_tuples(positive, negative):
-    (pa, pb), (na, nb) = positive, negative
-    return pa-na, pb-nb
-
-
-def _scale_tuple(t, scale):
-    return scale * t[0], scale * t[1]
 
 
 if __name__ == '__main__':
