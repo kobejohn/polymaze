@@ -1,3 +1,4 @@
+import math
 import unittest
 
 import polymaze as pmz
@@ -96,6 +97,24 @@ class TestComponentShapeImplementations(unittest.TestCase):
                     self.assertNotAlmostEqual(a, d)
                     # confirm b and c are the same
                     self.assertAlmostEqual(b, c)
+
+    def test_avg_area_is_correct(self):
+        # only consider some existing super shapes and assume it otherwise works
+        triangle_area = math.sin(math.pi / 3.0) / 2.0
+        hexagon_area = 1.5 * 3**0.5
+        name_and_avg_areas_spec = {'Square': 1.0,
+                                   'Triangle': triangle_area,
+                                   'Hexagon': hexagon_area}
+        tested_count = 0
+        for neighborhood in self.shape_neighborhoods:
+            ss = neighborhood._supershape
+            if ss.name() not in name_and_avg_areas_spec:
+                continue
+            self.assertAlmostEqual(ss.avg_area(),
+                                   name_and_avg_areas_spec[ss.name()])
+            tested_count += 1
+        # confirm all the specified shapes were tested
+        self.assertEqual(tested_count, len(name_and_avg_areas_spec))
 
 
 #noinspection PyProtectedMember
