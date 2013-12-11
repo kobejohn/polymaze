@@ -771,5 +771,131 @@ class Qube(_SuperShape):
         return origin_row, origin_col
 
 
+class HexaFlower(_SuperShape):
+    """Looks round on paper."""
+    @classmethod
+    def _make_specification(cls):
+        """Return a dict that describes this supershape."""
+        side = 1.0
+        hex_w = 0.5 * side * 3**0.5  # width of the hex
+        hex_v_cap = side * math.sin(math.pi / 6.0)
+        s_partial_long = float(side) / math.tan(math.pi / 3.0)
+        s_partial_short = side - s_partial_long
+        dmd_h_offset = s_partial_short * math.cos(math.pi / 6.0)
+        dmd_v_offset = s_partial_short * math.sin(math.pi / 6.0)
+        dmd_v_partial = float(side) / math.cos(math.pi / 6.0)
+        # component shape data
+        # shared horizontal and vertical rails
+        hex_top_rail = -hex_v_cap
+        hex_midtop_rail = 0.0
+        hex_midbottom_rail = side
+        hex_bottom_rail = side + hex_v_cap
+        dmd_outer_v_mid = -side * math.sin(math.pi / 3.0)
+        top_rail = -dmd_v_partial - dmd_v_offset
+        hex_left_rail = 0.0
+        hex_h_mid_rail = hex_w
+        hex_right_rail = 2 * hex_w
+        left_rail = -side
+        dmd_left_rail = -side * math.cos(math.pi / 3.0)
+        dmd_right_rail = hex_right_rail + side * math.cos(math.pi / 3.0)
+        # points
+        hex_bottom_pt = (hex_bottom_rail, hex_h_mid_rail)
+        hex_btm_left_pt = (hex_midbottom_rail, hex_left_rail)
+        hex_top_left_pt = (hex_midtop_rail, hex_left_rail)
+        hex_top_pt = (hex_top_rail, hex_h_mid_rail)
+        hex_top_right_pt = (hex_midtop_rail, hex_right_rail)
+        hex_btm_right_pt = (hex_midbottom_rail, hex_right_rail)
+        sqr_btm_left_pt = (hex_midbottom_rail, left_rail)
+        sqr_top_left_pt = (hex_midtop_rail, left_rail)
+        ldmd_left_pt = (dmd_outer_v_mid, dmd_left_rail)
+        ldmd_top_pt = (top_rail, hex_left_rail + dmd_h_offset)
+        rdmd_top_pt = (top_rail, hex_right_rail - dmd_h_offset)
+        rdmd_right_pt = (dmd_outer_v_mid, dmd_right_rail)
+        # build components separately to avoid long lines
+        c = {(0, 0): {'name': 'left_triangle',
+                      'clockwise_edge_names': ('left', 'right', 'bottom'),
+                      'edges': {(1, -1): {'name': 'left',
+                                          'counter_vertex': sqr_top_left_pt},
+                                (0, 1): {'name': 'right',
+                                         'counter_vertex': ldmd_left_pt},
+                                (1, 0): {'name': 'bottom',
+                                         'counter_vertex': hex_top_left_pt}}},
+             (0, 1): {'name': 'left_diamond',
+                      'clockwise_edge_names': ('top_left', 'top_right',
+                                               'bottom_right', 'bottom_left'),
+                      'edges': {(-1, 1): {'name': 'top_left',
+                                          'counter_vertex': ldmd_left_pt},
+                                (0, 2): {'name': 'top_right',
+                                         'counter_vertex': ldmd_top_pt},
+                                (1, 1): {'name': 'bottom_right',
+                                         'counter_vertex': hex_top_pt},
+                                (0, 0): {'name': 'bottom_left',
+                                         'counter_vertex': hex_top_left_pt}}},
+             (0, 2): {'name': 'top_triangle',
+                      'clockwise_edge_names': ('left', 'top', 'right'),
+                      'edges': {(0, 1): {'name': 'left',
+                                         'counter_vertex': hex_top_pt},
+                                (-1, 3): {'name': 'top',
+                                          'counter_vertex': ldmd_top_pt},
+                                (1, 2): {'name': 'right',
+                                         'counter_vertex': rdmd_top_pt}}},
+             (1, 0): {'name': 'square',
+                      'clockwise_edge_names': ('left', 'top',
+                                               'right', 'bottom'),
+                      'edges': {(1, -2): {'name': 'left',
+                                          'counter_vertex': sqr_btm_left_pt},
+                                (0, 0): {'name': 'top',
+                                         'counter_vertex': sqr_top_left_pt},
+                                (1, 1): {'name': 'right',
+                                         'counter_vertex': hex_top_left_pt},
+                                (2, -1): {'name': 'bottom',
+                                          'counter_vertex': hex_btm_left_pt}}},
+             (1, 1): {'name': 'hexagon',
+                      'clockwise_edge_names': ('left',
+                                               'top_left', 'top_right',
+                                               'right',
+                                               'bottom_right', 'bottom_left'),
+                      'edges': {(1, 0): {'name': 'left',
+                                         'counter_vertex': hex_btm_left_pt},
+                                (0, 1): {'name': 'top_left',
+                                         'counter_vertex': hex_top_left_pt},
+                                (1, 2): {'name': 'top_right',
+                                         'counter_vertex': hex_top_pt},
+                                (1, 3): {'name': 'right',
+                                         'counter_vertex': hex_top_right_pt},
+                                (2, 1): {'name': 'bottom_right',
+                                         'counter_vertex': hex_btm_right_pt},
+                                (3, -1): {'name': 'bottom_left',
+                                          'counter_vertex': hex_bottom_pt}}},
+             (1, 2): {'name': 'right_diamond',
+                      'clockwise_edge_names': ('top_left', 'top_right',
+                                               'bottom_right', 'bottom_left'),
+                      'edges': {(0, 2): {'name': 'top_left',
+                                         'counter_vertex': hex_top_pt},
+                                (-1, 4): {'name': 'top_right',
+                                          'counter_vertex': rdmd_top_pt},
+                                (0, 3): {'name': 'bottom_right',
+                                         'counter_vertex': rdmd_right_pt},
+                                (1, 1): {'name': 'bottom_left',
+                                         'counter_vertex': hex_top_right_pt}}}}
+        d = {'name': 'HexaFlower',
+             'reference_length': side,
+             'graph_offset_per_row': (float(hex_bottom_rail +
+                                            abs(dmd_outer_v_mid)) / 2,
+                                      float(2 * hex_w - dmd_h_offset) / 2),
+             'graph_offset_per_col': (0.0, float(2 * hex_w + side) / 3),
+             'components': c}
+        return d
+
+    @classmethod
+    def origin_index(cls, index):
+        """Return the equivalent index when the supershape is at the origin."""
+        row, col = index
+        # Hexaflower is 2 rows, 3 cols
+        origin_row = row % 2
+        origin_col = col % 3
+        return origin_row, origin_col
+
+
 if __name__ == '__main__':
     pass
