@@ -1,5 +1,7 @@
 # coding=utf-8
 """Demonstrate some ways to use polymaze."""
+import PIL.Image
+
 import polymaze as pmz
 
 
@@ -7,12 +9,22 @@ def demo():
     print 'Saving demos:'
     basic_string_maze()
     custom_rectangle_mazes()
+    image_maze()
+
+
+def image_maze():
+    image = PIL.Image.open('source_image.png')
+    grid = pmz.PolyGrid(supershape=pmz.SUPERSHAPES_DICT['HexaFlower'])
+    grid.create_from_image(image, complexity=100)
+    maze = pmz.Maze(grid)
+    filename = 'globe.png'
+    maze.image().save(filename, format='PNG')
 
 
 def basic_string_maze():
-    s = u'Poly Maze'
-    grid = pmz.PolyGrid()
-    grid.create_string(s, complexity=2)
+    s = u'迷路'
+    grid = pmz.PolyGrid(supershape=pmz.SUPERSHAPES_DICT['OctaDiamond'])
+    grid.create_string(s, complexity=50, font_path='meiryob.ttc')
     maze = pmz.Maze(grid)
     filename = 'Demo Normal String.png'
     maze.image().save(filename, format='PNG')
