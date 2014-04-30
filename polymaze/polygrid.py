@@ -116,7 +116,11 @@ class PolyGrid(object):
         self.create_from_image(string_image, **kwargs)
 
     def create_from_image(self, image, max_level=None, **kwargs):
-        """Create shapes that reproduce the shape of black pixels in image."""
+        """Create shapes that reproduce the shape of black pixels in image.
+
+        arguments:
+        image - a grayscale PIL image
+        """
         max_level = max_level or 127  # middle of 8-bit range
         grid_im = self._source_image_to_grid_image(image, **kwargs)
         grid_pixels = grid_im.load()
