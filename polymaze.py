@@ -1,6 +1,8 @@
 import argparse
 from datetime import datetime
 
+import PIL.Image
+
 import polymaze as pmz
 
 
@@ -16,12 +18,21 @@ def commandline():
     grid = pmz.PolyGrid(supershape=supershape)
     # pull off non-common parameters
     string = kwargs.pop('string')
+    image_path = kwargs.pop('image')
     font_path = kwargs.pop('font')
     # fill the grid based on the remaining arguments provided
     if string:
         grid.create_string(string, font_path=font_path, **kwargs)
         maze = pmz.Maze(grid)
         save_maze(maze, 'String')
+    elif image_path:
+        image = PIL.Image.open(image_path).convert('L')
+        if not image:
+            print('Unable to open the provided image path: {}'
+                  ''.format(image_path))
+        grid.create_from_image(image, **kwargs)
+        maze = pmz.Maze(grid)
+        save_maze(maze, 'Image')
     else:
         grid.create_rectangle(**kwargs)
         maze = pmz.Maze(grid)
@@ -48,6 +59,8 @@ def _parser():
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--string',
                        help='Make a maze for each character in STRING.')
+    group.add_argument('--image',
+                       help='Make a maze from IMAGE (path).')
     # optional complexity
     parser.add_argument('--complexity', type=_positive,
                         help='Numeric scale for complexity.'
