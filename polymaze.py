@@ -43,7 +43,7 @@ def commandline():
 def save_maze(maze, maze_type):
     image = maze.image()
     if image is None:
-        print 'This maze appears to be empty. Not saving.'
+        print('This maze appears to be empty. Not saving.')
     else:
         now_str = str(datetime.now().time())
         clean_now_string = now_str.replace(':', '.').rsplit('.', 1)[0]
@@ -51,7 +51,7 @@ def save_maze(maze, maze_type):
                                                      maze_type,
                                                      maze.shape_name())
         image.save(filename, format='PNG')
-        print filename
+        print(filename)
 
 
 def _parser():

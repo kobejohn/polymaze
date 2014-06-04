@@ -9,7 +9,7 @@ import polymaze as pmz
 
 
 def demo():
-    print 'Saving demos:'
+    print('Saving demos:')
     custom_rectangle_mazes()
     ascii_string_maze()
     unicode_string_maze()

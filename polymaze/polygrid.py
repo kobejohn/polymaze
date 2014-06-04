@@ -8,7 +8,7 @@ import PIL.ImageFilter
 import PIL.ImageFont
 import PIL.ImageOps
 
-import shapes as _shapes
+from . import shapes as _shapes
 
 _SS_DICT = _shapes.supershapes_dict()
 _EDGES_PER_COMPLEXITY = 400
@@ -28,7 +28,7 @@ class PolyGrid(object):
                      (random if not provided)
         """
         self._shapes = dict()
-        self._supershape = supershape or random.choice(_SS_DICT.values())
+        self._supershape = supershape or random.choice(list(_SS_DICT.values()))
 
     def create(self, index):
         """Create (or replace) a shape at index."""
@@ -62,18 +62,18 @@ class PolyGrid(object):
 
     def shapes(self):
         """Generate each edge in the map exactly once."""
-        for shape in self._shapes.itervalues():
+        for shape in self._shapes.values():
             yield shape
 
     def edges(self):
         """Generate each edge in the map exactly once."""
-        for shape in self._shapes.itervalues():
-            for edge in shape._owned_edges.itervalues():
+        for shape in self._shapes.values():
+            for edge in shape._owned_edges.values():
                 yield edge
 
     def border_shapes(self):
         """Generate all shapes on the grid that have at least one open edge."""
-        for shape in self._shapes.itervalues():
+        for shape in self._shapes.values():
             for n_index, neighbor in shape.neighbors():
                 if neighbor is None:
                     yield shape
@@ -205,7 +205,7 @@ def _string_image(string, font_path=None):
     else:
         # nothing worked. give up and use whatever PIL decides
         font = None
-        print 'Unable to find custom or standard font. Using default.'
+        print('Unable to find custom or standard font. Using default.')
     draw.text((10, 10), string, fill=_PIXEL_ON, font=font)
     # isolate the text
     c_box = PIL.ImageOps.invert(image).getbbox()
