@@ -20,7 +20,8 @@ def commandline():
     string = kwargs.pop('string')
     image_path = kwargs.pop('image')
     font_path = kwargs.pop('font')
-    # fill the grid based on the remaining arguments provided
+
+    # fill the grid and create maze based on the remaining arguments provided
     if string:
         grid.create_string(string, font_path=font_path, **kwargs)
         maze = pmz.Maze(grid)

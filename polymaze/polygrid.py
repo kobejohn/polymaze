@@ -11,7 +11,7 @@ import PIL.ImageOps
 import shapes as _shapes
 
 _SS_DICT = _shapes.supershapes_dict()
-_BASE_EDGES = 400
+_EDGES_PER_COMPLEXITY = 400
 _DEFAULT_COMPLEXITY = 1.0
 _DEFAULT_FONT = 'impact.ttf'  # common font with a high surface area
 _PIXEL_ON = 0  # PIL color value to indicate a shape should be used (black)
@@ -92,10 +92,11 @@ class PolyGrid(object):
         # get an exact-aspect ratio and roughly-accurate size rectangle
         rough_ss_edgecount = float(self._supershape.avg_edge_count()) / 2.0
         rough_complexity = kwargs.get('complexity') or _DEFAULT_COMPLEXITY
-        rough_edge_count = _BASE_EDGES * rough_complexity  # total edges
+        rough_edge_count = _EDGES_PER_COMPLEXITY * rough_complexity
         rough_shape_count = float(rough_edge_count) * 2.0 / rough_ss_edgecount
         rough_h = int(round((rough_shape_count * aspect)**0.5))
         rough_w = int(round((float(rough_shape_count) / aspect)**0.5))
+        # grayscale "image" where every pixel is on ==> whole shape will be maze
         rectangle_image = PIL.Image.new('L', (rough_w, rough_h),
                                         color=_PIXEL_ON)
         self.create_from_image(rectangle_image, **kwargs)
@@ -139,7 +140,7 @@ class PolyGrid(object):
         ss_h_per_row, ss_w_per_row = ss.graph_offset_per_row()
         ss_h_per_col, ss_w_per_col = ss.graph_offset_per_col()
         # determine the size of the target graph
-        edge_count = _BASE_EDGES * complexity  # total edges
+        edge_count = _EDGES_PER_COMPLEXITY * complexity
         shape_count = float(edge_count) * 2.0 / ss.avg_edge_count()
         ss_avg_area = ss.avg_area()
         # ss_avg_area = (1.0 + ss_avg_area) / 2  # helps normalize complexity
