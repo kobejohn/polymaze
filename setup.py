@@ -12,7 +12,7 @@ setup(
     version='0.5b1',
     description='Create polygon-tesselation mazes from a variety of sources.',
     long_description=long_description,
-    url='https://bitbucket.org/kobejohn/polymaze',
+    url='https://github.com/kobejohn/polymaze',
     author='John Nieri',
     author_email='niericentral@gmail.com',
     license='MIT',
