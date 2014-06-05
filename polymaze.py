@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 from datetime import datetime
 
@@ -16,6 +18,7 @@ def commandline():
     else:
         supershape = None
     grid = pmz.PolyGrid(supershape=supershape)
+
     # pull off non-common parameters
     string = kwargs.pop('string')
     image_path = kwargs.pop('image')
