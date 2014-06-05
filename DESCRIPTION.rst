@@ -15,6 +15,18 @@ Options:
 - Font - use your own font (especially for unicode strings)
 - Shape - explicitly choose the type of tesselation used in the maze
 
+Installation:
+=============
+
+`polymaze` should work with Py2 or Py3.
+
+    pip install polymaze
+
+If you get the error `decoder zip not available` when using it, then probably
+`PIL`/`PILLOW` did not install completely. You can try:
+
+    pip install -use-wheel pillow
+
 Commandline Usage:
 ==================
 
@@ -29,16 +41,22 @@ Please see demo/demo.py for examples of how to use the different parts.
 The primary components are PolyGrid (the geometric core of the whole package),
 and PolyMaze which converts a PolyGrid into a maze.
 
+Extension:
+==========
+
+If anyone is interested, I can document how to specify new tessellations.
+
 Background and Feedback:
 ========================
 
-I'd like to be a professional developer but this is just a hobby for me. I
-developed this to regain some of my basic trigonometry skills which I have lost
-over the years. It has been reasonably successful at that.
+I developed this to regain some of my basic trigonometry skills which I have
+lost over the years.
 
-If you find this useful or have any feedback, please let me know!
+If you find this useful or have any feedback, please let me know! Specifically
+I have only tested this on Windows so please make an issue if it doesn't work
+in linux, etc.
 
 License:
 ========
 
-MIT. See LICENSE.
+MIT. See LICENSE
