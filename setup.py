@@ -9,7 +9,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='polymaze',
-    version='0.5.2',
+    version='0.5.3',
     description='Create polygon-tesselation mazes from a variety of sources.',
     long_description=long_description,
     url='https://github.com/kobejohn/polymaze',
@@ -31,7 +31,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'polymaze=polymaze:commandline'
+            'polymaze=polymaze.cli:commandline'
         ]
     }
 )

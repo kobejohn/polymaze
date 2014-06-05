@@ -1,11 +1,15 @@
-#!/usr/bin/env python
-
+#! /usr/bin/python
 import argparse
 from datetime import datetime
 
 import PIL.Image
 
-import polymaze as pmz
+from .shapes import supershapes_dict
+from .maze import Maze
+from .polygrid import PolyGrid
+
+
+ss_dict = supershapes_dict()
 
 
 def commandline():
@@ -14,10 +18,10 @@ def commandline():
     # setup the base grid with a supershape if provided
     ss_name = kwargs.pop('shape')
     if ss_name:
-        supershape = pmz.SUPERSHAPES_DICT[ss_name]
+        supershape = ss_dict[ss_name]
     else:
         supershape = None
-    grid = pmz.PolyGrid(supershape=supershape)
+    grid = PolyGrid(supershape=supershape)
 
     # pull off non-common parameters
     string = kwargs.pop('string')
@@ -27,7 +31,7 @@ def commandline():
     # fill the grid and create maze based on the remaining arguments provided
     if string:
         grid.create_string(string, font_path=font_path, **kwargs)
-        maze = pmz.Maze(grid)
+        maze = Maze(grid)
         save_maze(maze, 'String')
     elif image_path:
         image = PIL.Image.open(image_path).convert('L')
@@ -35,11 +39,11 @@ def commandline():
             print('Unable to open the provided image path: {}'
                   ''.format(image_path))
         grid.create_from_image(image, **kwargs)
-        maze = pmz.Maze(grid)
+        maze = Maze(grid)
         save_maze(maze, 'Image')
     else:
         grid.create_rectangle(**kwargs)
-        maze = pmz.Maze(grid)
+        maze = Maze(grid)
         save_maze(maze, 'Rectangle')
 
 
@@ -70,7 +74,7 @@ def _parser():
                         help='Numeric scale for complexity.'
                              ' 0.5 is easy. 100 is WTFImpossible.')
      # optional shape to use
-    ss_names = pmz.SUPERSHAPES_DICT.keys()
+    ss_names = ss_dict.keys()
     parser.add_argument('--shape', choices=ss_names,
                         help='Make the maze with this shape. Random otherwise.')
     # optional aspect (relative height)

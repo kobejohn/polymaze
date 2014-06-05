@@ -45,6 +45,12 @@ For example, to make a string into a maze with some extra options:
 
     python polymaze.py --string "Happy Birthday!" --complexity 10 --shape Polycat
 
+Everything above assumes the command line entry point (named polymaze) works
+after installation. If not, then you will need to replace "polymaze ..." with
+
+    python /your_install_location/polymaze/cli.py ...
+
+
 Library Usage:
 ==============
 
