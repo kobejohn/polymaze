@@ -15,6 +15,9 @@ Options:
 - Font - use your own font (especially for unicode strings)
 - Shape - explicitly choose the type of tesselation used in the maze
 
+.. image:: demo/Globe (Polycat).png
+   :width: 400 px
+
 Installation:
 =============
 
