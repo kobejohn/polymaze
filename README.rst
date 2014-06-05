@@ -33,8 +33,17 @@ If you get the error `decoder zip not available` when using it, then probably
 Commandline Usage:
 ==================
 
-`python polymaze.py` to make a generic rectangular maze.
-`python polymaze.py -h` for help with all options
+To make a generic rectangular maze:
+
+    python polymaze.py
+
+To see all options:
+
+    python polymaze.py -h
+
+For example, to make a string into a maze with some extra options:
+
+    python polymaze.py --string "Happy Birthday!" --complexity 10 --shape Polycat
 
 Library Usage:
 ==============
