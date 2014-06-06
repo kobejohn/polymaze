@@ -17,10 +17,8 @@ Options:
 - Shape - explicitly choose the type of tesselation used in the maze
 
 .. image:: https://github.com/kobejohn/polymaze/raw/master/docs/Globe_Polycat_small.png
-   :target: https://github.com/kobejohn/polymaze/raw/master/demo/Globe%20%28Polycat%29.png
 
 .. image:: https://github.com/kobejohn/polymaze/raw/master/docs/String_small.png
-   :target: https://github.com/kobejohn/polymaze/raw/master/demo/ASCII%20String%20%28HexaFlower%29.png
 
 Installation:
 =============
@@ -35,14 +33,10 @@ If you get the error ``decoder zip not available`` when using it, then probably
 ``PILLOW`` did not install completely. Try to upgrade or reinstall
 ``PILLOW`` and make sure it says png support was installed.
 
-.. code:: sh
-
-    pip install -use-wheel pillow
-
 Commandline Usage:
 ==================
 
-To make a generic rectangular maze:
+To make a generic rectangular maze, at the command line:
 
 .. code:: sh
 
