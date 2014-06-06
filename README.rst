@@ -1,3 +1,4 @@
+=================================================
 PolyMaze - Create mazes from a variety of sources
 =================================================
 
@@ -23,10 +24,14 @@ Installation:
 
 `polymaze` should work with Py2 or Py3.
 
+.. code:: sh
+
     pip install polymaze
 
 If you get the error `decoder zip not available` when using it, then probably
 `PIL`/`PILLOW` did not install completely. You can try:
+
+.. code:: sh
 
     pip install -use-wheel pillow
 
@@ -35,18 +40,26 @@ Commandline Usage:
 
 To make a generic rectangular maze:
 
+.. code:: sh
+
     python polymaze.py
 
 To see all options:
+
+.. code:: sh
 
     python polymaze.py -h
 
 For example, to make a string into a maze with some extra options:
 
+.. code:: sh
+
     python polymaze.py --string "Happy Birthday!" --complexity 10 --shape Polycat
 
 Everything above assumes the command line entry point (named polymaze) works
 after installation. If not, then you will need to replace "polymaze ..." with
+
+.. code:: sh
 
     python /your_install_location/polymaze/cli.py ...
 
@@ -72,7 +85,7 @@ lost over the years.
 
 If you find this useful or have any feedback, please let me know! Specifically
 I have only tested this on Windows so please make an issue if it doesn't work
-in linux, etc.
+in Linux, etc.
 
 License:
 ========
