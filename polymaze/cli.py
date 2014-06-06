@@ -51,11 +51,16 @@ def save_maze(maze, maze_type, filename=None):
         now_str = str(datetime.now().time())
         clean_now_string = now_str.replace(':', '.').rsplit('.', 1)[0]
         if filename is None:
-            filename = '{} - {} made with {}.png'.format(clean_now_string,
-                                                         maze_type,
-                                                         maze.shape_name())
+            filename = '{} - {} made with {}'.format(clean_now_string,
+                                                     maze_type,
+                                                     maze.shape_name())
+        # force png... for your own good! png works well with this type
+        # of image, lossless AND smaller file size than jpg.
+        # If this is ever updated to work with original images remaining
+        # in the background of the maze, then jpg might make sense.
+        filename += '.png'
         image.save(filename)
-        print(filename)
+        print('Saved {}'.format(filename))
 
 
 def _parser():
@@ -79,7 +84,8 @@ def _parser():
                         help='Set the height/width aspect of the maze.')
     parser.add_argument('-f', '--font', type=str,
                         help='Provide a font name/path for string mazes.')
-    parser.add_argument('-o', '--output', type=str, help='Output filename.')
+    parser.add_argument('-o', '--output', type=str,
+                        help='Output filename. Note the extension is always png.')
     return parser
 
 
