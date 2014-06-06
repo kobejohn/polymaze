@@ -19,15 +19,15 @@ def commandline():
     grid = PolyGrid(supershape=ss_dict.get(kwargs.pop('shape'), None))
 
     # pull off non-common parameters
-    string = kwargs.pop('string')
+    text = kwargs.pop('text')
     image_path = kwargs.pop('image')
     font_path = kwargs.pop('font')
     filename = kwargs.pop('output')
 
     # fill the grid and create maze based on the remaining arguments provided
-    if string:
-        grid.create_string(string, font_path=font_path, **kwargs)
-        maze_type = 'String'
+    if text:
+        grid.create_string(text, font_path=font_path, **kwargs)
+        maze_type = 'Text'
     elif image_path:
         image = PIL.Image.open(image_path).convert('L')
         if not image:
@@ -62,8 +62,8 @@ def _parser():
     parser = argparse.ArgumentParser(description='Make and save mazes.')
     # optional top level type of maze to make (default rectangle)
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-s', '--string',
-                       help='Make a maze for each character in STRING.')
+    group.add_argument('-t', '--text',
+                       help='Make a maze for each character in TEXT.')
     group.add_argument('-i', '--image',
                        help='Make a maze from IMAGE (path).')
     # optional complexity
@@ -72,7 +72,7 @@ def _parser():
                              ' 0.5 is easy. 100 is WTFImpossible (tm).')
      # optional shape to use
     ss_names = ss_dict.keys()
-    parser.add_argument('-S', '--shape', choices=ss_names,
+    parser.add_argument('-s', '--shape', choices=ss_names,
                         help='Make the maze with this shape. Random otherwise.')
     # optional aspect (relative height)
     parser.add_argument('-a', '--aspect', type=_positive,
