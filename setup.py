@@ -22,6 +22,7 @@ setup(
         'Topic :: Artistic Software',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
     ],
     keywords='mazes tesselation',
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
