@@ -13,23 +13,27 @@ Allowed Inputs:
 Options:
 
 - Complexity - adjust the difficulty
-- Font - use your own font (especially for unicode strings)
+- Font - use your own font when making a String maze (especially for unicode strings)
 - Shape - explicitly choose the type of tesselation used in the maze
 
-.. image:: http://raw.githubusercontent.com/kobejohn/polymaze/master/demo/Globe%20%28Polycat%29.png
-   :width: 400 px
+.. image:: https://github.com/kobejohn/polymaze/raw/master/docs/Globe_Polycat_small.png
+   :target: https://github.com/kobejohn/polymaze/raw/master/demo/Globe%20%28Polycat%29.png
+
+.. image:: https://github.com/kobejohn/polymaze/raw/master/docs/String_small.png
+   :target: https://github.com/kobejohn/polymaze/raw/master/demo/ASCII%20String%20%28HexaFlower%29.png
 
 Installation:
 =============
 
-`polymaze` should work with Py2 or Py3.
+``polymaze`` should work with Py2 or Py3.
 
 .. code:: sh
 
     pip install polymaze
 
-If you get the error `decoder zip not available` when using it, then probably
-`PIL`/`PILLOW` did not install completely. You can try:
+If you get the error ``decoder zip not available`` when using it, then probably
+``PILLOW`` did not install completely. Try to upgrade or reinstall
+``PILLOW`` and make sure it says png support was installed.
 
 .. code:: sh
 
@@ -42,19 +46,19 @@ To make a generic rectangular maze:
 
 .. code:: sh
 
-    python polymaze.py
+    polymaze
 
 To see all options:
 
 .. code:: sh
 
-    python polymaze.py -h
+    polymaze -h
 
 For example, to make a string into a maze with some extra options:
 
 .. code:: sh
 
-    python polymaze.py --string "Happy Birthday!" --complexity 10 --shape Polycat
+    polymaze --string "Happy Birthday!" --complexity 10 --shape Polycat
 
 Everything above assumes the command line entry point (named polymaze) works
 after installation. If not, then you will need to replace "polymaze ..." with
@@ -67,7 +71,7 @@ after installation. If not, then you will need to replace "polymaze ..." with
 Library Usage:
 ==============
 
-Please see demo/demo.py for examples of how to use the different parts.
+Please see demo/demo.py for examples of how to use the components.
 
 The primary components are PolyGrid (the geometric core of the whole package),
 and PolyMaze which converts a PolyGrid into a maze.
