@@ -8,7 +8,7 @@ import PIL.ImageFilter
 import PIL.ImageFont
 import PIL.ImageOps
 
-from . import shapes as _shapes
+import shapes as _shapes
 
 _SS_DICT = _shapes.supershapes_dict()
 _EDGES_PER_COMPLEXITY = 400
