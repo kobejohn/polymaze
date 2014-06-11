@@ -48,11 +48,12 @@ To see all options:
 
     polymaze -h
 
-For example, to make a string into a maze with some extra options:
+For example, to make a string into a maze with some extra options (note the \n
+gets converted to a real newline internally):
 
 .. code:: sh
 
-    polymaze --string "Happy Birthday!" --complexity 10 --shape Polycat
+    polymaze --string "Happy\nBirthday!" --complexity 10 --shape Polycat
 
 Everything above assumes the command line entry point (named polymaze) works
 after installation. If not, then you will need to replace "polymaze ..." with

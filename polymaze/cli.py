@@ -68,7 +68,8 @@ def _parser():
     # optional top level type of maze to make (default rectangle)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-t', '--text',
-                       help='Make a maze for each character in TEXT.')
+                       help='Make a maze for each character in TEXT.'
+                            ' Note: interprets "\\n" as a new line.')
     group.add_argument('-i', '--image',
                        help='Make a maze from IMAGE (path).')
     # optional complexity

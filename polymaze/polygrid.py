@@ -105,6 +105,10 @@ class PolyGrid(object):
     def create_string(self, string, font_path=None, **kwargs):
         """Create shapes in the form of the provided string.
 
+        args:
+        string - converted into a grid based on other parameters.
+                 note: literal '\n' in string will be interpreted as newlines
+
         kwargs:
         font_path - just file name of any font in resources or full path
         complexity - scale the difficulty of the maze to any positive number
@@ -177,16 +181,18 @@ class PolyGrid(object):
 
 
 def _string_image(string, font_path=None):
-    """Return a grayscale image with black characters on a white background."""
+    """Return a grayscale image with black characters on a white background.
+
+    arguments:
+    string - this string will be converted to an image
+             if string has "\n" token in it, interpret it as a newline
+    font_path - path to a font file (for example impact.ttf)
+    """
     grayscale = 'L'
-    large = 1000
-    height = 1400  # presumably large enough for any font @ large size
-    width = int(round(height * 0.8 * len(string)))
-    # make the background
-    image = PIL.Image.new(grayscale, (width, height), color=_PIXEL_OFF)
-    # draw the text
-    draw = PIL.ImageDraw.Draw(image)
+    # parse any literal '\n' into newlines
+    lines = string.split('\\n')
     # choose a font
+    large_font = 1000
     font_priority = list()
     if font_path:
         # if font path was provided, it might work in three ways
@@ -197,18 +203,39 @@ def _string_image(string, font_path=None):
     #todo: how to list this font for linux? windows automatically looks in fonts
     # always try the default font last
     font_priority.append(_DEFAULT_FONT)
+    font = None
     for font_path in font_priority:
         try:
-            font = PIL.ImageFont.truetype(font_path, size=large)
+            font = PIL.ImageFont.truetype(font_path, size=large_font)
             break  # break when a font works
         except IOError:
             pass
-    else:
+    if font is None:
         # nothing worked. give up and use whatever PIL decides
-        font = None
-        print('Unable to find custom or standard font. Using default.')
-    draw.text((10, 10), string, fill=_PIXEL_ON, font=font)
-    # isolate the text
+        font = PIL.ImageFont.load_default()
+        print('Unable to find custom or standard font. Using a default.')
+
+    # make the background image based on the combination of font and lines
+    pt2px = lambda pt: int(round(pt * 96.0 / 72))  # convert points to pixels
+    max_width_line = max(lines, key=lambda s: font.getsize(s)[0])
+    # max height is adjusted down because it's too large visually for spacing
+    test_string = 'abcdefghijklmnopqrstuvwxyz'  # some bug with single chars
+    max_height = int(round(pt2px(font.getsize(test_string)[1]) * 0.8))
+    max_width = pt2px(font.getsize(max_width_line)[0])
+    height = max_height * len(lines)  # perfect or a little oversized
+    width = int(round(max_width + 40))  # a little oversized
+    image = PIL.Image.new(grayscale, (width, height), color=_PIXEL_OFF)
+    draw = PIL.ImageDraw.Draw(image)
+
+    # draw each line of text
+    vertical_position = 5
+    horizontal_position = 5
+    for line in lines:
+        draw.text((horizontal_position, vertical_position),
+                  line, fill=_PIXEL_ON, font=font)
+        # line_height = pt2px(font.getsize(line)[1])
+        vertical_position += max_height  # seems to include enough for spacing
+    # crop the text
     c_box = PIL.ImageOps.invert(image).getbbox()
     image = image.crop(c_box)
     return image
