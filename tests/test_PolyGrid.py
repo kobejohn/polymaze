@@ -29,15 +29,14 @@ class TestPolyGrid_Creation(unittest.TestCase):
         self.assertTrue(hasattr(image, 'resize'))
 
     @mock.patch('PIL.ImageFont.truetype')
-    def test_string_image_tries_impact_font_when_none_provided(self,
-                                                               m_truetype):
+    def test_string_image_tries_impact_font_when_none_provided(self, m_tt):
         some_string = 'asdf'
         impact_font = 'impact.ttf'
         try:
             _polygrid_module._string_image(some_string)
         except Exception:
             pass  # ignore fallout
-        m_truetype_args = m_truetype.call_args[0]
+        m_truetype_args = m_tt.call_args[0]
         self.assertIn(impact_font, m_truetype_args)
 
     @mock.patch('PIL.ImageFont.truetype')
@@ -57,11 +56,30 @@ class TestPolyGrid_Creation(unittest.TestCase):
         some_string = 'asdf'
         try:
             _polygrid_module._string_image(some_string)
-        except Exception:
-            self.fail('_string_image unexpectedly failed when fonts all failed')
+        except Exception as e:
+            self.fail('_string_image unexpectedly failed when all font attempts'
+                      ' failed:\n{}'.format(e))
 
     def test_create_from_image_looks_like_provided_image(self):
         pass  # todo: too lazy to mock / test :(
+
+    def test_string_image_is_about_double_height_with_newline(self):
+        # get a string image without newline
+        char = 'a'
+        image_without_newline = _polygrid_module._string_image(char)
+        # get a string image with 1 literal newline
+        char_with_newline = char + '\\n' + char
+        image_with_newline = _polygrid_module._string_image(char_with_newline)
+        # confirm height is about double
+        h_single_line = image_without_newline.size[1]
+        h_min_spec = 2 * h_single_line
+        h_max_spec = 3.2 * h_single_line  # since cropped, generous upper bound
+        h_double = image_with_newline.size[1]
+        self.assertTrue(h_min_spec <= h_double <= h_max_spec,
+                        'Height of text with newline was unexpectedly not about'
+                        ' double the height of a single line.\nExpected'
+                        ' between {} and {} but got {}'
+                        ''.format(h_min_spec, h_max_spec, h_double))
 
 
 # noinspection PyProtectedMember
