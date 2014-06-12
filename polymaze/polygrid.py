@@ -220,7 +220,7 @@ def _string_image(string, font_path=None):
     max_width_line = max(lines, key=lambda s: font.getsize(s)[0])
     # max height is adjusted down because it's too large visually for spacing
     test_string = 'abcdefghijklmnopqrstuvwxyz'  # some bug with single chars
-    max_height = int(round(pt2px(font.getsize(test_string)[1]) * 0.8))
+    max_height = pt2px(font.getsize(test_string)[1])
     max_width = pt2px(font.getsize(max_width_line)[0])
     height = max_height * len(lines)  # perfect or a little oversized
     width = int(round(max_width + 40))  # a little oversized
@@ -230,11 +230,11 @@ def _string_image(string, font_path=None):
     # draw each line of text
     vertical_position = 5
     horizontal_position = 5
+    line_spacing = int(round(max_height * 0.8))  # reduced spacing seems better
     for line in lines:
         draw.text((horizontal_position, vertical_position),
                   line, fill=_PIXEL_ON, font=font)
-        # line_height = pt2px(font.getsize(line)[1])
-        vertical_position += max_height  # seems to include enough for spacing
+        vertical_position += line_spacing
     # crop the text
     c_box = PIL.ImageOps.invert(image).getbbox()
     image = image.crop(c_box)
