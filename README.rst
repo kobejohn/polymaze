@@ -42,6 +42,8 @@ To make a generic rectangular maze, at the command line:
 
     polymaze
 
+.. image:: https://github.com/kobejohn/polymaze/raw/master/docs/rectangle_small.png
+
 To see all options:
 
 .. code:: sh
@@ -54,14 +56,19 @@ gets converted to a real newline internally):
 .. code:: sh
 
     polymaze --text "Happy\nBirthday!" --complexity 10 --shape Polycat
+    polymaze -t 迷路 -c 10 -s OctaDiamond --font meiryob.ttc
+
+.. image:: https://github.com/kobejohn/polymaze/raw/master/docs/birthday_small.png
+
+.. image:: https://github.com/kobejohn/polymaze/raw/master/docs/unicode_small.png
 
 Everything above assumes the command line entry point (named polymaze) works
-after installation. If not, then you will need to replace "polymaze ..." with
+after installation. If not, then you will need to navigate to the root package
+directory and use:
 
 .. code:: sh
 
-    python /your_install_location/polymaze/cli.py ...
-
+    python -m polymaze.cli --...
 
 Library Usage:
 ==============
