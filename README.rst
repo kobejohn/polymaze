@@ -7,7 +7,7 @@ This utility converts several different kinds of inputs into mazes.
 Allowed Inputs:
 
 - Aspect ratio (height / width) of a rectangular maze
-- String - convert the content of the string into a maze / mazes
+- Text - convert the content of the string into a maze / mazes
 - Image - convert the dark parts of an image into a maze / mazes
 
 Options:
@@ -53,7 +53,7 @@ gets converted to a real newline internally):
 
 .. code:: sh
 
-    polymaze --string "Happy\nBirthday!" --complexity 10 --shape Polycat
+    polymaze --text "Happy\nBirthday!" --complexity 10 --shape Polycat
 
 Everything above assumes the command line entry point (named polymaze) works
 after installation. If not, then you will need to replace "polymaze ..." with
