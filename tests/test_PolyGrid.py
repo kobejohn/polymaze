@@ -1,7 +1,7 @@
 import unittest
 
 from .. import polymaze as pmz
-from ..polymaze import polygrid as _polygrid_module
+from ..polygrid import polygrid as _polygrid_module
 
 # silly workaround to allow tests to work in py2 or py3
 try:

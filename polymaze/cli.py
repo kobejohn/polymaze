@@ -4,9 +4,9 @@ from datetime import datetime
 
 import PIL.Image
 
-from .shapes import supershapes_dict
+from ..polygrid.polygrid import PolyGrid
+from ..polygrid.shapes import supershapes_dict
 from .maze import Maze
-from .polygrid import PolyGrid
 
 
 ss_dict = supershapes_dict()
