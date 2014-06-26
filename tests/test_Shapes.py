@@ -1,7 +1,13 @@
 import math
 import unittest
 
-import polymaze as pmz
+from .. import polymaze as pmz
+
+# silly workaround to allow tests to work in py2 or py3
+try:
+    _assertCountEqual = unittest.TestCase.assertCountEqual  # py3
+except AttributeError:
+    _assertCountEqual = unittest.TestCase.assertItemsEqual  # py2
 
 
 #noinspection PyProtectedMember
@@ -129,7 +135,7 @@ class TestComponentShape(unittest.TestCase):
         # confirm ownership of every edge for an independent shape
         owned_indexes = (n_index for n_index, edge in shape.edges())
         owned_indexes_spec = shape.n_indexes()
-        self.assertItemsEqual(owned_indexes, owned_indexes_spec)
+        _assertCountEqual(self, owned_indexes, owned_indexes_spec)
 
     def test_creation_does_not_take_ownership_of_claimed_edges(self):
         shape = generic_shape()
@@ -178,7 +184,7 @@ class TestComponentShape(unittest.TestCase):
             indexed_neighbors_spec.append((n_index, neighbor))
         # confirm that the correct index-neighbor combos are generated
         indexed_neighbors = list(shape.neighbors())
-        self.assertItemsEqual(indexed_neighbors, indexed_neighbors_spec)
+        _assertCountEqual(self, indexed_neighbors, indexed_neighbors_spec)
 
     def test_neighbors_generates_index_and_None_for_empty_neighbors(self):
         # make a shape with no neighbors
@@ -203,7 +209,7 @@ class TestEdge(unittest.TestCase):
         end_2_spec = shape._edge_data[n_index]['clock_vertex']
         ends_spec = (end_1_spec, end_2_spec)
         ends = tuple(edge.endpoints())
-        self.assertItemsEqual(ends, ends_spec)
+        _assertCountEqual(self, ends, ends_spec)
 
     def test_endpoints_returns_endpoints_from_indicated_shape(self):
         """Each shape may/will have a different order for the same endpoints."""

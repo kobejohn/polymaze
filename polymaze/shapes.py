@@ -232,7 +232,7 @@ class _ComponentShape(object):
 
     def _give_away_edges(self):
         """Give edges away to neighbors or keep them if no neighbor."""
-        for n_index, edge in self._owned_edges.items():
+        for n_index, edge in tuple(self._owned_edges.items()):
             neighbor = self._grid.get(n_index)
             if neighbor:
                 # transfer the edge only when there is a neighbor

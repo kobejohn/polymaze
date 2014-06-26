@@ -1,15 +1,22 @@
-import mock
 import unittest
 
-import polymaze as pmz
-import polymaze.polygrid as _polygrid_module
+from .. import polymaze as pmz
+from ..polymaze import polygrid as _polygrid_module
+
+# silly workaround to allow tests to work in py2 or py3
+try:
+    _assertCountEqual = unittest.TestCase.assertCountEqual  # py3
+    from unittest import mock
+except (AttributeError, ImportError):
+    _assertCountEqual = unittest.TestCase.assertItemsEqual  # py2
+    import mock
 
 
 # noinspection PyProtectedMember
 # noinspection PyBroadException
 class TestPolyGrid_Creation(unittest.TestCase):
-    @mock.patch('polymaze.polygrid.PolyGrid.create_from_image')
-    @mock.patch('polymaze.polygrid._string_image')
+    @mock.patch.object(_polygrid_module.PolyGrid, 'create_from_image')
+    @mock.patch.object(_polygrid_module, '_string_image')
     def test_create_string_converts_to_image_then_uses_create_image(self,
                                                                     m_s_img,
                                                                     m_crt_im):
@@ -133,7 +140,7 @@ class TestShapeGrid(unittest.TestCase):
         shape_count_spec = 5
         self.assertEqual(len(all_shapes_spec), shape_count_spec)
         all_shapes = tuple(grid.shapes())
-        self.assertItemsEqual(all_shapes, all_shapes_spec)
+        _assertCountEqual(self, all_shapes, all_shapes_spec)
 
     def test_edges_generates_each_edge_exactly_once(self):
         # make a grid with a center square and a neighbor on each side
@@ -152,7 +159,7 @@ class TestShapeGrid(unittest.TestCase):
         self.assertEqual(len(edges_spec), edge_count_spec)
         # confirm each edge appears exactly once
         edges = tuple(grid.edges())
-        self.assertItemsEqual(edges, edges_spec)
+        _assertCountEqual(self, edges, edges_spec)
 
     def test_border_shapes_generates_all_shapes_with_any_empty_neighbors(self):
         # make a grid with a center square and a neighbor on each side
@@ -163,7 +170,7 @@ class TestShapeGrid(unittest.TestCase):
         n_indexes = tuple(center.n_indexes())
         border_shapes_spec = (grid.get(n_index) for n_index in n_indexes)
         border_shapes = tuple(grid.border_shapes())
-        self.assertItemsEqual(border_shapes, border_shapes_spec)
+        _assertCountEqual(self, border_shapes, border_shapes_spec)
 
     def test_remove_removes_shape_from_the_grid(self):
         # create a grid with one shape

@@ -1,6 +1,12 @@
 import unittest
 
-import polymaze as pmz
+from .. import polymaze as pmz
+
+# silly workaround to allow tests to work in py2 or py3
+try:
+    _assertCountEqual = unittest.TestCase.assertCountEqual  # py3
+except AttributeError:
+    _assertCountEqual = unittest.TestCase.assertItemsEqual  # py2
 
 
 #noinspection PyProtectedMember
@@ -8,7 +14,7 @@ class TestMaze(unittest.TestCase):
     #todo: to really test this, need to confirm all graph nodes lead to in/out
 
     def test_shape_name_provides_it(self):
-        ss = pmz.SUPERSHAPES_DICT.values()[0]
+        ss = next(iter(pmz.SUPERSHAPES_DICT.values()))  # test any value
         maze = generic_maze(supershape=ss)
         ss_name = maze.shape_name()
         ss_name_spec = ss.name()
@@ -27,7 +33,7 @@ class TestMaze(unittest.TestCase):
         pmz.Maze(grid)
         final_shapes = tuple(grid.shapes())
         final_shapes_spec = (neighbor_1, neighbor_2)
-        self.assertItemsEqual(final_shapes, final_shapes_spec)
+        _assertCountEqual(self, final_shapes, final_shapes_spec)
 
     def test_entrance_exit_pairs_are_available_after_creation(self):
         maze = generic_maze()
