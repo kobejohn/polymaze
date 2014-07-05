@@ -241,5 +241,104 @@ def _string_image(string, font_path=None):
     return image
 
 
+class PolyViz(object):
+    TRANSPARENT = 0
+    OPAQUE = 255
+    PX_PER_GRAPH_UNIT = 40.0  # tweakable. higher makes higher resolution images
+
+    def __init__(self, grid):
+        self.grid = grid
+        white = (255, 255, 255, 255)
+        black = (0, 0, 0, 255)
+        self._shape_styles, self._edge_styles = dict(), dict()
+        self.new_shape_style('default', color=white)
+        self.new_edge_style('default', color=black)
+
+    def new_shape_style(self, name, color):
+        self._shape_styles[name] = {'color': color}
+
+    def new_edge_style(self, name, color):
+        self._edge_styles[name] = {'color': color}
+
+    def get_shape_style(self, shape):
+        try:
+            style = self._shape_styles[shape.viz_style]
+        except (AttributeError, KeyError):
+            style = None
+        return style or self._shape_styles['default']
+
+    def get_edge_style(self, edge):
+        try:
+            style = self._edge_styles[edge.viz_style]
+        except (AttributeError, KeyError):
+            style = None
+        return style or self._edge_styles['default']
+
+    def image(self):
+        """Return a PIL(LOW) image representation of self.grid.
+
+        returns: None if grid is empty
+
+        note: Appearance of the output image depends on the default styles
+            for grid elements or any style object found on each element.
+        """
+        # first calculate the graph size of the final image
+        x_values, y_values = list(), list()
+        for edge in self.grid.edges():
+            (y1, x1), (y2, x2) = edge.endpoints()
+            x_values.extend((x1, x2))
+            y_values.extend((y1, y2))
+        if not x_values:
+            # empty grid
+            return None
+        image_padding_in_edges = 1.0
+        graph_height = max(y_values) - min(y_values) + 2*image_padding_in_edges
+        graph_width = max(x_values) - min(x_values) + 2*image_padding_in_edges
+        # handle graph --> image scaling reasonably
+        scale = float(self.PX_PER_GRAPH_UNIT)  # default scale for no limits
+        # pad the image
+        size = (int(round(scale * graph_width)),
+                int(round(scale * graph_height)))
+
+        # create the base image
+        image = PIL.Image.new('RGBA', size)
+        drawer = PIL.ImageDraw.Draw(image)
+        # calculate total offset including padding and centering
+        vert_offset_in_edges = min(y_values)
+        horz_offset_in_edges = min(x_values)
+        vert_offset_px = int(round((image_padding_in_edges
+                                    - vert_offset_in_edges) * scale))
+        horz_offset_px = int(round((image_padding_in_edges
+                                    - horz_offset_in_edges) * scale))
+
+        # mark all spaces white before drawing anything else
+        for space in self.grid.shapes():
+            space_polygon_points = list()
+            for _, edge in space.edges():
+                (row_a, col_a), _ = edge.endpoints(space.index())
+                point_a = (int(round(col_a * scale)) + horz_offset_px,
+                           int(round(row_a * scale)) + vert_offset_px)
+                space_polygon_points.append(point_a)
+            # get style or default
+            space_style = self.get_shape_style(space)
+            drawer.polygon(space_polygon_points, fill=space_style['color'])
+
+        # draw each wall edge and don't draw each path edge
+        for edge in self.grid.edges():
+            edge_style = self.get_edge_style(edge)
+            # current stop-gap design: skip fully transparent edges
+            # instead of drawing since the overlap at vertexes looks bad
+            if edge_style['color'][3] == self.TRANSPARENT:
+                continue
+            # normal case: draw the non-fully-transparent edges
+            (row_a, col_a), (row_b, col_b) = edge.endpoints()
+            drawer.line(((int(round(scale * col_a)) + horz_offset_px,
+                          int(round(scale * row_a)) + vert_offset_px),
+                         (int(round(scale * col_b)) + horz_offset_px,
+                          int(round(scale * row_b)) + vert_offset_px)),
+                        fill=edge_style['color'], width=4)
+        return image
+
+
 if __name__ == '__main__':
     pass

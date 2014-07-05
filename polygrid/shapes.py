@@ -115,6 +115,7 @@ class _ComponentShape(object):
         self._name, self._edge_data, self._ordered_n_indexes =\
             self._calc_final_data(supershape, index)
         self._owned_edges = self._grab_edges(dict())
+        self.viz_style = None
 
     @staticmethod
     def _calc_final_data(ss, index):
@@ -245,6 +246,7 @@ class Edge(object):
         self._grid = grid
         self._neighbor_1_index = neighbor_1_index
         self._neighbor_2_index = neighbor_2_index
+        self.viz_style = None
 
     def endpoints(self, requesting_shape_index=None):
         """Return the xy, xy end points of this edge.
