@@ -51,7 +51,7 @@ class TestMaze(unittest.TestCase):
         some_index = tuple(maze._grid.shapes())[0].index()
         space = maze._grid.get(some_index)
         for _, edge in space.edges():
-            edge.status = maze.WALL
+            edge.viz_style = maze._WALL_STYLE
         # confirm that the space is pathable
         self.assertFalse(maze._has_paths(space))
 
@@ -61,9 +61,9 @@ class TestMaze(unittest.TestCase):
         some_index = tuple(maze._grid.shapes())[0].index()
         space = maze._grid.get(some_index)
         for _, edge in space.edges():
-            edge.status = maze.WALL
+            edge.status = maze._WALL_STYLE
         # set any edge to path
-        tuple(space.edges())[0][1].status = maze.PATH
+        tuple(space.edges())[0][1].status = maze._PATH_STYLE
         # confirm that the space is not pathable
         self.assertTrue(maze._has_paths(space))
 
