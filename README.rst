@@ -68,7 +68,7 @@ directory and use:
 
 .. code:: sh
 
-    python -m polymaze.cli --...
+    python -m workingdirectory.polymaze.cli --...
 
 Library Usage:
 ==============
