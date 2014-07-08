@@ -9,7 +9,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='polymaze',
-    version='0.6.6',
+    version='0.6.7',
     description='Create polygon-tesselation mazes from a variety of sources.',
     long_description=long_description,
     url='https://github.com/kobejohn/polymaze',
@@ -17,7 +17,7 @@ setup(
     author_email='niericentral@gmail.com',
     license='MIT',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Topic :: Artistic Software',
         'License :: OSI Approved :: MIT License',
