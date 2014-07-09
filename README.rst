@@ -68,15 +68,20 @@ directory and use:
 
 .. code:: sh
 
-    python -m workingdirectory.polymaze.cli --...
+    python cli_runner.py [--options...]
 
 Library Usage:
 ==============
 
-Please see demo/demo.py for examples of how to use the components.
+Please see demo.py for examples of how to use the components. You can also run
+it simply with:
 
-The primary components are PolyGrid (the geometric core of the whole package),
-and PolyMaze which converts a PolyGrid into a maze.
+.. code:: sh
+
+    python demo.py
+
+The primary components are ``PolyGrid`` (the geometric core of the whole package),
+and ``PolyMaze`` which converts a ``PolyGrid`` into a maze.
 
 Extension:
 ==========
@@ -86,7 +91,7 @@ If anyone is interested, I can document how to specify new tessellations.
 Background and Feedback:
 ========================
 
-I developed this to regain some of my basic trigonometry skills which I have
+I developed this to regain some basic trigonometry skills which I have
 lost over the years.
 
 If you find this useful or have any feedback, please let me know! Specifically

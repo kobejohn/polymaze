@@ -1,7 +1,11 @@
+import os
+import sys
 import unittest
 
-from .. import polymaze as pmz
-from ..polygrid import polygrid as _polygrid_module
+sys.path.insert(0, os.path.abspath('..'))  # hack to allow simple test structure
+import polymaze as pmz
+from polymaze import polygrid as _polygrid_module
+
 
 # silly workaround to allow tests to work in py2 or py3
 try:

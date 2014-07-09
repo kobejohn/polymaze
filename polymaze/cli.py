@@ -4,8 +4,8 @@ from datetime import datetime
 
 import PIL.Image
 
-from ..polygrid.polygrid import PolyGrid
-from ..polygrid.shapes import supershapes_dict
+from .polygrid import PolyGrid
+from .shapes import supershapes_dict
 from .maze import Maze
 
 

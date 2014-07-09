@@ -2,10 +2,13 @@
 """Demonstrate some ways to use polymaze."""
 import itertools
 import random
+import os
 
 import PIL.Image
 
 import polymaze as pmz
+
+_image_directory = os.path.join('.', 'demo_images')
 
 
 def demo():
@@ -22,7 +25,8 @@ def ascii_string_maze():
     grid = pmz.PolyGrid(supershape=supershape)
     grid.create_string(s, complexity=15)
     maze = pmz.Maze(grid)
-    filename = 'ASCII String ({}).png'.format(supershape_name)
+    filename = os.path.join(_image_directory,
+                            'ASCII String ({}).png'.format(supershape_name))
     maze.image().save(filename, format='PNG')
     print('Saved {}'.format(filename))
 
@@ -33,18 +37,20 @@ def unicode_string_maze():
     grid = pmz.PolyGrid(supershape=supershape)
     grid.create_string(s, complexity=20, font_path='meiryob.ttc')
     maze = pmz.Maze(grid)
-    filename = 'Unicode String ({}).png'.format(supershape_name)
+    filename = os.path.join(_image_directory,
+                            'Unicode String ({}).png'.format(supershape_name))
     maze.image().save(filename, format='PNG')
     print('Saved {}'.format(filename))
 
 
 def image_maze():
-    image = PIL.Image.open('globe_source.png')
+    image = PIL.Image.open(os.path.join(_image_directory, 'globe_source.png'))
     supershape_name, supershape = next(_supershapes_cycle)
     grid = pmz.PolyGrid(supershape=supershape)
     grid.create_from_image(image, complexity=100)
     maze = pmz.Maze(grid)
-    filename = 'Globe ({}).png'.format(supershape_name)
+    filename = os.path.join(_image_directory,
+                            'Globe ({}).png'.format(supershape_name))
     maze.image().save(filename, format='PNG')
     print('Saved {}'.format(filename))
 
@@ -57,12 +63,15 @@ def custom_rectangle_mazes():
         grid.create_rectangle(complexity=complexity,
                               aspect=aspect_close_to_golden_rectangle)
         maze = pmz.Maze(grid)
-        filename = 'Rectangle (Complexity {}) ({}).png'.format(complexity,
-                                                               supershape_name)
+        filename = os.path.join(_image_directory,
+                                'Rectangle (Complexity {}) ({}).png'
+                                ''.format(complexity, supershape_name))
         maze.image().save(filename, format='PNG')
         print('Saved {}'.format(filename))
 
 
+# instead of simple random shapes, use a randomized cycle so they are not
+# repeated until all have been used
 _supershapes_cycle = list(pmz.SUPERSHAPES_DICT.items())
 random.shuffle(_supershapes_cycle)
 _supershapes_cycle = itertools.cycle(_supershapes_cycle)

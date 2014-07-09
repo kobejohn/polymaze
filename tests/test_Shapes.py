@@ -1,7 +1,10 @@
 import math
+import os
+import sys
 import unittest
 
-from .. import polymaze as pmz
+sys.path.insert(0, os.path.abspath('..'))  # hack to allow simple test structure
+import polymaze as pmz
 
 # silly workaround to allow tests to work in py2 or py3
 try:

@@ -1,7 +1,7 @@
 from collections import deque
 import random
 
-from ..polygrid.polygrid import PolyViz
+from .polygrid import PolyViz
 
 
 class Maze(object):

@@ -27,7 +27,6 @@ setup(
     keywords='mazes tesselation',
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
     install_requires=['PILLOW'],
-    tests_require=['nose'],  # without nose, relative imports are a hassle
     package_data={
         'demo': ['globe_source.png'],
     },

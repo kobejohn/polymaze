@@ -1,8 +1,9 @@
 import unittest
 
-from .test_PolyGrid import generic_grid
-from ..polygrid.polygrid import PolyGrid, PolyViz
+from tests.test_PolyGrid import generic_grid
+from polymaze.polygrid import PolyGrid, PolyViz
 
+# silly workaround to allow tests to work in py2 or py3
 try:
     _assertCountEqual = unittest.TestCase.assertCountEqual  # py3
     from unittest import mock
