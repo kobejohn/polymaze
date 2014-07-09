@@ -311,7 +311,7 @@ class PolyViz(object):
         horz_offset_px = int(round((image_padding_in_edges
                                     - horz_offset_in_edges) * scale))
 
-        # mark all spaces white before drawing anything else
+        # color spaces before other parts
         for space in self.grid.shapes():
             space_polygon_points = list()
             for _, edge in space.edges():

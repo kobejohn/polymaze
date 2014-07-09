@@ -63,7 +63,6 @@ class Maze(object):
 
     def _mazify_connected_shapes(self, entrance_space, border_spaces):
         # break down one border wall to make the entrance
-        entrance_space.viz_style = self._ENTRANCE_STYLE
         for n_index, neighbor in entrance_space.neighbors():
             if neighbor is None:
                 edge = entrance_space.edge(n_index)
@@ -109,13 +108,16 @@ class Maze(object):
                 space = current_path.pop()  # normal case - back up one step
         # when maze complete mark longest path to edge as exit
         exit_space = potential_exit_and_length[0]
+
         # break down one border wall to make the exit
-        exit_space.viz_style = self._EXIT_STYLE
         for n_index, neighbor in exit_space.neighbors():
             if neighbor is None:
                 edge = exit_space.edge(n_index)
                 edge.viz_style = self._PATH_STYLE
                 break  # done after making the exit path
+        # set the special case entrance and exit space styles
+        entrance_space.viz_style = self._ENTRANCE_STYLE
+        exit_space.viz_style = self._EXIT_STYLE
         return entrance_space, exit_space
 
     def image(self):
