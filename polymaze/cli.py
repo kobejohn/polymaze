@@ -68,14 +68,14 @@ def _parser():
     # optional top level type of maze to make (default rectangle)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-t', '--text',
-                       help='Make a maze for each character in TEXT.'
+                       help='Make a maze inside the characters of TEXT.'
                             ' Note: interprets "\\n" as a new line.')
     group.add_argument('-i', '--image',
                        help='Make a maze from IMAGE (path).')
     # optional complexity
     parser.add_argument('-c', '--complexity', type=_positive,
-                        help='Numeric scale for complexity.'
-                             ' 0.5 is easy. 100 is WTFImpossible (tm).')
+                        help='Positive number that controls maze complexity.'
+                             ' 0.5 is very easy. 110 is very hard.')
      # optional shape to use
     ss_names = ss_dict.keys()
     parser.add_argument('-s', '--shape', choices=ss_names,
@@ -84,9 +84,9 @@ def _parser():
     parser.add_argument('-a', '--aspect', type=_positive,
                         help='Set the height/width aspect of the maze.')
     parser.add_argument('-f', '--font', type=str,
-                        help='Provide a font name/path for string mazes.')
+                        help='Provide a font file name/path for text mazes.')
     parser.add_argument('-o', '--output', type=str,
-                        help='Output filename. Note the extension is always png.')
+                        help='Output filename. The format will always be PNG.')
     return parser
 
 
