@@ -40,15 +40,16 @@ class TestPolyGrid_Creation(unittest.TestCase):
         self.assertTrue(hasattr(image, 'resize'))
 
     @mock.patch('PIL.ImageFont.truetype')
-    def test_string_image_tries_impact_font_when_none_provided(self, m_tt):
+    def test_string_image_uses_bundled_font_when_none_provided(self, m_tt):
         some_string = 'asdf'
-        impact_font = 'impact.ttf'
+        bundled_font_name = 'NotoSansCJK-Bold.ttc'
         try:
             _polygrid_module._string_image(some_string)
         except Exception:
-            pass  # ignore fallout
+            pass  # ignore fallout due to mock object blowing up later
         m_truetype_args = m_tt.call_args[0]
-        self.assertIn(impact_font, m_truetype_args)
+        m_truetype_arg = m_truetype_args[0]
+        self.assertIn(bundled_font_name, m_truetype_arg)
 
     @mock.patch('PIL.ImageFont.truetype')
     def test_string_image_tries_provided_font_path(self, m_truetype):
@@ -61,15 +62,10 @@ class TestPolyGrid_Creation(unittest.TestCase):
         m_truetype_args = m_truetype.call_args[0]
         self.assertIn(some_font, m_truetype_args)
 
-    @mock.patch('PIL.ImageFont.truetype')
-    def test_string_image_survives_even_if_all_fonts_fail(self, m_truetype):
-        m_truetype.side_effect = IOError
+    def test_string_image_raises_ValueError_if_provided_font_fails(self):
+        nonexistent_font_path = 'asdfjkl'
         some_string = 'asdf'
-        try:
-            _polygrid_module._string_image(some_string)
-        except Exception as e:
-            self.fail('_string_image unexpectedly failed when all font attempts'
-                      ' failed:\n{}'.format(e))
+        self.assertRaises(ValueError, _polygrid_module._string_image, some_string, font_path=nonexistent_font_path)
 
     def test_create_from_image_looks_like_provided_image(self):
         pass  # todo: too lazy to mock / test :(
@@ -84,7 +80,7 @@ class TestPolyGrid_Creation(unittest.TestCase):
         # confirm height is about double
         h_single_line = image_without_newline.size[1]
         h_min_spec = 2 * h_single_line
-        h_max_spec = 3.2 * h_single_line  # since cropped, generous upper bound
+        h_max_spec = 3.5 * h_single_line  # since cropped, generous upper bound
         h_double = image_with_newline.size[1]
         self.assertTrue(h_min_spec <= h_double <= h_max_spec,
                         'Height of text with newline was unexpectedly not about'

@@ -1,5 +1,6 @@
 # coding=utf-8
 import math
+import os
 import random
 
 import PIL.Image
@@ -14,7 +15,7 @@ from . import shapes as _shapes
 _SS_DICT = _shapes.supershapes_dict()
 _EDGES_PER_COMPLEXITY = 400
 _DEFAULT_COMPLEXITY = 1.0
-_DEFAULT_FONT = 'impact.ttf'  # common font with a high surface area
+_DEFAULT_FONT = os.path.join(os.path.dirname(__file__), '..', 'font', 'NotoSansCJK-Bold.ttc')  # high coverage font
 _PIXEL_ON = 0  # PIL color value to indicate a shape should be used (black)
 _PIXEL_OFF = 255  # PIL color value to indicate a shape is off (white)
 
@@ -187,33 +188,29 @@ def _string_image(string, font_path=None):
     string - this string will be converted to an image
              if string has "\n" token in it, interpret it as a newline
     font_path - path to a font file (for example impact.ttf)
+               if font path is provided, it might work in three ways
+               1) path completely defines location of a font
+               2) just a file name works for a font in the current working directory
+               3) just a file name works for a font somewhere in the system path
+               4) on windows, PILLOW may search the windows fonts directory.
+                  on linux, it does not as of 2015-August
+
     """
     grayscale = 'L'
     # parse any literal '\n' into newlines
     lines = string.split('\\n')
     # choose a font
     large_font = 1000
-    font_priority = list()
-    if font_path:
-        # if font path was provided, it might work in three ways
-        # 1) path completely defines location of a font
-        # 2) just a file name works for a font in the current working directory
-        # 3) just a file name works for a font somewhere in the system path
-        font_priority.append(font_path)
-    #todo: how to list this font for linux? windows automatically looks in fonts
-    # always try the default font last
-    font_priority.append(_DEFAULT_FONT)
-    font = None
-    for font_path in font_priority:
-        try:
-            font = PIL.ImageFont.truetype(font_path, size=large_font)
-            break  # break when a font works
-        except IOError:
-            pass
+    font_path = font_path or _DEFAULT_FONT
+    try:
+        font = PIL.ImageFont.truetype(font_path, size=large_font)
+    except IOError:
+        font = None
     if font is None:
-        # nothing worked. give up and use whatever PIL decides
-        font = PIL.ImageFont.load_default()
-        print('Unable to find custom or standard font. Using a default.')
+        if font_path == _DEFAULT_FONT:
+            raise RuntimeError('Unable to load built-in font ({})'.format(_DEFAULT_FONT))
+        else:
+            raise ValueError('Unable to load provided font ({})'.format(font_path))
 
     # make the background image based on the combination of font and lines
     pt2px = lambda pt: int(round(pt * 96.0 / 72))  # convert points to pixels
@@ -230,7 +227,7 @@ def _string_image(string, font_path=None):
     # draw each line of text
     vertical_position = 5
     horizontal_position = 5
-    line_spacing = int(round(max_height * 0.8))  # reduced spacing seems better
+    line_spacing = int(round(max_height * 0.65))  # reduced spacing seems better
     for line in lines:
         draw.text((horizontal_position, vertical_position),
                   line, fill=_PIXEL_ON, font=font)

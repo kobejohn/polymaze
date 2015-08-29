@@ -102,3 +102,8 @@ License:
 ========
 
 MIT. See LICENSE
+
+Bundled Noto CJK Font:
+======================
+
+SIL Open Font License, Version 1.1. See font\LICENSE_CJK.txt
