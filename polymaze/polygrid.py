@@ -15,7 +15,7 @@ from . import shapes as _shapes
 _SS_DICT = _shapes.supershapes_dict()
 _EDGES_PER_COMPLEXITY = 400
 _DEFAULT_COMPLEXITY = 1.0
-_DEFAULT_FONT = os.path.join(os.path.dirname(__file__), '..', 'font', 'NotoSansCJK-Bold.ttc')  # high coverage font
+_DEFAULT_FONT = os.path.join(os.path.dirname(__file__), 'font', 'NotoSansCJK-Bold.ttc')  # high coverage font
 _PIXEL_ON = 0  # PIL color value to indicate a shape should be used (black)
 _PIXEL_OFF = 255  # PIL color value to indicate a shape is off (white)
 

@@ -27,9 +27,7 @@ setup(
     keywords='mazes tesselation',
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
     install_requires=['PILLOW'],
-    package_data={
-        'demo': ['globe_source.png'],
-    },
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'polymaze=polymaze.cli:commandline'

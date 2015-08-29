@@ -1,2 +1,4 @@
 include LICENSE
 include README.rst
+include demo_images/globe_source.png
+include polymaze/font/*
