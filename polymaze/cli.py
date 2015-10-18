@@ -1,6 +1,7 @@
 #! /usr/bin/python
 import argparse
 from datetime import datetime
+import sys
 
 import PIL.Image
 
@@ -20,9 +21,17 @@ def commandline():
 
     # pull off non-common parameters
     text = kwargs.pop('text')
+    if text is not None:
+        text = text.decode(sys.stdin.encoding)
     image_path = kwargs.pop('image')
+    if image_path is not None:
+        image_path = image_path.decode(sys.stdin.encoding)
     font_path = kwargs.pop('font')
+    if font_path is not None:
+        font_path = font_path.decode(sys.stdin.encoding)
     filename = kwargs.pop('output')
+    if filename is not None:
+        filename = filename.decode(sys.stdin.encoding)
 
     # fill the grid and create maze based on the remaining arguments provided
     if text:
@@ -60,7 +69,7 @@ def save_maze(maze, maze_type, filename=None):
         # in the background of the maze, then jpg might make sense.
         filename += '.png'
         image.save(filename)
-        print('Saved {}'.format(filename))
+        print(u'Saved {}'.format(filename))
 
 
 def _parser():
