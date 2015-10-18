@@ -35,7 +35,7 @@ def unicode_string_maze():
     s = u'迷\\n路'  # note literal \n is interpreted as newline
     supershape_name, supershape = next(_supershapes_cycle)
     grid = pmz.PolyGrid(supershape=supershape)
-    grid.create_string(s, complexity=20, font_path='meiryob.ttc')
+    grid.create_string(s, complexity=20)
     maze = pmz.Maze(grid)
     filename = os.path.join(_image_directory,
                             'Unicode String ({}).png'.format(supershape_name))
