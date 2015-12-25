@@ -137,7 +137,8 @@ class PolyGrid(object):
                 if grid_pixels[x, y] <= max_level:
                     self.create((y, x))
 
-    def _source_image_to_grid_image(self, source, complexity=None, aspect=None):
+    def _source_image_to_grid_image(self, source, complexity=None, aspect=None,
+                                    width_units_target=None, height_units_target=None):
         """Produce shapes to recreate the appearance of dark parts of source."""
         # determine defaults, basic values and shortcuts
         ss = self._supershape  # for brevity
@@ -145,13 +146,32 @@ class PolyGrid(object):
         target_aspect = aspect or (float(source.size[1]) / source.size[0])
         ss_h_per_row, ss_w_per_row = ss.graph_offset_per_row()
         ss_h_per_col, ss_w_per_col = ss.graph_offset_per_col()
-        # determine the size of the target graph
+
+        # determine the size of the target graph based on complexity
         edge_count = _EDGES_PER_COMPLEXITY * complexity
         shape_count = float(edge_count) * 2.0 / ss.avg_edge_count()
         ss_avg_area = ss.avg_area()
-        # ss_avg_area = (1.0 + ss_avg_area) / 2  # helps normalize complexity
         target_h = (float(ss_avg_area) * shape_count * target_aspect)**0.5
         target_w = (float(ss_avg_area) * shape_count / target_aspect)**0.5
+
+        # optionally adjust the size if targets were provided
+        # note: in the case of over-specification, this will override aspect and/or complexity
+        if width_units_target is not None:
+            if height_units_target is not None:
+                # if height units is also specified, the pair overrides everything
+                target_w = width_units_target
+                target_h = height_units_target
+            else:
+                # only one target is specified, so maintain the aspect
+                sized_scaling = width_units_target / target_w
+                target_w = width_units_target
+                target_h *= sized_scaling
+        elif height_units_target is not None:
+            # handle the case of only height being specified
+            sized_scaling = height_units_target / target_h
+            target_h = height_units_target
+            target_w *= sized_scaling
+
         # determine the approximate size of the grid needed to make the target
         # note: does not include skew - just average w/h
         grid_base_rows = int(round(float(target_h) / ss_h_per_row))

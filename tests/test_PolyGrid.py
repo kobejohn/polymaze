@@ -88,6 +88,62 @@ class TestPolyGrid_Creation(unittest.TestCase):
                         ' between {} and {} but got {}'
                         ''.format(h_min_spec, h_max_spec, h_double))
 
+    def test_sized_grid_is_within_three_side_lengths_of_single_target_size(self):
+        # establish the desired dimension size
+        single_dimension_size_spec = {0: ('height_units_target', 15),
+                                      1: ('width_units_target', 20)}
+
+        # build a grid with the target size option
+        for dimension, (kw, dimension_limit) in single_dimension_size_spec.items():
+            sized_grid = generic_grid()
+            sized_grid.create_string('?', **{kw: dimension_limit})
+
+            # manually detect the actual size of the target dimension
+            dimension_units_min = 99999
+            dimension_units_max = -99999
+            for edge in sized_grid.edges():
+                for yx_units in edge.endpoints():
+                    dimension_units = yx_units[dimension]
+                    dimension_units_min = min(dimension_units, dimension_units_min)
+                    dimension_units_max = max(dimension_units, dimension_units_max)
+            size_units = dimension_units_max - dimension_units_min
+
+            # confirm the actual size is within the specified delta of the target size
+            max_delta_spec = 3 * sized_grid._supershape._reference_length
+            size_units_spec = single_dimension_size_spec[dimension][1]
+            self.assertAlmostEqual(size_units, size_units_spec, delta=max_delta_spec)
+
+    def test_sized_grid_is_within_three_side_lengths_of_both_targets_with_double_target_size(self):
+        # establish the desired dimension sizes
+        dimensions_data = {0: {'size_spec': 15,
+                               'actual_max': -99999,
+                               'actual_min': 99999},
+                           1: {'size_spec': 20,
+                               'actual_max': -99999,
+                               'actual_min': 99999}}
+
+        # build a grid with the target size options both set
+        sized_grid = generic_grid()
+        sized_grid.create_string('?', height_units_target=dimensions_data[0]['size_spec'],
+                                 width_units_target=dimensions_data[1]['size_spec'])
+
+        # determine the actual min and max of each dimension
+        for edge in sized_grid.edges():
+            for yx_units in edge.endpoints():
+                for dimension in (0, 1):
+                    dimension_units = yx_units[dimension]
+                    dimension_min = dimensions_data[dimension]['actual_min']
+                    dimensions_data[dimension]['actual_min'] = min(dimension_units, dimension_min)
+                    dimension_max = dimensions_data[dimension]['actual_max']
+                    dimensions_data[dimension]['actual_max'] = max(dimension_units, dimension_max)
+
+        # confirm the size of each dimension
+        for dimension in (0, 1):
+            size_units = dimensions_data[dimension]['actual_max'] - dimensions_data[dimension]['actual_min']
+            max_delta_spec = 3 * sized_grid._supershape._reference_length
+            size_units_spec = dimensions_data[dimension]['size_spec']
+            self.assertAlmostEqual(size_units, size_units_spec, delta=max_delta_spec)
+
 
 # noinspection PyProtectedMember
 class TestShapeGrid(unittest.TestCase):
