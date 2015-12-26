@@ -74,24 +74,32 @@ def save_maze(maze, maze_type, filename=None):
 
 def _parser():
     parser = argparse.ArgumentParser(description='Make and save mazes.')
-    # optional top level type of maze to make (default rectangle)
+    # optional top level type of maze to make
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-t', '--text',
                        help='Make a maze inside the characters of TEXT.'
                             ' Note: interprets "\\n" as a new line.')
     group.add_argument('-i', '--image',
                        help='Make a maze from IMAGE (path).')
-    # optional complexity
-    parser.add_argument('-c', '--complexity', type=_positive,
-                        help='Positive number that controls maze complexity.'
-                             ' For example: 0.5 is very easy. 110 is very hard.')
-     # optional shape to use
+
+    # optional complexity, size and aspect arguments.
+    group = parser.add_argument_group(title='Optional complexity, size and aspect',
+                                      description='Note: If over-specified, the choices are resolved internally.')
+    group.add_argument('-c', '--complexity', type=_positive,
+                       help='Positive number that controls maze complexity.'
+                            ' For example: 0.5 is very easy. 110 is very hard.')
+    group.add_argument('-w', '--width', type=_positive,
+                       help='Positive number that sets the width of the maze in side-length units.')
+    group.add_argument('-g', '--height', type=_positive,
+                       help='Positive number that sets the height of the maze in side-length units.')
+    group.add_argument('-a', '--aspect', type=_positive,
+                       help='Set the height/width aspect of the maze.')
+
+    # optional shape to use
     ss_names = ss_dict.keys()
     parser.add_argument('-s', '--shape', choices=ss_names,
                         help='Make the maze with this shape. Random otherwise.')
     # optional aspect (relative height)
-    parser.add_argument('-a', '--aspect', type=_positive,
-                        help='Set the height/width aspect of the maze.')
     parser.add_argument('-f', '--font', type=str,
                         help='Provide a font path for text mazes.')
     parser.add_argument('-o', '--output', type=str,
