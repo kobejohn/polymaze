@@ -138,7 +138,7 @@ class PolyGrid(object):
                     self.create((y, x))
 
     def _source_image_to_grid_image(self, source, complexity=None, aspect=None,
-                                    width_units_target=None, height_units_target=None):
+                                    width=None, height=None):
         """Produce shapes to recreate the appearance of dark parts of source."""
         # determine defaults, basic values and shortcuts
         ss = self._supershape  # for brevity
@@ -156,26 +156,29 @@ class PolyGrid(object):
 
         # optionally adjust the size if targets were provided
         # note: in the case of over-specification, this will override aspect and/or complexity
-        if width_units_target is not None:
-            if height_units_target is not None:
+        if width is not None:
+            if height is not None:
                 # if height units is also specified, the pair overrides everything
-                target_w = width_units_target
-                target_h = height_units_target
+                target_w = width
+                target_h = height
             else:
                 # only one target is specified, so maintain the aspect
-                sized_scaling = width_units_target / target_w
-                target_w = width_units_target
+                sized_scaling = width / target_w
+                target_w = width
                 target_h *= sized_scaling
-        elif height_units_target is not None:
+        elif height is not None:
             # handle the case of only height being specified
-            sized_scaling = height_units_target / target_h
-            target_h = height_units_target
+            sized_scaling = height / target_h
+            target_h = height
             target_w *= sized_scaling
 
         # determine the approximate size of the grid needed to make the target
         # note: does not include skew - just average w/h
-        grid_base_rows = int(round(float(target_h) / ss_h_per_row))
-        grid_base_cols = int(round(float(target_w) / ss_w_per_col))
+        # note: shrink factor ensures that the final result is *within* the target size, not just close
+        #       actual shrink value determined by trial and error
+        fit_within_factor = 1.8 * ss._reference_length
+        grid_base_rows = int(round(float(target_h - fit_within_factor) / ss_h_per_row))
+        grid_base_cols = int(round(float(target_w - fit_within_factor) / ss_w_per_col))
         # resize the source image to the target grid
         # note: done separately from transform to get better quality resize
         grid_base = source.resize((grid_base_cols, grid_base_rows),
