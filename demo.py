@@ -23,7 +23,7 @@ def ascii_string_maze():
     s = 'Mazes.'
     supershape_name, supershape = next(_supershapes_cycle)
     grid = pmz.PolyGrid(supershape=supershape)
-    grid.create_string(s, complexity=15)
+    grid.create_string(s, height=50)
     maze = pmz.Maze(grid)
     filename = os.path.join(_image_directory,
                             'ASCII String ({}).png'.format(supershape_name))

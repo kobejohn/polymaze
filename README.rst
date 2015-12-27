@@ -12,7 +12,8 @@ Allowed Inputs:
 
 Options:
 
-- Complexity - adjust the difficulty
+- Height / Width - adjust the difficulty (measured in polygon side lengths)
+- Complexity - adjust the difficulty (measured in polygon density)
 - Font - use your own font when making a String maze (especially for unicode strings)
 - Shape - explicitly choose the type of tesselation used in the maze
 
